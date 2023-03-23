@@ -11,7 +11,7 @@ import Ultils_model_creation
 
 #FROM https://github.com/TannerGilbert/Tensorflow-Lite-Object-Detection-with-the-Tensorflow-Object-Detection-API/blob/master/Convert_custom_object_detection_model_to_TFLITE.ipynb
 from Utils_Detect_Signature import   img_proccess, draw_bounding_box_on_image
-from Utils_detect_TFlite import detect_objects
+from Utils_detect_TFlite import detect_objects_TFlite
 
 MODEL_TFLITE_PATH = 'model_mobil_v2_C/frozen/model_simple_sigNo_Mdata.tflite'
 PATH_IMG_SOURCE = 'img_cat_dogs_test_valida/*.jpg'
@@ -35,7 +35,7 @@ for i, image_path in enumerate(glob.glob(PATH_IMG_SOURCE)):
 
   if interpreter.get_input_details()[0]['dtype'] == np.float32:
     image_pred = (np.float32(image_pred) - input_mean) / input_std
-  results = detect_objects(interpreter, image_pred, HUMBRAL_PREDTIC )
+  results = detect_objects_TFlite(interpreter, image_pred, HUMBRAL_PREDTIC)
 
   PATH_saved_img = "img_cat_TFlite/" + str(i) + ".jpg"
 
