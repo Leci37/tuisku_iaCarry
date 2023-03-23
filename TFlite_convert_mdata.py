@@ -36,8 +36,8 @@ def mdata_write_all_in_tflite_FULL(MODEL_PATH_LITE, SAVE_TO_PATH_LITE, LABEL_FIL
     print("Associated file(s) populated:")
     print(displayer.get_packed_associated_file_list())
     model_meta = _metadata_fb.ModelMetadataT()
-    model_meta.name = "SSD_Detector " + MODEL_PATH_LITE
-    model_meta.description = (
+    model_meta.name = "SSD_Detector: " + MODEL_PATH_LITE
+    model_meta.description = (MODEL_PATH_LITE+
         "Identify which of a known set of objects might be present and provide "
         "information about their positions within the given image or a video "
         "stream.")
@@ -62,9 +62,10 @@ def mdata_write_all_in_tflite_FULL(MODEL_PATH_LITE, SAVE_TO_PATH_LITE, LABEL_FIL
     input_stats.min = [0]
     input_meta.stats = input_stats
     # Creates outputs info.
+    #LOCATION
     output_location_meta = _metadata_fb.TensorMetadataT()
     output_location_meta.name = "location"
-    output_location_meta.description = "The locations of the detected boxes."
+    output_location_meta.description = "The LOCATIONS of the detected boxes."
     output_location_meta.content = _metadata_fb.ContentT()
     output_location_meta.content.contentPropertiesType = (
         _metadata_fb.ContentProperties.BoundingBoxProperties)
@@ -78,9 +79,10 @@ def mdata_write_all_in_tflite_FULL(MODEL_PATH_LITE, SAVE_TO_PATH_LITE, LABEL_FIL
     output_location_meta.content.range = _metadata_fb.ValueRangeT()
     output_location_meta.content.range.min = 2
     output_location_meta.content.range.max = 2
+    # CATEGORY
     output_class_meta = _metadata_fb.TensorMetadataT()
     output_class_meta.name = "category"
-    output_class_meta.description = "The categories of the detected boxes."
+    output_class_meta.description = "The CATEGORIES of the detected boxes."
     output_class_meta.content = _metadata_fb.ContentT()
     output_class_meta.content.contentPropertiesType = (
         _metadata_fb.ContentProperties.FeatureProperties)
@@ -89,14 +91,16 @@ def mdata_write_all_in_tflite_FULL(MODEL_PATH_LITE, SAVE_TO_PATH_LITE, LABEL_FIL
     output_class_meta.content.range = _metadata_fb.ValueRangeT()
     output_class_meta.content.range.min = 2
     output_class_meta.content.range.max = 2
+    #LABEL MAP
     label_file = _metadata_fb.AssociatedFileT()
     label_file.name = os.path.basename("tflite_label_map.txt")
     label_file.description = "Label of objects that this model can recognize."
     label_file.type = _metadata_fb.AssociatedFileType.TENSOR_VALUE_LABELS
     output_class_meta.associatedFiles = [label_file]
+    #SCORE
     output_score_meta = _metadata_fb.TensorMetadataT()
     output_score_meta.name = "score"
-    output_score_meta.description = "The scores of the detected boxes."
+    output_score_meta.description = "The SCORE of the detected boxes."
     output_score_meta.content = _metadata_fb.ContentT()
     output_score_meta.content.contentPropertiesType = (
         _metadata_fb.ContentProperties.FeatureProperties)
@@ -105,14 +109,16 @@ def mdata_write_all_in_tflite_FULL(MODEL_PATH_LITE, SAVE_TO_PATH_LITE, LABEL_FIL
     output_score_meta.content.range = _metadata_fb.ValueRangeT()
     output_score_meta.content.range.min = 2
     output_score_meta.content.range.max = 2
+    #NUMBER OF DETECTIONS
     output_number_meta = _metadata_fb.TensorMetadataT()
     output_number_meta.name = "number of detections"
-    output_number_meta.description = "The number of the detected boxes."
+    output_number_meta.description = "The NUMber of the detected boxes."
     output_number_meta.content = _metadata_fb.ContentT()
     output_number_meta.content.contentPropertiesType = (
         _metadata_fb.ContentProperties.FeatureProperties)
     output_number_meta.content.contentProperties = (
         _metadata_fb.FeaturePropertiesT())
+
     # Creates subgraph info.
     group = _metadata_fb.TensorGroupT()
     group.name = "detection result"
