@@ -236,11 +236,13 @@ tf.keras.backend.clear_session()
 
 print('Building model and restoring weights for fine-tuning...', flush=True)
 
-PATH_TRANSFER =  'ssd_mobilenet_v2_fpnlite_640x640'
+PATH_TRANSFER =  'ssd_resnet101_v1_fpn_640x640' #'ssd_mobilenet_v2_fpnlite_640x640'
+PATH_MODELS_CHECKPOINT_STEP_STPE = 'model_101_D'
+
 PATH_MODEL_TRANSFER_PIPE = PATH_TRANSFER +'/pipeline.config'
 PATH_MODEL_TRANSFER_CHECK = PATH_TRANSFER +'/checkpoint/ckpt-0'
 print('\t'+PATH_MODEL_TRANSFER_PIPE)
-PATH_MODELS_CHECKPOINT_STEP_STPE = 'model_cat_dog_zombie'
+
 # pipeline_config = 'ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/pipeline.config'
 # checkpoint_path = 'ssd_mobilenet_v2_fpnlite_640x640_coco17_tpu-8/checkpoint/ckpt-0'
 
