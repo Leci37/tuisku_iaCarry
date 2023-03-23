@@ -53,6 +53,7 @@ for i, image_path in enumerate(glob.glob(PATH_IMG_SOURCE)):
       display_str = (str(class_name) + ":" + str(int(score*100))+"%")
       color = colors[hash(str(class_name)) % len(colors)]
 
+      print("DEBUG Add detection  class_name: ", display_str, " box: ", tuple(box), " color: ", color)
       image_pil = Image.fromarray(np.uint8(now_image_np)).convert("RGB")
 
       draw_bounding_box_on_image(

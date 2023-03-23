@@ -8,7 +8,7 @@ import tensorflow as tf
 import numpy as np
 
 import Utils_TFlite_see_info
-from convert_TFlite_mdata import mdata_write_all_in_tflite_SIMPLE, log_metadata_info_tflite
+from TFlite_convert_mdata import mdata_write_all_in_tflite_SIMPLE, log_metadata_info_tflite, mdata_write_all_in_tflite_FULL
 
 
 def Add_metadata(model_path):
@@ -56,6 +56,7 @@ converter_F.optimizations = [tf.lite.Optimize.DEFAULT]
 converter_F.experimental_new_converter = True
 converter_F.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS,
                                        tf.lite.OpsSet.SELECT_TF_OPS]
+# converter_F.inference_input_type = tf.uint8  # or tf.int8
 tflite_model = converter_F.convert()
 
 TF_LITE_PATH_2 = PATH_MODEL+'/model_Build_sigDef.tflite'
