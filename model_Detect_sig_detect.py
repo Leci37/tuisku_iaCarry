@@ -8,7 +8,11 @@ import Ultils_model_creation
 
 category_index = Ultils_model_creation.get_category_index()
 
-PATH_MODELS_CHECK = 'model_cat_dog_zombie'
+PATH_MODELS_CHECK = 'model_mobil_v2_C'
+PATH_FOLDER_IMG_TEST = "img_cat_dogs_test_valida" # NO TOCAR
+PATH_FOLDER_IMG_TEST_RESULT = "img_cat_mobiv2_C"
+
+
 detection_model =  tf.saved_model.load( PATH_MODELS_CHECK + "/save_model_detect")
 signatures = detection_model.signatures
 print('Signature:', signatures)
@@ -20,8 +24,6 @@ list_paths = ["cat.2000.jpg", "cat.2001.jpg", "cat.2002.jpg", "cat.2003.jpg", "c
 category_index = Ultils_model_creation.get_category_index()
 label_id_offset = 1
 
-PATH_FOLDER_IMG_TEST = "img_cat_dogs_test_valida"
-PATH_FOLDER_IMG_TEST_RESULT = "img_cat_dogs_test_valida_result_epo170"
 
 for path_test_img_path in list_paths:
     print("TEST image: ", path_test_img_path)
