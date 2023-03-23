@@ -167,6 +167,7 @@ def save_detecion_pd_checkpoint(detection_model, PATH_MODELS_CHECK, configs):
     print('Checkpoint saved! path: ',PATH_MODELS_CHECK + "/checkpoint/")
     tf.saved_model.save(detection_model, PATH_MODELS_CHECK + "/saved_model/", signatures=None, options=None)
     print('Save .pb ', PATH_MODELS_CHECK + "/saved_model/")
+    generate_file_log_PB_info(PATH_MODELS_CHECK + "/saved_model")
 
     # new_model = tf.saved_model.load(PATH_MODELS_CHECK + "/saved_model_sig/")
     # detections = new_model.signatures['detect']("your_detection_img_tensor")
@@ -205,3 +206,13 @@ def plot_parameter_setup_config(plt):
     plt.rcParams['ytick.right'] = False
     plt.rcParams['figure.figsize'] = [14, 7]
     return plt
+
+
+def generate_file_log_PB_info( path_saved_model_pd ,path_file_info = None ):
+    # path_saved_model_pd = "ssd_resnet101_v1_fpn_640x640/saved_model"
+    if path_file_info is None:
+        path_file_info = path_saved_model_pd + "/model_info.LOG"
+
+    cmd_command = r" saved_model_cli show --dir  "+path_saved_model_pd+"   --all >  "+path_file_info
+    r = os.system(cmd_command)
+    print("Generate log .pb info ", cmd_command, "  Returned: ", r)
