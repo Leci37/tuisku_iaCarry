@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import scipy.misc
 import numpy as np
+from keras.callbacks import EarlyStopping
 from six import BytesIO
 from PIL import Image, ImageDraw, ImageFont
 import tensorflow as tf
@@ -107,7 +108,7 @@ model_dir = "./ssd_mobilenet_v2_fpnlite_640x640/checkpoint"
 configs = config_util.get_configs_from_pipeline_file(pipeline_config)
 model_config = configs['model']
 # Build the model with the configurations read.
-detection_model = model_builder.build(model_config=model_config, is_training=False)
+detection_model = model_builder.build(model_config=model_config, is_training=True)
 # Restore the weights from the checkpoint.
 ckpt = tf.compat.v2.train.Checkpoint(model=detection_model)
 ckpt.restore(os.path.join(model_dir, 'ckpt-0')).expect_partial()
@@ -347,7 +348,7 @@ tf.keras.backend.set_learning_phase(True)
 # fit more examples in memory if we wanted to.
 batch_size = 8
 learning_rate = 0.01
-num_batches = 700
+num_batches = 7000
 
 # Select variables in top layers to fine-tune.
 trainable_variables = detection_model.trainable_variables
@@ -374,6 +375,7 @@ else:
 print('Start fine-tuning!', flush=True)
 
 time_start = time.time()
+list_loss = []
 for idx in range(num_batches):
   # Grab keys for a random subset of examples
   all_keys = list(range(len(train_images_np)))
@@ -389,11 +391,21 @@ for idx in range(num_batches):
 
   # Training step (forward pass + backwards pass)
   total_loss , losses_dict = train_step_fn(image_tensors, gt_boxes_list, gt_classes_list)
+  list_loss.append(total_loss.numpy())
   print("=", end="")
   if idx % 10 == 0:
     time_end = time.time(); loss_str = "\tbbox=" +str('{:.5f}'.format(losses_dict['Loss/localization_loss'].numpy()))+ "\tclass="+  str('{:.5f}'.format(losses_dict['Loss/classification_loss'].numpy()))
     print(' batch ' + str(idx) + ' of ' + str(num_batches) + '\tloss=' +  str('{:.5f}'.format(total_loss.numpy())), loss_str, "\tTime take: ", '{:.2f}'.format(time_end - time_start)+"s")
     time_start = time.time()
+
+    last_lost = list_loss[-1]
+    if len(list_loss) > 10 and  all([not(l >= last_lost) for l in list_loss[-8:]]):
+        print("EarlyStopping(monitor='loss')  END the lost does not impruve. Last loss: ", ",".join(list_loss[-8:]) )
+        break
+
+
+
+
 
     # print("DEBUG:  example_keys : ", example_keys)
 save_path = manager_ckpt_new.save()
