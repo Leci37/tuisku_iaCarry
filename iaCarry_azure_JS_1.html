@@ -1,0 +1,533 @@
+
+   <meta charset="utf-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+   <link href="https://fonts.googleapis.com/css2?family=Ubuntu&amp;display=swap" rel="stylesheet">
+   <style>
+      canvas {
+         display: block;
+         border: 1px solid black;
+         margin-top: 10px;
+         border-radius: 10px;
+      }
+      @import url(https://fonts.googleapis.com/css?family=Roboto:300,400,500);
+      * {
+         box-sizing: border-box;
+      }
+      html,
+      body {
+         width: 100%;
+         /*height: 100%; cuiadado luego no hace scroll*/
+         padding: 10px;
+         margin: 0;
+         background-color: #705fc811;
+         font-family: 'Roboto', sans-serif;
+         border-radius: 40px;
+      }
+      .loading_button {
+         /* text-transform: uppercase; */
+         background-image: none;
+         border-style: none;
+         /* letter-spacing: 2px; */
+         margin: 10px auto;
+         padding: 10px;
+         pointer-events: initial;
+         color: #ffffff !important;
+         background-color: #715fc8 !important;
+         border-radius: 36px;
+      }
+      .shopping-cart {
+         /* width: 750px; */
+         margin: 20px auto;
+         background: #FFFFFF;
+         box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.10);
+         border-radius: 6px;
+         display: flex;
+         flex-direction: column;
+      }
+      /* .title {
+         height: 60px;
+         border-bottom: 1px solid #E1E8EE;
+         padding: 20px 75px;
+         color: #5E6977;
+         font-size: 18px;
+         font-weight: 400;
+      } */
+      .title_cols {
+         height: 60px;
+         border-bottom: 1px solid #E1E8EE;
+         padding: 20px 60px;
+         color: #5E6977;
+         font-size: 18px;
+         font-weight: 400;
+         padding: 17px 30px;
+         /*height: 140px; */
+         display: flex;
+         align-items: center;
+         align-content: center;
+         justify-content: space-around;
+      }
+      .item {
+         padding: 17px 30px;
+         height: 140px;
+         display: flex;
+         align-items: center;
+         align-content: center;
+         justify-content: space-around;
+      }
+      .box_color {
+         display: inline-block;
+         padding: 10px 10px;
+         height: 20px;
+         width: 50px;
+         border-radius: 18px;
+         margin-top: 4px;
+      }
+      .item:nth-child(n) {
+         border-top: 1px solid #E1E8EE;
+         border-bottom: 1px solid #E1E8EE;
+      }
+      .div_imgs {
+         padding-bottom: 10px;
+      }
+      /* Buttons -  Delete and Like */
+      .buttons {
+         position: relative;
+         padding-top: 30px;
+         margin-right: 60px;
+      }
+      .delete-btn {
+         display: inline-block;
+         cursor: pointer;
+         width: 18px;
+         height: 17px;
+         background: url("delete-icn.svg") no-repeat center;
+         margin-right: 20px;
+      }
+      .like-btn {
+         position: absolute;
+         top: 9px;
+         left: 15px;
+         display: inline-block;
+         background: url('twitter-heart.png');
+         width: 60px;
+         height: 60px;
+         background-size: 2900%;
+         background-repeat: no-repeat;
+         cursor: pointer;
+      }
+      .is-active {
+         animation-name: animate;
+         animation-duration: .8s;
+         animation-iteration-count: 1;
+         animation-timing-function: steps(28);
+         animation-fill-mode: forwards;
+      }
+      @keyframes animate {
+         0% {
+            background-position: left;
+         }
+         50% {
+            background-position: right;
+         }
+         100% {
+            background-position: right;
+         }
+      }
+      /* Product Image */
+      /* .image {
+         margin-right: 50px;
+      } */
+      .image_list {
+         margin-right: 10px;
+         float: center;
+         width: 155px;
+         border: 3px solid #715fc8;
+         /* padding: 6px; */
+         border-radius: 10px;
+      }
+      #shopping_cart_total_pay {
+         border: 1px solid #715fc8;
+         /*border-bottom*/
+         background-color: rgb(248, 241, 185);
+         border-radius: 10px;
+      }
+      /* Product Description */
+      .description {
+         /* padding-top: 10px; */
+         text-align: center;
+         display: inline-block;
+         margin-right: 60px;
+         width: 115px;
+         margin: 6px 0;
+      }
+      .description span {
+         display: block;
+         font-size: 14px;
+         color: #43484D;
+         font-weight: 400;
+      }
+      .description span:first-child {
+         margin-bottom: 5px;
+      }
+      .description span:last-child {
+         font-weight: 300;
+         margin-top: 8px;
+         color: #86939E;
+      }
+      td {
+         font-weight: bold;
+         margin: 12px;
+         text-align: center;
+         vertical-align: middle;
+      }
+      .title_td .title_td_hide {
+         margin: 12px;
+         text-align: center;
+         vertical-align: middle;
+         display: flex;
+         /* align-items: center;
+         align-content: center;
+         justify-content: space-around; */
+      }
+      /* Product Quantity */
+      .quantity {
+         text-align: center;
+         display: inline-block;
+         padding-bottom: 10px;
+      }
+      .quantity input {
+         -webkit-appearance: none;
+         border: none;
+         text-align: center;
+         width: 32px;
+         font-size: 16px;
+         color: #43484D;
+         font-weight: 300;
+      }
+      button[class*=btn] {
+         width: 22px;
+         height: 22px;
+         background-color: #E1E8EE;
+         border-radius: 8px;
+         border: none;
+         cursor: pointer;
+      }
+      .minus-btn img {
+         margin-bottom: 3px;
+      }
+      .plus-btn img {
+         margin-top: 2px;
+      }
+      button:focus,
+      input:focus {
+         outline: 0;
+      }
+      /* Total Price */
+      .total-price {
+         display: inline-block;
+         width: 83px;
+         padding-bottom: 10px;
+         text-align: center;
+         font-size: 16px;
+         color: #43484D;
+         font-weight: 300;
+      }
+      /* Responsive */
+      @media (max-width: 724px) {
+         .shopping-cart {
+            width: 100%;
+            height: auto;
+            overflow: hidden;
+         }
+         .item {
+            height: auto;
+            flex-wrap: wrap;
+            justify-content: center;
+         }
+         .image_list {
+            margin-right: -2px;
+         }
+         .image img {
+            width: 50%;
+         }
+         .image,
+         .quantity,
+         .description {
+            margin-right: 0px;
+            width: 100%;
+            text-align: center;
+            margin: 6px 0;
+         }
+         .buttons {
+            margin-right: 20px;
+         }
+         td {
+            margin-right: 0px;
+            margin: -7px;
+         }
+         .box_color {
+            visibility: hidden;
+            display: none;
+         }
+         .title_td_hide {
+            visibility: hidden;
+            display: none;
+         }
+      }
+   </style>
+   <title></title>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+   <script>
+      function getRandomColor() {
+         color = "hsl(" + Math.random() * 360 + ", 100%, 75%)";
+         return color;
+      }
+      const ENDPOINT = "https://westeurope.api.cognitive.microsoft.com/"
+      var DICT_PROD = {
+         "aguila_33cl": { "tag_id": "aguila_33cl", "weight": 0.34, "name_show": "Aguila beer 33cl ", "cost_ud": 0.98, "color": "rgba(141, 211, 199, 1)" },
+         "axedrak_150ml": { "tag_id": "axedrak_150ml", "weight": 0.16, "name_show": "Axe Drak deodorant 150ml ", "cost_ud": 2.73, "color": "rgba(255, 255, 179, 1)" },
+         "chipsahoy_300g": { "tag_id": "chipsahoy_300g", "weight": 0.3, "name_show": "Chips Ahoy! biscuits 300g", "cost_ud": 3.12, "color": "rgba(190, 186, 218, 1)" },
+         "cocacola_33cl": { "tag_id": "cocacola_33cl", "weight": 0.34, "name_show": "CocaCola 33cl ", "cost_ud": 0.8, "color": "rgba(251, 128, 114, 1)" },
+         "colacao_383g": { "tag_id": "colacao_383g", "weight": 0.383, "name_show": "ColaCao 383g ", "cost_ud": 5.6, "color": "rgba(128, 177, 211, 1)" },
+         "colgate_75ml": { "tag_id": "colgate_75ml", "weight": 0.34, "name_show": "Colgate toothpaste  75ml ", "cost_ud": 2.3, "color": "rgba(253, 180, 98, 1)" },
+         "estrellag_33cl": { "tag_id": "estrellag_33cl", "weight": 0.34, "name_show": "Estrella Galicia beer 33cl ", "cost_ud": 0.78, "color": "rgba(179, 222, 105, 1)" },
+         "fanta_33cl": { "tag_id": "fanta_33cl", "weight": 0.34, "name_show": "Fanta Lemon 33cl ", "cost_ud": 0.73, "color": "rgba(188, 128, 189, 1)" },
+         "hysori_300ml": { "tag_id": "hysori_300ml", "weight": 0.65, "name_show": "HyS original shampoo 300ml", "cost_ud": 2.54, "color": "rgba(252, 205, 229, 1)" },
+         "mahou00_33cl": { "tag_id": "mahou00_33cl", "weight": 0.34, "name_show": "Mahou 00 Tostada beer 33cl", "cost_ud": 1.02, "color": "rgba(217, 217, 217, 1)" },
+         "mahou5_33cl": { "tag_id": "mahou5_33cl", "weight": 0.34, "name_show": "Mahou 5 Estrellas beer 33cl", "cost_ud": 0.69, "color": "rgba(204, 235, 197, 1)" },
+         "smacks_330g": { "tag_id": "smacks_330g", "weight": 0.33, "name_show": "Cereales Smacks Kelloggs 330g", "cost_ud": 3.01, "color": "rgba(255, 237, 111, 1)" },
+         "tostarica_570g": { "tag_id": "tostarica_570g", "weight": 0.57, "name_show": "Cuétara Tostarica 570g", "cost_ud": 2.99, "color": "#3c1feb" }
+      };
+      var DICT_PROD_RAW = {
+         "aguila_33cl": 0, "axedrak_150ml": 0, "chipsahoy_300g": 0, "cocacola_33cl": 0, "colacao_383g": 0, "colgate_75ml": 0, "estrellag_33cl": 0,
+         "fanta_33cl": 0, "hysori_300ml": 0, "mahou00_33cl": 0, "mahou5_33cl": 0, "smacks_330g": 0, "tostarica_570g": 0
+      };
+      var RAW_IMG_PROD = "https://raw.githubusercontent.com/Leci37/stocks-prediction-Machine-learning-RealTime-TensorFlow/master/readme_img/{tag_id}_300.png"
+      var STRING_PRODUCT = ' <tr class="item"> ' +
+         // '<div class="buttons">' +
+         // '<span class="delete-btn"></span>' +
+         // '<span class="like-btn"></span>' +
+         // '</div>' +
+         '<td class="image_list" height="105"  >' +
+         '<div align="center" > <img src="{url_img}" class="div_imgs"  height="103" alt="alt image,{name_show}" /> </div>' +
+         '</td>' +
+         '<td class="description">' +
+         '<div align="center" > <span  font-family="Ubuntu"  text-align="left" font-weight="bold" ><strong>{name_show}</strong></span> </div>' +
+         // '<svg xmlns="http://www.w3.org/2000/svg">' +
+         //    '<circle cx="15" cy="15" r="15" fill="{color_box}" ></circle>' +
+         // '</svg>' +
+         '<div> <div class="box_color"  style="background:{color_box}; " > </div> </div>' +
+         // '<svg width="70" height="45" viewBox="0 0 220 220" fill="{color_box}" xmlns="http://www.w3.org/2000/svg">' +
+         //    '<rect x="115" y="115" width="100" height="100" fill="{color_box}"  strokeWidth="2" rx="70" ry="45" ></rect>' +
+         // '</svg>' +
+         // '<span>{name_show}22222</span>' +
+         // '<span>{name_show}33333</span>' +
+         '</td>' +
+         // '<td class="total-price">' +
+         // '<div align="center" > <span  font-family="Ubuntu"  text-align="left" font-weight="bold" >{cost_ud}</span> </div>' +
+         // '</td>' +
+         '<td  class="total-price"><pre> {cost_ud}€ </pre></td>' +
+         '<td class="quantity">' +
+         '<button class="plus-btn" type="button" name="button" style="background:{color_box}; ">' +
+         '<img src="plus.svg" alt="" />' +
+         '</button>' +
+         '<input id="units_{idname}" type="text" name="name" value="0">' +
+         '<button class="minus-btn" type="button" name="button"  style="background:{color_box}; " >' +
+         '<img src="minus.svg" alt="" />' +
+         '</button>' +
+         '</td>' +
+         // '</div>' +
+         '<td id="total_price_{total_price}" class="total-price"><div><pre> € </pre></div></td>' +
+         '</tr>'
+      /**
+      * Function draws the image from provided file
+      * and bounding boxes of detected objects on
+      * top of the image
+      * @param file Uploaded file object
+      * @param boxes Array of bounding boxes in format
+      [[x1,y1,x2,y2,object_type,probability],...]
+      */
+      function draw_image_and_boxes(file, r_prediction) {
+         var dict_prod_count = structuredClone(DICT_PROD_RAW); //reset all values
+         var total_a_pagar = 0;
+         const img = new Image()
+         img.src = URL.createObjectURL(file);
+         img.onload = () => {
+            const canvas = document.querySelector("canvas");
+            var ctx = canvas.getContext('2d');
+            canvas.width = 640;// img.width;
+            canvas.height = 640;//img.height;
+            var img_corrector_wigth = 640 / img.width
+            var img_corrector_height = 640 / img.height
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 3;
+            ctx.font = "bold 18px Ubuntu";
+            for (let i = 0; i < r_prediction.length; i++) {
+               if (r_prediction[i]['probability'] > 0.4) {
+                  tagName = r_prediction[i]['tagName']
+                  var dict_a_prod = DICT_PROD[tagName];
+                  var ram_Color = dict_a_prod["color"];
+                  ctx.strokeStyle = ram_Color;//"#00FF00";
+                  bbox = r_prediction[i]['boundingBox']
+                  probability = parseInt(r_prediction[i]['probability'] * 100)
+                  bbox = r_prediction[i]['boundingBox']
+                  x = bbox['left'] * img.width * img_corrector_wigth
+                  y = bbox['top'] * img.height * img_corrector_height
+                  w = bbox['width'] * img.width * img_corrector_wigth
+                  h = bbox['height'] * img.height * img_corrector_height
+                  ctx.strokeRect(x, y, w, h);
+                  ctx.fillStyle = ram_Color;//   "#00ff00";
+                  const width = ctx.measureText(tagName + " " + probability + "%").width;
+                  ctx.fillRect(x, y - 14, width, +24);
+                  ctx.fillStyle = "#000000"; //color fuente
+                  ctx.fillText(tagName + " " + probability + "%", x, y + 2);
+                  dict_prod_count[tagName] += 1
+                  if (dict_prod_count[tagName] == 1) {
+                     var url_img_prod = RAW_IMG_PROD.replace("{tag_id}", tagName)
+                     var divs_ele = STRING_PRODUCT.replace("{url_img}", url_img_prod);
+                     divs_ele = divs_ele.replaceAll("{name_show}", dict_a_prod["name_show"]);
+                     // divs_ele = divs_ele.replaceAll("{units}", dict_prod_count[tagName]);
+                     divs_ele = divs_ele.replaceAll("units_{idname}", "units_" + tagName);
+                     divs_ele = divs_ele.replaceAll("total_price_{total_price}", "total_price_" + tagName);
+                     divs_ele = divs_ele.replaceAll("{cost_ud}", dict_a_prod["cost_ud"]);
+                     divs_ele = divs_ele.replaceAll("{color_box}", ram_Color);
+                     document.getElementById("shopping_cart_idid").insertAdjacentHTML("beforeend", divs_ele);
+                  }
+                  document.getElementById("units_" + tagName).value = dict_prod_count[tagName]
+                  document.querySelector("#total_price_" + tagName + " div > pre").innerHTML = (dict_prod_count[tagName] * dict_a_prod["cost_ud"]).toFixed(2) + "€"
+                  //document.getElementById("total_price_" + tagName).innerHTML = (dict_prod_count[tagName] * dict_a_prod["cost_ud"]).toFixed(2) + "€"
+                  total_a_pagar += dict_a_prod["cost_ud"];
+               }
+            }
+            //TOTAL final
+            document.querySelector("#shopping_cart_total_pay > div > strong > pre").innerHTML = "  " + total_a_pagar.toFixed(2) + "€  "
+            //document.getElementById("shopping_cart_total_pay").innerHTML = "  "+ total_a_pagar.toFixed(2) + "€  "
+         }
+      }
+      function readImage(element) {
+         // from https://stackoverflow.com/questions/70906006/how-to-use-azure-custom-vision-prediction-api-by-url-method-in-javascript
+         [...document.getElementsByClassName("item")].map(n => n && n.remove());//borar las listas anteriores
+         var file = element.files[0];
+         var reader = new FileReader();
+         var intervalId = "";
+         reader.onloadstart = function () {
+            document.getElementById("h5_loading").innerHTML = "LOADING "
+            intervalId = window.setInterval(function () {
+               document.getElementById("h5_loading").innerHTML += ".."
+            }, 600);
+         }
+         reader.onloadend = function () {
+            //load_img_in_canvas(file);
+            $.ajax({
+               url: ENDPOINT + "customvision/v3.0/Prediction/bb92520b-5d96-436e-ae98-84af06f0dee0/detect/iterations/Iteration7/image",
+               data: reader.result,
+               processData: false,
+               contentType: "application/octet-streama",
+               headers: {
+                  'Prediction-key': "e0454c07b84f4c76b9750e4b74710a3c"
+               },
+               type: 'POST',
+               success: function (response) {
+                  var r_prediction = response["predictions"];
+                  // document.getElementById("demo1").innerHTML = "id: " + JSON.stringify(response["id"])
+                  // document.getElementById("demo2").innerHTML = "project: " + JSON.stringify(response["project"])
+                  // document.getElementById("demo3").innerHTML = "iteration: " + JSON.stringify(response["iteration"])
+                  // document.getElementById("demo4").innerHTML = "created: " + JSON.stringify(response["created"])
+                  // document.getElementById("demo5").innerHTML = "-" // "predictions: "+ JSON.stringify(response["predictions"])
+                  r_prediction.forEach(function (valor, indice, array) {
+                     var info_pred = "valor " + JSON.stringify(valor) + " Valor: " + JSON.stringify(indice)
+                     console.log(info_pred); //+ " Array: " + JSON.stringify(array));
+                     // document.getElementById("demo5").innerHTML += "\n<br>**" + JSON.stringify(valor)
+                     // document.getElementById("demo6").innerHTML += "\n<br>**" + JSON.stringify(valor['probability'])
+                     // document.getElementById("demo7").innerHTML += "\n<br>**" + JSON.stringify(valor['tagName'])
+                     // document.getElementById("demo8").innerHTML += "\n<br>**" + JSON.stringify(valor['boundingBox'])
+                  });
+                  for (let i = 0; i < r_prediction.length; i++) {
+                     console.log(r_prediction);
+                  }
+                  //const boxes = response["predictions"]['boundingBox'];
+                  draw_image_and_boxes(file, response["predictions"]);
+                  clearInterval(intervalId)
+                  document.getElementById("h5_loading").innerHTML = "LOADED"
+                  //alert(result);
+               },
+               error: function (error) {
+                  document.getElementById("demo").innerHTML = "ERROR: " + JSON.stringify(error)
+                  alert('error: ' + error);
+               }
+            });
+         }
+         reader.readAsArrayBuffer(file);
+      }
+   </script>
+   <div style="width:640; height:640; margin:0 auto;">
+      <div style="margin-left: 10px;display: block; display: inline-block;">
+         <h4 id="h5_loading" style="margin-left: 10px;"></h4>
+         <form>
+            <input type="file" class="loading_button" onchange="readImage(this)" accept="capture=camera,image/*">
+         </form>
+      </div>
+      <canvas id="canvas_id" class="shopping-cart" width="640" height="640" style="border:2px solid black">
+         Your browser doesn't support html5! Please download a fitable browser.
+      </canvas>
+   </div>
+   <div id="shopping_cart_total_to_buy" class="shopping-cart">
+      <!-- Title -->
+      <!-- <div class="title">
+         <span style="text-align:left; float: left;">Total to be paid:</span>
+         <span id="shopping_cart_total_pay" style="text-align:right; float: right;">€€€</span>
+      </div> -->
+      <table>
+         <tbody id="shopping_cart_id_to_pay" class="shopping-cart">
+            <!-- Title -->
+            <tr class="title_cols">
+               <td class="title_td" style="margin-right: 20px;">Total to be paid:</td>
+               <td class="title_td_hide"></td>
+               <td class="title_td_hide"></td>
+               <td class="title_td_hide"></td>
+               <td id="shopping_cart_total_pay" class="title_td">
+                  <div style="margin: -8px;">
+                     <strong>
+                        <pre>  €€€  </pre>
+                     </strong>
+                  </div>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+   <div class="shopping-cart">
+      <table>
+         <tbody id="shopping_cart_idid" class="shopping-cart">
+            <!-- Title -->
+            <tr class="title_cols">
+               <td class="title_td">
+                  <p>Shopping Trolley</p>
+               </td>
+               <td class="title_td_hide">
+                  <p> Product </p>
+               </td>
+               <td class="title_td_hide">
+                  <p> Cost unit </p>
+               </td>
+               <td class="title_td_hide">
+                  <p> Units </p>
+               </td>
+               <td class="title_td_hide">
+                  <p> Price </p>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+   </div>
+   <!-- <br>
+   <p id="demo1">Log text here</p>
+   <p id="demo2">Log text here</p>
+   <p id="demo3">Log text here</p>
+   <p id="demo4">Log text here</p>
+   <p id="demo5">Log text here</p>
+   <p id="demo6">probability</p>
+   <p id="demo7">tagName</p>
+   <p id="demo8">boundingBox</p> -->
