@@ -193,6 +193,15 @@ def get_scalated_00_x_y_w_h(row):
     h = h / img_height
     return  x, y, w, h
 
+def get_scalated_00_xmin_ymin_xmax_ymax(row):
+    img_width, img_height = Image.open(row['path']).size
+    x, y, x_max, y_max = row[["x_min", "y_min", "x_max", "y_max"]]
+    w = (x_max - x) / img_width
+    h = (y_max - y) / img_height
+    x = x / img_width
+    y = y / img_height
+    return  x, y, w, h
+
 
 # EL png tiene 4 dimensiones RGB y tranparencia , si la transparencia es zero pone a zero los otros R G B
 # Read with this to enter cv2.imread(path_out_put, cv2.IMREAD_UNCHANGED)

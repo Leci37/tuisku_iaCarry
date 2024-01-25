@@ -75,7 +75,7 @@ def get_img_ram_perspective_transform(img_path, img_path_save):
     alpha = X_imgs[:, :, 3]
     img[alpha == 0] = (0, 0, 0)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    print("\t", img_path, " ", img.shape)
+    print("\tPerspective: ", img_path, " ", img.shape)
     ri = random.randint(2, 33)
     m = int(np.mean(img.shape) / 3)
     # All points are in format [cols, rows]
