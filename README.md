@@ -172,3 +172,241 @@ python TFlite_detect.py
 
 ## 🙌 Author
 **@Leci37** — Built for advanced object detection workflows using a blend of local + cloud data pipelines.
+
+
+---
+
+# 🛒 iaCarry: Revolutionizing the Checkout Experience
+
+**Website:** http://iacarry.tuisku.eu  
+**Demo Video:** http://www.youtube.com/watch?v=Sj-IvGnjODE  
+**GitHub:** https://github.com/Leci37/tuisku_iaCarry
+
+iaCarry is an innovative AI-based checkout system designed to drastically reduce transaction times and eliminate the bottlenecks caused by traditional scanning. Developed by tuisku.eu, it leverages cutting-edge technologies like Google TensorFlow and OpenCV to visually recognize products in a shopping cart — with no need for barcodes to be scanned manually.
+
+---
+
+## ✨ Key Features of iaCarry
+
+### ⚡ Rapid Checkout Process
+Customers can complete their purchases in as little as 6 seconds, greatly reducing queues and wait times.  
+📍 *Source: ia_carry_home2*
+
+### 🧠 Advanced AI & Computer Vision
+Trained using models developed in collaboration with Google TensorFlow and Facebook AI, iaCarry can identify products by simply analyzing an overhead image of the cart.  
+📍 *Source: ia_carry_home2, YouTube demos*
+
+### 💸 Economic and Resource Efficiency
+Eliminates the need for a dedicated cashier scanning items, allowing personnel to focus on value-added tasks while significantly cutting operational costs.  
+📍 *Source: ia_carry_home2*
+
+### 🔧 Simplified Maintenance
+Unlike RFID or cart-mounted camera systems, iaCarry centralizes the technology in a single station, simplifying maintenance and lowering long-term costs.  
+📍 *Source: Product*
+
+### 🏪 Adaptability to Store Size
+iaCarry is modular and fits into spaces as small as 4.5 square meters, making it ideal for both large supermarkets and compact retail stores.  
+📍 *Source: Product*
+
+---
+
+## 🧠 How iaCarry Works (Full Explanation)
+
+1. **Cart Positioning:** Customer places their cart on the iaCarry-Station equipped with a scale.
+2. **Product Recognition:** Overhead camera takes a photo of the contents.
+3. **AI Analysis:** The image is processed to detect products and retrieve their prices/barcodes/weights.
+4. **Customer Interaction:** Real-time display with visual and sound feedback.
+5. **Payment:** Customer pays via contactless methods at the station.
+6. **Completion:** Gate opens, customer leaves — no lines, no friction.
+
+---
+
+## 🍌 Handling Bulk / Fresh Products
+
+iaCarry supports:
+- **Pre-Weighing:** Items like fruits and meat can be weighed in-store and labeled, then recognized by the system.
+- **Integrated Weighing:** Additional scales can be installed beside the station for on-the-spot weighing.
+
+---
+
+## 🛡️ Anti-Fraud Measures
+
+- Detects missing or hidden products.
+- Verifies total weight of items to catch unscanned products.
+- Prompts users with visual/auditory warnings when anomalies are detected.
+
+---
+
+## 🧩 Product Offerings
+
+### 🏢 Large Supermarkets
+- Full-featured iaCarry Station
+- Requires 4.5 m² and integration with POS systems
+- Includes staff training and customer education
+
+### 🛍️ Small Supermarkets
+- Compact version
+- Customized software
+- Cost-effective hardware + remote support
+
+### 👕 Clothing & Furniture Stores
+- Uses QR codes, RFID or visual features (color, size)
+- Specialized AI models for non-barcode products
+- Recognition of furniture models, apparel styles, etc.
+
+---
+
+## 📈 Investment Opportunities
+
+iaCarry is open to:
+- Retail partnerships
+- Franchise or white-label solutions
+- Technology investment or acquisition
+
+**Benefits for investors:**
+- Breakthrough in AI retail automation
+- High efficiency = increased throughput = higher revenue
+- Attracts modern shoppers who expect self-service and speed
+- Scalable across markets (grocery, fashion, electronics, etc.)
+
+---
+
+## 🎥 Demonstrations and Visuals
+
+- ✅ Main Demo – How iaCarry Works
+- ⚡ Express Checkout Video 1
+- ⚡ Express Checkout Video 2
+
+These videos showcase real-world usage, transaction speed, and user experience at iaCarry stations.
+
+---
+
+## 📬 Contact & Info
+
+**Developer:** tuisku.eu  
+**Location:** Calle la Fanderia, 2, 48901 Barakaldo, Biscay, Spain  
+**Website:** http://iacarry.tuisku.eu
+
+---
+
+## 🧾 Summary
+
+iaCarry is not just a self-checkout system — it’s a complete AI-powered retail transformation tool. From lightning-fast payment to fraud detection and plug-and-play scalability, iaCarry offers the future of shopping today.
+
+---
+
+## 💼 Pitch Deck Highlights
+
+**What is iaCarry?**  
+iaCarry is an AI-powered checkout station designed to complete a full shopping cart transaction in just 6 seconds using an overhead image and advanced computer vision.
+
+- Developed by tuisku.eu
+- Built with Google TensorFlow and Facebook’s Computer Vision tools
+- Embedded in a physical station: scale + overhead camera + screen + payment terminal
+
+---
+
+## 🌍 Market Opportunity
+
+- 23,572 supermarkets in Spain and over 234,000 stores across Europe still depend on conventional barcode scanning.
+- iaCarry targets:
+   - Large supermarkets
+   - Small convenience stores
+   - Clothing and furniture retailers (customized with QR or smart labels)
+
+---
+
+## 🎯 Vision & Value Proposition
+
+- "Payment in 6 seconds!" – drastically reduces customer time spent at checkout.
+- AI recognition replaces barcode scanning
+- Seamless and scalable integration with existing retail infrastructure
+- Optimized for store staff productivity – staff can focus on stocking instead of scanning
+- Error reduction – less manual intervention = fewer mistakes
+
+---
+
+## ⚙️ How Does It Work?
+
+1. Cart Placement: Customer pushes their cart onto the scale.
+2. Overhead Image Capture: The system takes an aerial photo.
+3. AI Product Detection: TensorFlow-powered model detects all products in view.
+4. Price/Barcode Match: Items are matched to SKUs (price, barcode, weight).
+5. Real-Time Feedback: Customers see the scanned items on a screen.
+6. Payment: They pay via electronic payment (card, NFC).
+7. Exit: Once paid, the system unlocks the gate automatically.
+
+---
+
+## 🔐 Anti-Fraud Features
+
+- Picaresque control: Validates cart weight to prevent hidden/missing products.
+- Bulk product detection: Camera AI can handle unpackaged items without extra scales.
+- Alerts customer in real-time for inconsistencies.
+
+---
+
+## 🏪 Retail Formats Supported
+
+| Retail Type         | Customization Features                                    |
+|---------------------|-----------------------------------------------------------|
+| Large supermarkets  | Standard iaCarry-Station (4.5 m²), fully integrated       |
+| Small stores        | Space-optimized versions, remote support                  |
+| Clothing/Furniture  | Smart label support (QR, color/style detection), specialized cameras |
+
+---
+
+## 🏆 Competitive Advantages
+
+- Uses conventional trolleys (no hardware required on carts)
+- Minimal infrastructure: scale, camera, screen, dataphone
+- Easy to install, easy to scale
+- Cheaper than competitors (no cart computers, charging stations, Wi-Fi mesh)
+- Real fraud detection, unlike "take and go" competitors
+
+---
+
+## 📊 Revenue Model
+
+| Revenue Source     | Details                                                       |
+|--------------------|---------------------------------------------------------------|
+| Station installation | €12,000 per station                                          |
+| Trolley cost         | €38 per trolley                                              |
+| Software license     | €420/month per station or recognition-based (e.g. €0.01/item) |
+| Maintenance          | €165/month per station                                       |
+| Optional training    | Included in B2B sales packages                               |
+
+---
+
+## 📈 Scalability Strategy
+
+- First 10 stations operational → global rollout
+- Scalable for:
+   - Supermarkets
+   - Retail apparel/furniture
+   - Tech/consumer goods stores
+- The underlying iaCarry Kernel is also reusable for other applications like iaRecycle (AI-based recycling automation).
+
+---
+
+## 💼 Investment Needs
+
+To scale the project, iaCarry is looking for:
+
+1. Implementation partner (to deploy prototype units)
+2. Cloud compute rental (for model resolution)
+3. Optional team expansions:
+   - 2 more developers
+   - 1 QA engineer (to eliminate critical bugs)
+   - 7 commercial/sales staff (national + international)
+
+---
+
+## 👨‍💻 Meet the Founder
+
+**Luis Castillo**  
+Founder of tuisku.eu  
+- AI/ML developer, specialized in neural networks  
+- GitHub: https://github.com/Leci37  
+- LinkedIn: https://linkedin.com/in/luislcastillo/
+
