@@ -163,7 +163,9 @@
 
   <div class="steps">
     <div class="step"><span class="sc" id="s1">1</span><b id="s1b" style="font-size:14px" data-i18n="step1">Pon el carro</b>
-      <div class="seg2"><button id="btnEmpty" data-full="0" data-i18n="mtEmpty">Vacío</button><button id="btnFull" data-full="1" data-i18n="mtFull">Lleno</button></div></div>
+      <!-- Stand-in for the physical cart sensor: see setCartPresent(). The
+           tooltip says so, so nobody demoing this mistakes it for a live feed. -->
+      <div class="seg2" id="sensorToggle" data-stub="cart-sensor"><button id="btnEmpty" data-full="0" data-i18n="mtEmpty" data-i18n-title="sensorHint">Vacío</button><button id="btnFull" data-full="1" data-i18n="mtFull" data-i18n-title="sensorHint">Lleno</button></div></div>
     <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
     <div class="step"><span class="sc" id="s2">2</span><b id="s2b" style="font-size:14px" data-i18n="step2">Revisa</b></div>
     <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
@@ -213,9 +215,15 @@
     <div class="card cart" style="position:relative">
       <div class="success" id="success" style="display:none">
         <div style="width:96px;height:96px;border-radius:50%;background:#E9F7EF;display:flex;align-items:center;justify-content:center;animation:popCheck .5s cubic-bezier(.2,.9,.3,1.2) both"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#12864a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-        <div id="sThanks" style="font-weight:800;font-size:26px;letter-spacing:-.02em;margin-top:14px;animation:fadeUp .4s .15s both">¡Gracias por tu compra! 🎉</div>
+        <!-- data-i18n was missing here since the design bundle, so this heading
+             stayed Spanish in all seven languages while the lines under it
+             translated. The `thanks` key already existed, unused. -->
+        <div id="sThanks" data-i18n="thanks" style="font-weight:800;font-size:26px;letter-spacing:-.02em;margin-top:14px;animation:fadeUp .4s .15s both">¡Gracias por tu compra! 🎉</div>
         <div id="sConfirmed" style="font-size:15px;color:#5a5478;max-width:340px;animation:fadeUp .4s .25s both">Pago confirmado.</div>
         <div class="pill pill-live" style="margin-top:4px;animation:fadeUp .4s .35s both"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="sTicket">Ticket enviado</span></div>
+        <!-- Shown only while PAYMENT_BACKEND is false. It disappears on its own
+             the moment a real payment route confirms the charge. -->
+        <div id="sSim" style="display:none;margin-top:10px;max-width:430px;background:#FCF3E0;border:1px solid #F3E2BC;color:#9a6a00;border-radius:12px;padding:10px 14px;font-weight:700;font-size:13px;line-height:1.45;animation:fadeUp .4s .4s both"></div>
         <button class="btn btn-pay" id="reset" data-i18n="newBuy" style="margin:22px 0 0;animation:fadeUp .4s .45s both">Nueva compra</button>
       </div>
       <div class="chead">
@@ -238,7 +246,7 @@
         <div class="paybar">
           <div class="total"><small style="font-size:13px;color:var(--sub);font-weight:600" data-i18n="totalPay">Total a pagar</small><b class="tabnum" id="total">0.00€</b></div>
           <button class="btn btn-listen" id="listen"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 8a5 5 0 010 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="listen">Escuchar total</span></button>
-          <button class="btn btn-pay" id="pay"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12c4.5-4.5 11.5-4.5 16 0"/><path d="M7.5 15.5c2.5-2.5 6.5-2.5 9 0"/><path d="M11 19h2"/></svg><span data-i18n="payBtn">Pagar sin contacto</span></button>
+          <button class="btn btn-pay" id="pay"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12c4.5-4.5 11.5-4.5 16 0"/><path d="M7.5 15.5c2.5-2.5 6.5-2.5 9 0"/><path d="M11 19h2"/></svg><span id="payBtnTxt">Pagar sin contacto</span></button>
         </div>
         <div class="sema" id="sema"><span class="dot" style="width:12px;height:12px;background:#23b364;box-shadow:0 0 0 4px rgba(35,179,100,.18)"></span>Todo correcto, ya puedes pagar 👍</div>
       </div>
@@ -396,7 +404,7 @@ function adaptDetections(json){
 function applyDetections(json){
   const adapted=adaptDetections(json);
   state.live=adapted;
-  if(unitsOf(adapted.qty)>0) state.cartFull=true;
+  if(unitsOf(adapted.qty)>0) setCartPresent(true,"detection");
   render();
   return adapted;
 }
@@ -540,7 +548,7 @@ async function runDemo(key){
   const src=DEMO_SOURCES[key];
   if(!src||src.live){ resetDetection(); return }
   const seq=++detectSeq;
-  state.live=null; state.paid=false;
+  state.live=null; state.pay={status:"idle",simulated:false,ref:"",detail:""};
   setDetect("busy","loading","");
   let blob;
   try{ blob=await fetchDemoBlob(src) }
@@ -552,17 +560,113 @@ async function runDemo(key){
 /* Payment is blocked, not merely discouraged, unless a detection actually
    succeeded and produced something to charge for. */
 function payable(){
-  return state.detect.status==="ok" && state.cartFull && !state.paid
+  return state.detect.status==="ok" && state.cartFull && state.pay.status==="idle"
       && unitsOf(state.live&&state.live.qty)>0;
 }
+
+const cartTotal=q=>CATALOG.reduce((s,c)=>s+c.cost*(q&&q[c.tag]||0),0);
+
+/* ===========================================================================
+   BACKEND SEAMS — the two things on this screen with nothing behind them.
+
+   Each is exactly one function. Wiring either up is a change here and nowhere
+   else in the UI, and neither pretends to be connected while it is not.
+   =========================================================================== */
+
+/* ---- Seam 1 of 2: payment and door ---------------------------------------
+   RUN_server_py_upload.py serves GET / and GET|POST /upload and nothing else —
+   there is no payment route, and no door release anywhere in this codebase.
+
+   So requestPayment() returns a clearly-marked simulated approval, and the
+   confirmation overlay says in plain language that nothing was charged and no
+   door was opened. The overlay itself is unchanged and stays the confirmation
+   screen for the real flow.
+
+   TO WIRE IT UP: set PAYMENT_BACKEND to true and implement PAYMENT_ENDPOINT as
+   a POST route answering {"ok":true,"ref":"…"} on approval and either a non-2xx
+   status or {"ok":false,"error":"…"} on refusal. Nothing else changes: success
+   is already the server's to declare, never the button's.                     */
+const PAYMENT_ENDPOINT="/payment";   /* NOT IMPLEMENTED SERVER-SIDE YET */
+const PAYMENT_BACKEND=false;         /* the one line that turns this real */
+const PAYMENT_TIMEOUT_MS=30000;
+
+async function requestPayment(order){
+  if(!PAYMENT_BACKEND){
+    /* Deliberately not instant. A payment that returns in zero milliseconds
+       teaches everyone to expect something no real terminal ever does. */
+    await new Promise(r=>setTimeout(r,900));
+    return {ok:true,simulated:true,ref:"DEMO-"+Date.now().toString(36).toUpperCase()};
+  }
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),PAYMENT_TIMEOUT_MS);
+  try{
+    const res=await fetch(PAYMENT_ENDPOINT,{method:"POST",signal:ac.signal,
+      headers:{"Content-Type":"application/json"},body:JSON.stringify(order)});
+    const text=await res.text();
+    if(!res.ok) throw new Error("HTTP "+res.status+" "+text.slice(0,120));
+    let json;
+    try{ json=JSON.parse(text) }
+    catch(e){ throw new Error("server said: "+(text.trim().slice(0,140)||"empty response")) }
+    if(!json||json.ok!==true) throw new Error((json&&json.error)||"payment declined");
+    return {ok:true,simulated:false,ref:json.ref||""};
+  }finally{ clearTimeout(timer) }
+}
+
+/* The only thing the pay button does. Success is shown on confirmation, never
+   on click. */
+async function pay(){
+  if(!payable()) return;
+  state.pay={status:"paying",simulated:false,ref:"",detail:""};
+  render();
+  const q=state.live?state.live.qty:{};
+  try{
+    const r=await requestPayment({
+      total:Number(cartTotal(q).toFixed(2)),currency:"EUR",
+      units:unitsOf(q),lines:Object.keys(q).length,items:q
+    });
+    state.pay={status:"done",simulated:!!r.simulated,ref:r.ref||"",detail:""};
+  }catch(err){
+    console.error("[iaCarry] payment failed:",err);
+    state.pay={status:"error",simulated:false,ref:"",
+               detail:(err&&err.name==="AbortError")
+                 ? "timed out after "+(PAYMENT_TIMEOUT_MS/1000)+"s"
+                 : String(err&&err.message||err)};
+  }
+  render();
+}
+
+/* ---- Seam 2 of 2: cart-presence sensor -----------------------------------
+   The physical sensor lives outside this codebase, and nothing here carries its
+   signal — no endpoint, no websocket, no event. The Empty/Full toggle in step 1
+   stands in for it and is labelled as a stand-in in its tooltip.
+
+   TO WIRE IT UP: have the real signal call setCartPresent(true|false, "sensor").
+   Every path that changes cart presence already goes through this one function,
+   so nothing else in the UI needs finding or touching, and the toggle can then
+   be deleted or kept as a manual override.                                    */
+const CART_SENSOR_BACKEND=false;     /* no sensor input exists yet */
+
+function setCartPresent(present,source){
+  const was=state.cartFull;
+  state.cartFull=!!present;
+  if(was!==state.cartFull)
+    console.info("[iaCarry] cart presence:",state.cartFull,"via",source||"unspecified");
+  if(!state.cartFull){
+    /* No cart means nothing to describe. Leaving the last photo, boxes and
+       totals up would be describing a trolley that has gone. */
+    state.pay={status:"idle",simulated:false,ref:"",detail:""};
+    state.demo="camera"; fillDemo();
+    resetDetection();
+  }else render();
+}
 const I18N={
-  es:{flag:"\uD83C\uDDEA\uD83C\uDDF8",langName:"Español",detActive:"Detección activa",forC:"para",bigText:"Texto grande",step1:"Pon el carro",mtEmpty:"Vacío",mtFull:"Lleno",step2:"Revisa",step3:"Paga",cam:"Cámara cenital",live:"en directo",mProd:"productos",mAcc:"precisión",mInf:"inferencia",wVer:"Peso estimado",antifraud:"Anti-fraude",noAnom:"Pendiente de báscula",fTitle:"Resumen de la revisión",fPara:"El sistema ha reconocido los productos a partir de la imagen cenital y ha calculado el peso esperado del carro con los pesos del catálogo.",fLi1:"productos reconocidos",fLi2:"Peso esperado del carro: {w}",fLi3:"Comprobación con báscula no disponible: no hay ningún sensor de peso conectado.",cart:"Tu carrito",uds:"uds",ref:"ref.",confIA:"Confianza IA",dCom:"Cómodo",dCompact:"Compacto",dCols:"3 columnas",search:"Buscar entre +10.000 productos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Cuidado",eMatch:"Sin productos que coincidan",eCart:"El carro está vacío",cReco:"✓ Reconocido",cDoubt:"¿Es esto?",perUd:"/ ud",verW:"Reconocido por IA · peso estimado {w}",totalPay:"Total a pagar",listen:"Escuchar total",payBtn:"Pagar sin contacto",semaReady:"Todo correcto, ya puedes pagar \uD83D\uDC4D",semaPlace:"Coloca el carro para empezar",thanks:"¡Gracias por tu compra! \uD83C\uDF89",confirmed:"Pago de {t}€ confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",ticket:"Ticket enviado · {n} artículos",newBuy:"Nueva compra",speak:"El total a pagar es {a} euros con {b} céntimos",speechLang:"es-ES",camLive:"Cámara en directo",camIdle:"Aún no se ha analizado ninguna imagen",camLoading:"Cargando imagen…",camAnalysing:"Analizando el carro…",semaBusy:"Analizando el carro…",semaFail:"Fallo de detección — avisa a un asistente",semaNone:"No se ha reconocido ningún producto — avisa a un asistente",dec:",",verWNone:"Reconocido por IA"},
-  en:{flag:"\uD83C\uDDEC\uD83C\uDDE7",langName:"English",detActive:"Detection active",forC:"for",bigText:"Large text",step1:"Place the cart",mtEmpty:"Empty",mtFull:"Full",step2:"Review",step3:"Pay",cam:"Overhead camera",live:"live",mProd:"products",mAcc:"accuracy",mInf:"inference",wVer:"Estimated weight",antifraud:"Anti-fraud",noAnom:"Awaiting scale",fTitle:"Review summary",fPara:"The system recognised the products from the overhead image and calculated the cart's expected weight from the catalogue weights.",fLi1:"products recognised",fLi2:"Expected cart weight: {w}",fLi3:"Scale check unavailable: no weight sensor is connected.",cart:"Your cart",uds:"items",ref:"ref.",confIA:"AI confidence",dCom:"Comfortable",dCompact:"Compact",dCols:"3 columns",search:"Search +10,000 products…",catAll:"All",catDrinks:"Drinks",catSnacks:"Snacks",catCare:"Care",eMatch:"No matching products",eCart:"The cart is empty",cReco:"✓ Recognized",cDoubt:"Is this it?",perUd:"/ ea",verW:"AI-recognised · est. weight {w}",totalPay:"Total to pay",listen:"Read total aloud",payBtn:"Contactless pay",semaReady:"All correct, you can pay now \uD83D\uDC4D",semaPlace:"Place the cart to start",thanks:"Thanks for your purchase! \uD83C\uDF89",confirmed:"Payment of €{t} confirmed. The door will open automatically, have a nice day.",ticket:"Receipt sent · {n} items",newBuy:"New purchase",speak:"The total to pay is {a} euros and {b} cents",speechLang:"en-GB",camLive:"Live camera",camIdle:"No image analysed yet",camLoading:"Loading image…",camAnalysing:"Analysing the cart…",semaBusy:"Analysing your cart…",semaFail:"Detection failed — please call an assistant",semaNone:"No products recognised — please call an assistant",dec:".",verWNone:"AI-recognised"},
-  eu:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC70\uDB40\uDC76\uDB40\uDC7F",langName:"Euskera",detActive:"Detekzioa aktibo",forC:"honentzat",bigText:"Testu handia",step1:"Jarri orga",mtEmpty:"Hutsik",mtFull:"Beteta",step2:"Berrikusi",step3:"Ordaindu",cam:"Goiko kamera",live:"zuzenean",mProd:"produktu",mAcc:"zehaztasuna",mInf:"inferentzia",wVer:"Kalkulatutako pisua",antifraud:"Iruzurraren aurka",noAnom:"Balantzaren zain",fTitle:"Berrikuspenaren laburpena",fPara:"Sistemak goiko irudiaren bidez produktuak ezagutu ditu eta katalogoko pisuekin orgaren espero den pisua kalkulatu du.",fLi1:"produktu ezagutu",fLi2:"Orgaren espero den pisua: {w}",fLi3:"Balantzaren egiaztapena ez dago erabilgarri: ez dago pisu-sentsorerik konektatuta.",cart:"Zure orga",uds:"unitate",ref:"erref.",confIA:"IA konfiantza",dCom:"Erosoa",dCompact:"Trinkoa",dCols:"3 zutabe",search:"Bilatu +10.000 produktutan…",catAll:"Guztiak",catDrinks:"Edariak",catSnacks:"Mokaduak",catCare:"Zainketa",eMatch:"Ez dago bat datorren produkturik",eCart:"Orga hutsik dago",cReco:"✓ Ezaguna",cDoubt:"Hau al da?",perUd:"/ unit.",verW:"IAk ezagutua · gutxi gorabeherako pisua {w}",totalPay:"Ordaintzeko guztira",listen:"Entzun guztira",payBtn:"Ordaindu kontakturik gabe",semaReady:"Dena ondo, ordain dezakezu \uD83D\uDC4D",semaPlace:"Jarri orga hasteko",thanks:"Eskerrik asko erosketagatik! \uD83C\uDF89",confirmed:"{t}€-ko ordainketa berretsita. Atea automatikoki irekiko da, ondo izan.",ticket:"Tiketa bidalita · {n} artikulu",newBuy:"Erosketa berria",speak:"Ordaintzeko guztira {a} euro eta {b} zentimo da",speechLang:"eu-ES",camLive:"Zuzeneko kamera",camIdle:"Oraindik ez da irudirik aztertu",camLoading:"Irudia kargatzen…",camAnalysing:"Orga aztertzen…",semaBusy:"Orga aztertzen…",semaFail:"Detekzio-errorea — deitu langile bati",semaNone:"Ez da produkturik ezagutu — deitu langile bati",dec:",",verWNone:"IAk ezagutua"},
-  ca:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F",langName:"Català",detActive:"Detecció activa",forC:"per a",bigText:"Text gran",step1:"Posa el carro",mtEmpty:"Buit",mtFull:"Ple",step2:"Revisa",step3:"Paga",cam:"Càmera zenital",live:"en directe",mProd:"productes",mAcc:"precisió",mInf:"inferència",wVer:"Pes estimat",antifraud:"Antiffrau",noAnom:"Pendent de bàscula",fTitle:"Resum de la revisió",fPara:"El sistema ha reconegut els productes a partir de la imatge zenital i ha calculat el pes esperat del carro amb els pesos del catàleg.",fLi1:"productes reconeguts",fLi2:"Pes esperat del carro: {w}",fLi3:"Comprovació amb bàscula no disponible: no hi ha cap sensor de pes connectat.",cart:"El teu carro",uds:"u.",ref:"ref.",confIA:"Confiança IA",dCom:"Còmode",dCompact:"Compacte",dCols:"3 columnes",search:"Cerca entre +10.000 productes…",catAll:"Tots",catDrinks:"Begudes",catSnacks:"Snacks",catCare:"Cura",eMatch:"Cap producte coincident",eCart:"El carro és buit",cReco:"✓ Reconegut",cDoubt:"És això?",perUd:"/ u.",verW:"Reconegut per IA · pes estimat {w}",totalPay:"Total a pagar",listen:"Escolta el total",payBtn:"Paga sense contacte",semaReady:"Tot correcte, ja pots pagar \uD83D\uDC4D",semaPlace:"Posa el carro per començar",thanks:"Gràcies per la teva compra! \uD83C\uDF89",confirmed:"Pagament de {t}€ confirmat. La porta s'obrirà automàticament, que tinguis un bon dia.",ticket:"Tiquet enviat · {n} articles",newBuy:"Nova compra",speak:"El total a pagar és {a} euros amb {b} cèntims",speechLang:"ca-ES",camLive:"Càmera en directe",camIdle:"Encara no s'ha analitzat cap imatge",camLoading:"Carregant la imatge…",camAnalysing:"Analitzant el carro…",semaBusy:"Analitzant el carro…",semaFail:"Error de detecció — avisa un assistent",semaNone:"No s'ha reconegut cap producte — avisa un assistent",dec:",",verWNone:"Reconegut per IA"},
-  pt:{flag:"\uD83C\uDDF5\uD83C\uDDF9",langName:"Português",detActive:"Deteção ativa",forC:"para",bigText:"Texto grande",step1:"Coloque o carrinho",mtEmpty:"Vazio",mtFull:"Cheio",step2:"Reveja",step3:"Pague",cam:"Câmara superior",live:"em direto",mProd:"produtos",mAcc:"precisão",mInf:"inferência",wVer:"Peso estimado",antifraud:"Antifraude",noAnom:"A aguardar balança",fTitle:"Resumo da revisão",fPara:"O sistema reconheceu os produtos a partir da imagem superior e calculou o peso esperado do carrinho com os pesos do catálogo.",fLi1:"produtos reconhecidos",fLi2:"Peso esperado do carrinho: {w}",fLi3:"Verificação com balança indisponível: não há nenhum sensor de peso ligado.",cart:"O seu carrinho",uds:"un.",ref:"ref.",confIA:"Confiança IA",dCom:"Confortável",dCompact:"Compacto",dCols:"3 colunas",search:"Procurar entre +10.000 produtos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Higiene",eMatch:"Sem produtos correspondentes",eCart:"O carrinho está vazio",cReco:"✓ Reconhecido",cDoubt:"É isto?",perUd:"/ un.",verW:"Reconhecido por IA · peso estimado {w}",totalPay:"Total a pagar",listen:"Ouvir o total",payBtn:"Pagar sem contacto",semaReady:"Tudo certo, já pode pagar \uD83D\uDC4D",semaPlace:"Coloque o carrinho para começar",thanks:"Obrigado pela sua compra! \uD83C\uDF89",confirmed:"Pagamento de {t}€ confirmado. A porta abrir-se-á automaticamente, tenha um bom dia.",ticket:"Recibo enviado · {n} artigos",newBuy:"Nova compra",speak:"O total a pagar é {a} euros e {b} cêntimos",speechLang:"pt-PT",camLive:"Câmara em direto",camIdle:"Ainda não foi analisada nenhuma imagem",camLoading:"A carregar a imagem…",camAnalysing:"A analisar o carrinho…",semaBusy:"A analisar o carrinho…",semaFail:"Falha na deteção — chame um assistente",semaNone:"Nenhum produto reconhecido — chame um assistente",dec:",",verWNone:"Reconhecido por IA"},
-  fr:{flag:"\uD83C\uDDEB\uD83C\uDDF7",langName:"Français",detActive:"Détection active",forC:"pour",bigText:"Texte grand",step1:"Placez le chariot",mtEmpty:"Vide",mtFull:"Plein",step2:"Vérifiez",step3:"Payez",cam:"Caméra en plongée",live:"en direct",mProd:"produits",mAcc:"précision",mInf:"inférence",wVer:"Poids estimé",antifraud:"Anti-fraude",noAnom:"En attente de balance",fTitle:"Résumé de la vérification",fPara:"Le système a reconnu les produits à partir de l'image en plongée et a calculé le poids attendu du chariot d'après les poids du catalogue.",fLi1:"produits reconnus",fLi2:"Poids attendu du chariot : {w}",fLi3:"Contrôle par balance indisponible : aucun capteur de poids n'est connecté.",cart:"Votre chariot",uds:"u.",ref:"réf.",confIA:"Confiance IA",dCom:"Confortable",dCompact:"Compact",dCols:"3 colonnes",search:"Rechercher parmi +10 000 produits…",catAll:"Tous",catDrinks:"Boissons",catSnacks:"Snacks",catCare:"Hygiène",eMatch:"Aucun produit correspondant",eCart:"Le chariot est vide",cReco:"✓ Reconnu",cDoubt:"C'est ça ?",perUd:"/ u.",verW:"Reconnu par IA · poids estimé {w}",totalPay:"Total à payer",listen:"Écouter le total",payBtn:"Payer sans contact",semaReady:"Tout est correct, vous pouvez payer \uD83D\uDC4D",semaPlace:"Placez le chariot pour commencer",thanks:"Merci pour votre achat ! \uD83C\uDF89",confirmed:"Paiement de {t}€ confirmé. La porte s'ouvrira automatiquement, bonne journée.",ticket:"Ticket envoyé · {n} articles",newBuy:"Nouvel achat",speak:"Le total à payer est de {a} euros et {b} centimes",speechLang:"fr-FR",camLive:"Caméra en direct",camIdle:"Aucune image analysée pour l'instant",camLoading:"Chargement de l'image…",camAnalysing:"Analyse du chariot…",semaBusy:"Analyse du chariot…",semaFail:"Échec de la détection — appelez un assistant",semaNone:"Aucun produit reconnu — appelez un assistant",dec:",",verWNone:"Reconnu par IA"},
-  de:{flag:"\uD83C\uDDE9\uD83C\uDDEA",langName:"Deutsch",detActive:"Erkennung aktiv",forC:"für",bigText:"Großer Text",step1:"Wagen abstellen",mtEmpty:"Leer",mtFull:"Voll",step2:"Prüfen",step3:"Bezahlen",cam:"Deckenkamera",live:"live",mProd:"Produkte",mAcc:"Genauigkeit",mInf:"Inferenz",wVer:"Geschätztes Gewicht",antifraud:"Betrugsschutz",noAnom:"Waage ausstehend",fTitle:"Zusammenfassung der Prüfung",fPara:"Das System hat die Produkte anhand des Deckenbilds erkannt und das erwartete Gewicht des Wagens aus den Katalogangaben berechnet.",fLi1:"Produkte erkannt",fLi2:"Erwartetes Gewicht des Wagens: {w}",fLi3:"Waagenprüfung nicht verfügbar: Es ist kein Gewichtssensor angeschlossen.",cart:"Ihr Wagen",uds:"St.",ref:"Ref.",confIA:"KI-Konfidenz",dCom:"Komfortabel",dCompact:"Kompakt",dCols:"3 Spalten",search:"Unter +10.000 Produkten suchen…",catAll:"Alle",catDrinks:"Getränke",catSnacks:"Snacks",catCare:"Pflege",eMatch:"Keine passenden Produkte",eCart:"Der Wagen ist leer",cReco:"✓ Erkannt",cDoubt:"Ist es das?",perUd:"/ St.",verW:"KI-erkannt · geschätztes Gewicht {w}",totalPay:"Zu zahlen",listen:"Summe vorlesen",payBtn:"Kontaktlos zahlen",semaReady:"Alles korrekt, Sie können zahlen \uD83D\uDC4D",semaPlace:"Wagen abstellen zum Starten",thanks:"Danke für Ihren Einkauf! \uD83C\uDF89",confirmed:"Zahlung von {t}€ bestätigt. Die Tür öffnet sich automatisch, schönen Tag.",ticket:"Beleg gesendet · {n} Artikel",newBuy:"Neuer Einkauf",speak:"Der zu zahlende Betrag beträgt {a} Euro und {b} Cent",speechLang:"de-DE",camLive:"Live-Kamera",camIdle:"Noch kein Bild analysiert",camLoading:"Bild wird geladen…",camAnalysing:"Wagen wird analysiert…",semaBusy:"Wagen wird analysiert…",semaFail:"Erkennung fehlgeschlagen — bitte Personal rufen",semaNone:"Keine Produkte erkannt — bitte Personal rufen",dec:",",verWNone:"KI-erkannt"}
+  es:{flag:"\uD83C\uDDEA\uD83C\uDDF8",langName:"Español",detActive:"Detección activa",forC:"para",bigText:"Texto grande",step1:"Pon el carro",mtEmpty:"Vacío",mtFull:"Lleno",step2:"Revisa",step3:"Paga",cam:"Cámara cenital",live:"en directo",mProd:"productos",mAcc:"precisión",mInf:"inferencia",wVer:"Peso estimado",antifraud:"Anti-fraude",noAnom:"Pendiente de báscula",fTitle:"Resumen de la revisión",fPara:"El sistema ha reconocido los productos a partir de la imagen cenital y ha calculado el peso esperado del carro con los pesos del catálogo.",fLi1:"productos reconocidos",fLi2:"Peso esperado del carro: {w}",fLi3:"Comprobación con báscula no disponible: no hay ningún sensor de peso conectado.",cart:"Tu carrito",uds:"uds",ref:"ref.",confIA:"Confianza IA",dCom:"Cómodo",dCompact:"Compacto",dCols:"3 columnas",search:"Buscar entre +10.000 productos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Cuidado",eMatch:"Sin productos que coincidan",eCart:"El carro está vacío",cReco:"✓ Reconocido",cDoubt:"¿Es esto?",perUd:"/ ud",verW:"Reconocido por IA · peso estimado {w}",totalPay:"Total a pagar",listen:"Escuchar total",payBtn:"Pagar sin contacto",semaReady:"Todo correcto, ya puedes pagar \uD83D\uDC4D",semaPlace:"Coloca el carro para empezar",thanks:"¡Gracias por tu compra! \uD83C\uDF89",confirmed:"Pago de {t}€ confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",ticket:"Ticket enviado · {n} artículos",newBuy:"Nueva compra",speak:"El total a pagar es {a} euros con {b} céntimos",speechLang:"es-ES",camLive:"Cámara en directo",camIdle:"Aún no se ha analizado ninguna imagen",camLoading:"Cargando imagen…",camAnalysing:"Analizando el carro…",semaBusy:"Analizando el carro…",semaFail:"Fallo de detección — avisa a un asistente",semaNone:"No se ha reconocido ningún producto — avisa a un asistente",dec:",",verWNone:"Reconocido por IA",paying:"Procesando pago…",payFail:"El pago no se ha podido completar — avisa a un asistente",simConfirmed:"Pago simulado. No se ha cobrado nada.",simNote:"Modo demo: no hay pasarela de pago ni apertura de puerta conectadas.",sensorHint:"Simula el sensor físico del carro: no hay ningún sensor conectado"},
+  en:{flag:"\uD83C\uDDEC\uD83C\uDDE7",langName:"English",detActive:"Detection active",forC:"for",bigText:"Large text",step1:"Place the cart",mtEmpty:"Empty",mtFull:"Full",step2:"Review",step3:"Pay",cam:"Overhead camera",live:"live",mProd:"products",mAcc:"accuracy",mInf:"inference",wVer:"Estimated weight",antifraud:"Anti-fraud",noAnom:"Awaiting scale",fTitle:"Review summary",fPara:"The system recognised the products from the overhead image and calculated the cart's expected weight from the catalogue weights.",fLi1:"products recognised",fLi2:"Expected cart weight: {w}",fLi3:"Scale check unavailable: no weight sensor is connected.",cart:"Your cart",uds:"items",ref:"ref.",confIA:"AI confidence",dCom:"Comfortable",dCompact:"Compact",dCols:"3 columns",search:"Search +10,000 products…",catAll:"All",catDrinks:"Drinks",catSnacks:"Snacks",catCare:"Care",eMatch:"No matching products",eCart:"The cart is empty",cReco:"✓ Recognized",cDoubt:"Is this it?",perUd:"/ ea",verW:"AI-recognised · est. weight {w}",totalPay:"Total to pay",listen:"Read total aloud",payBtn:"Contactless pay",semaReady:"All correct, you can pay now \uD83D\uDC4D",semaPlace:"Place the cart to start",thanks:"Thanks for your purchase! \uD83C\uDF89",confirmed:"Payment of €{t} confirmed. The door will open automatically, have a nice day.",ticket:"Receipt sent · {n} items",newBuy:"New purchase",speak:"The total to pay is {a} euros and {b} cents",speechLang:"en-GB",camLive:"Live camera",camIdle:"No image analysed yet",camLoading:"Loading image…",camAnalysing:"Analysing the cart…",semaBusy:"Analysing your cart…",semaFail:"Detection failed — please call an assistant",semaNone:"No products recognised — please call an assistant",dec:".",verWNone:"AI-recognised",paying:"Processing payment…",payFail:"Payment could not be completed — please call an assistant",simConfirmed:"Simulated payment. Nothing was charged.",simNote:"Demo mode: no payment gateway or door release is connected.",sensorHint:"Stands in for the physical cart sensor: none is connected"},
+  eu:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC70\uDB40\uDC76\uDB40\uDC7F",langName:"Euskera",detActive:"Detekzioa aktibo",forC:"honentzat",bigText:"Testu handia",step1:"Jarri orga",mtEmpty:"Hutsik",mtFull:"Beteta",step2:"Berrikusi",step3:"Ordaindu",cam:"Goiko kamera",live:"zuzenean",mProd:"produktu",mAcc:"zehaztasuna",mInf:"inferentzia",wVer:"Kalkulatutako pisua",antifraud:"Iruzurraren aurka",noAnom:"Balantzaren zain",fTitle:"Berrikuspenaren laburpena",fPara:"Sistemak goiko irudiaren bidez produktuak ezagutu ditu eta katalogoko pisuekin orgaren espero den pisua kalkulatu du.",fLi1:"produktu ezagutu",fLi2:"Orgaren espero den pisua: {w}",fLi3:"Balantzaren egiaztapena ez dago erabilgarri: ez dago pisu-sentsorerik konektatuta.",cart:"Zure orga",uds:"unitate",ref:"erref.",confIA:"IA konfiantza",dCom:"Erosoa",dCompact:"Trinkoa",dCols:"3 zutabe",search:"Bilatu +10.000 produktutan…",catAll:"Guztiak",catDrinks:"Edariak",catSnacks:"Mokaduak",catCare:"Zainketa",eMatch:"Ez dago bat datorren produkturik",eCart:"Orga hutsik dago",cReco:"✓ Ezaguna",cDoubt:"Hau al da?",perUd:"/ unit.",verW:"IAk ezagutua · gutxi gorabeherako pisua {w}",totalPay:"Ordaintzeko guztira",listen:"Entzun guztira",payBtn:"Ordaindu kontakturik gabe",semaReady:"Dena ondo, ordain dezakezu \uD83D\uDC4D",semaPlace:"Jarri orga hasteko",thanks:"Eskerrik asko erosketagatik! \uD83C\uDF89",confirmed:"{t}€-ko ordainketa berretsita. Atea automatikoki irekiko da, ondo izan.",ticket:"Tiketa bidalita · {n} artikulu",newBuy:"Erosketa berria",speak:"Ordaintzeko guztira {a} euro eta {b} zentimo da",speechLang:"eu-ES",camLive:"Zuzeneko kamera",camIdle:"Oraindik ez da irudirik aztertu",camLoading:"Irudia kargatzen…",camAnalysing:"Orga aztertzen…",semaBusy:"Orga aztertzen…",semaFail:"Detekzio-errorea — deitu langile bati",semaNone:"Ez da produkturik ezagutu — deitu langile bati",dec:",",verWNone:"IAk ezagutua",paying:"Ordainketa prozesatzen…",payFail:"Ezin izan da ordainketa osatu — deitu langile bati",simConfirmed:"Ordainketa simulatua. Ez da ezer kobratu.",simNote:"Demo modua: ez dago ordainketa-pasabiderik ez ate-irekitzerik konektatuta.",sensorHint:"Orgaren sentsore fisikoa simulatzen du: ez dago sentsorerik konektatuta"},
+  ca:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F",langName:"Català",detActive:"Detecció activa",forC:"per a",bigText:"Text gran",step1:"Posa el carro",mtEmpty:"Buit",mtFull:"Ple",step2:"Revisa",step3:"Paga",cam:"Càmera zenital",live:"en directe",mProd:"productes",mAcc:"precisió",mInf:"inferència",wVer:"Pes estimat",antifraud:"Antiffrau",noAnom:"Pendent de bàscula",fTitle:"Resum de la revisió",fPara:"El sistema ha reconegut els productes a partir de la imatge zenital i ha calculat el pes esperat del carro amb els pesos del catàleg.",fLi1:"productes reconeguts",fLi2:"Pes esperat del carro: {w}",fLi3:"Comprovació amb bàscula no disponible: no hi ha cap sensor de pes connectat.",cart:"El teu carro",uds:"u.",ref:"ref.",confIA:"Confiança IA",dCom:"Còmode",dCompact:"Compacte",dCols:"3 columnes",search:"Cerca entre +10.000 productes…",catAll:"Tots",catDrinks:"Begudes",catSnacks:"Snacks",catCare:"Cura",eMatch:"Cap producte coincident",eCart:"El carro és buit",cReco:"✓ Reconegut",cDoubt:"És això?",perUd:"/ u.",verW:"Reconegut per IA · pes estimat {w}",totalPay:"Total a pagar",listen:"Escolta el total",payBtn:"Paga sense contacte",semaReady:"Tot correcte, ja pots pagar \uD83D\uDC4D",semaPlace:"Posa el carro per començar",thanks:"Gràcies per la teva compra! \uD83C\uDF89",confirmed:"Pagament de {t}€ confirmat. La porta s'obrirà automàticament, que tinguis un bon dia.",ticket:"Tiquet enviat · {n} articles",newBuy:"Nova compra",speak:"El total a pagar és {a} euros amb {b} cèntims",speechLang:"ca-ES",camLive:"Càmera en directe",camIdle:"Encara no s'ha analitzat cap imatge",camLoading:"Carregant la imatge…",camAnalysing:"Analitzant el carro…",semaBusy:"Analitzant el carro…",semaFail:"Error de detecció — avisa un assistent",semaNone:"No s'ha reconegut cap producte — avisa un assistent",dec:",",verWNone:"Reconegut per IA",paying:"Processant el pagament…",payFail:"El pagament no s'ha pogut completar — avisa un assistent",simConfirmed:"Pagament simulat. No s'ha cobrat res.",simNote:"Mode demo: no hi ha cap passarel·la de pagament ni obertura de porta connectades.",sensorHint:"Simula el sensor físic del carro: no n'hi ha cap de connectat"},
+  pt:{flag:"\uD83C\uDDF5\uD83C\uDDF9",langName:"Português",detActive:"Deteção ativa",forC:"para",bigText:"Texto grande",step1:"Coloque o carrinho",mtEmpty:"Vazio",mtFull:"Cheio",step2:"Reveja",step3:"Pague",cam:"Câmara superior",live:"em direto",mProd:"produtos",mAcc:"precisão",mInf:"inferência",wVer:"Peso estimado",antifraud:"Antifraude",noAnom:"A aguardar balança",fTitle:"Resumo da revisão",fPara:"O sistema reconheceu os produtos a partir da imagem superior e calculou o peso esperado do carrinho com os pesos do catálogo.",fLi1:"produtos reconhecidos",fLi2:"Peso esperado do carrinho: {w}",fLi3:"Verificação com balança indisponível: não há nenhum sensor de peso ligado.",cart:"O seu carrinho",uds:"un.",ref:"ref.",confIA:"Confiança IA",dCom:"Confortável",dCompact:"Compacto",dCols:"3 colunas",search:"Procurar entre +10.000 produtos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Higiene",eMatch:"Sem produtos correspondentes",eCart:"O carrinho está vazio",cReco:"✓ Reconhecido",cDoubt:"É isto?",perUd:"/ un.",verW:"Reconhecido por IA · peso estimado {w}",totalPay:"Total a pagar",listen:"Ouvir o total",payBtn:"Pagar sem contacto",semaReady:"Tudo certo, já pode pagar \uD83D\uDC4D",semaPlace:"Coloque o carrinho para começar",thanks:"Obrigado pela sua compra! \uD83C\uDF89",confirmed:"Pagamento de {t}€ confirmado. A porta abrir-se-á automaticamente, tenha um bom dia.",ticket:"Recibo enviado · {n} artigos",newBuy:"Nova compra",speak:"O total a pagar é {a} euros e {b} cêntimos",speechLang:"pt-PT",camLive:"Câmara em direto",camIdle:"Ainda não foi analisada nenhuma imagem",camLoading:"A carregar a imagem…",camAnalysing:"A analisar o carrinho…",semaBusy:"A analisar o carrinho…",semaFail:"Falha na deteção — chame um assistente",semaNone:"Nenhum produto reconhecido — chame um assistente",dec:",",verWNone:"Reconhecido por IA",paying:"A processar o pagamento…",payFail:"Não foi possível concluir o pagamento — chame um assistente",simConfirmed:"Pagamento simulado. Não foi cobrado nada.",simNote:"Modo de demonstração: não há gateway de pagamento nem abertura de porta ligados.",sensorHint:"Simula o sensor físico do carrinho: não há nenhum ligado"},
+  fr:{flag:"\uD83C\uDDEB\uD83C\uDDF7",langName:"Français",detActive:"Détection active",forC:"pour",bigText:"Texte grand",step1:"Placez le chariot",mtEmpty:"Vide",mtFull:"Plein",step2:"Vérifiez",step3:"Payez",cam:"Caméra en plongée",live:"en direct",mProd:"produits",mAcc:"précision",mInf:"inférence",wVer:"Poids estimé",antifraud:"Anti-fraude",noAnom:"En attente de balance",fTitle:"Résumé de la vérification",fPara:"Le système a reconnu les produits à partir de l'image en plongée et a calculé le poids attendu du chariot d'après les poids du catalogue.",fLi1:"produits reconnus",fLi2:"Poids attendu du chariot : {w}",fLi3:"Contrôle par balance indisponible : aucun capteur de poids n'est connecté.",cart:"Votre chariot",uds:"u.",ref:"réf.",confIA:"Confiance IA",dCom:"Confortable",dCompact:"Compact",dCols:"3 colonnes",search:"Rechercher parmi +10 000 produits…",catAll:"Tous",catDrinks:"Boissons",catSnacks:"Snacks",catCare:"Hygiène",eMatch:"Aucun produit correspondant",eCart:"Le chariot est vide",cReco:"✓ Reconnu",cDoubt:"C'est ça ?",perUd:"/ u.",verW:"Reconnu par IA · poids estimé {w}",totalPay:"Total à payer",listen:"Écouter le total",payBtn:"Payer sans contact",semaReady:"Tout est correct, vous pouvez payer \uD83D\uDC4D",semaPlace:"Placez le chariot pour commencer",thanks:"Merci pour votre achat ! \uD83C\uDF89",confirmed:"Paiement de {t}€ confirmé. La porte s'ouvrira automatiquement, bonne journée.",ticket:"Ticket envoyé · {n} articles",newBuy:"Nouvel achat",speak:"Le total à payer est de {a} euros et {b} centimes",speechLang:"fr-FR",camLive:"Caméra en direct",camIdle:"Aucune image analysée pour l'instant",camLoading:"Chargement de l'image…",camAnalysing:"Analyse du chariot…",semaBusy:"Analyse du chariot…",semaFail:"Échec de la détection — appelez un assistant",semaNone:"Aucun produit reconnu — appelez un assistant",dec:",",verWNone:"Reconnu par IA",paying:"Paiement en cours…",payFail:"Le paiement n'a pas pu aboutir — appelez un assistant",simConfirmed:"Paiement simulé. Rien n'a été débité.",simNote:"Mode démo : aucune passerelle de paiement ni ouverture de porte n'est connectée.",sensorHint:"Simule le capteur physique du chariot : aucun n'est connecté"},
+  de:{flag:"\uD83C\uDDE9\uD83C\uDDEA",langName:"Deutsch",detActive:"Erkennung aktiv",forC:"für",bigText:"Großer Text",step1:"Wagen abstellen",mtEmpty:"Leer",mtFull:"Voll",step2:"Prüfen",step3:"Bezahlen",cam:"Deckenkamera",live:"live",mProd:"Produkte",mAcc:"Genauigkeit",mInf:"Inferenz",wVer:"Geschätztes Gewicht",antifraud:"Betrugsschutz",noAnom:"Waage ausstehend",fTitle:"Zusammenfassung der Prüfung",fPara:"Das System hat die Produkte anhand des Deckenbilds erkannt und das erwartete Gewicht des Wagens aus den Katalogangaben berechnet.",fLi1:"Produkte erkannt",fLi2:"Erwartetes Gewicht des Wagens: {w}",fLi3:"Waagenprüfung nicht verfügbar: Es ist kein Gewichtssensor angeschlossen.",cart:"Ihr Wagen",uds:"St.",ref:"Ref.",confIA:"KI-Konfidenz",dCom:"Komfortabel",dCompact:"Kompakt",dCols:"3 Spalten",search:"Unter +10.000 Produkten suchen…",catAll:"Alle",catDrinks:"Getränke",catSnacks:"Snacks",catCare:"Pflege",eMatch:"Keine passenden Produkte",eCart:"Der Wagen ist leer",cReco:"✓ Erkannt",cDoubt:"Ist es das?",perUd:"/ St.",verW:"KI-erkannt · geschätztes Gewicht {w}",totalPay:"Zu zahlen",listen:"Summe vorlesen",payBtn:"Kontaktlos zahlen",semaReady:"Alles korrekt, Sie können zahlen \uD83D\uDC4D",semaPlace:"Wagen abstellen zum Starten",thanks:"Danke für Ihren Einkauf! \uD83C\uDF89",confirmed:"Zahlung von {t}€ bestätigt. Die Tür öffnet sich automatisch, schönen Tag.",ticket:"Beleg gesendet · {n} Artikel",newBuy:"Neuer Einkauf",speak:"Der zu zahlende Betrag beträgt {a} Euro und {b} Cent",speechLang:"de-DE",camLive:"Live-Kamera",camIdle:"Noch kein Bild analysiert",camLoading:"Bild wird geladen…",camAnalysing:"Wagen wird analysiert…",semaBusy:"Wagen wird analysiert…",semaFail:"Erkennung fehlgeschlagen — bitte Personal rufen",semaNone:"Keine Produkte erkannt — bitte Personal rufen",dec:",",verWNone:"KI-erkannt",paying:"Zahlung wird verarbeitet…",payFail:"Die Zahlung konnte nicht abgeschlossen werden — bitte Personal rufen",simConfirmed:"Simulierte Zahlung. Es wurde nichts abgebucht.",simNote:"Demo-Modus: Es sind weder Zahlungsterminal noch Türöffnung angebunden.",sensorHint:"Ersetzt den physischen Wagensensor: es ist keiner angeschlossen"}
 };
 function detectLang(){const raw=((navigator.language||navigator.userLanguage||"es")+"").toLowerCase();const code=raw.split("-")[0];if(code==="gl")return"es";return ["es","en","eu","ca","pt","fr","de"].includes(code)?code:"en";}
 let T=I18N.es;
@@ -572,8 +676,12 @@ let T=I18N.es;
               mock fallback any more, so an empty cart is either "nothing has
               been analysed" or "detection failed", and the two must not look
               alike to a customer standing at the screen.
-   `camUrl` / `camAspect` — the analysed photo shown in the panel. */
-const state={client:"iacarry",demo:"camera",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:false,paid:false,lang:detectLang(),live:null,detect:{status:"idle",phase:"",detail:""},camUrl:null,camAspect:null};
+   `camUrl` / `camAspect` — the analysed photo shown in the panel.
+   `pay`    — payment round-trip: idle | paying | done | error, plus whether the
+              approval was simulated. Replaces the old `paid` boolean, which
+              could only say "the button was clicked".
+   `cartFull` — cart presence. Only ever written through setCartPresent(). */
+const state={client:"iacarry",demo:"camera",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:false,lang:detectLang(),live:null,detect:{status:"idle",phase:"",detail:""},camUrl:null,camAspect:null,pay:{status:"idle",simulated:false,ref:"",detail:""}};
 
 const $=s=>document.querySelector(s);
 // language select
@@ -631,7 +739,7 @@ function render(){
   $("#badgeCount").textContent=`${count} ${T.uds} · ${inCart.length} ${T.ref}`;
   $("#total").textContent=total+"€";
   // steps
-  const full=state.cartFull,paid=state.paid;
+  const full=state.cartFull,paid=state.pay.status==="done";
   const done=b=>{b.style.background="#E9F7EF";b.style.color="#12864a";b.style.boxShadow="none";b.textContent="\u2713"};
   const act=(b,t)=>{b.style.background="var(--pri)";b.style.color="#fff";b.style.boxShadow="0 0 0 4px var(--ps)";b.textContent=t};
   const idle=(b,t)=>{b.style.background="#EDEAF6";b.style.color="var(--ter)";b.style.boxShadow="none";b.textContent=t};
@@ -656,14 +764,19 @@ function render(){
      products means "we looked and saw nothing" — an anomaly — whatever the
      sensor stand-in currently says. */
   const detUnits=unitsOf(state.live&&state.live.qty);
-  if(det==="busy")       light("var(--ps)","var(--ps)","var(--pri)","var(--pri)","rgba(110,90,224,.18)",T.semaBusy);
+  /* Payment outranks detection here: a refused card is what the customer needs
+     told, even though the cart behind it is perfectly valid. */
+  if(state.pay.status==="error") light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.payFail);
+  else if(state.pay.status==="paying") light("var(--ps)","var(--ps)","var(--pri)","var(--pri)","rgba(110,90,224,.18)",T.paying);
+  else if(det==="busy")  light("var(--ps)","var(--ps)","var(--pri)","var(--pri)","rgba(110,90,224,.18)",T.semaBusy);
   else if(det==="error") light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.semaFail);
   else if(det==="ok"&&detUnits===0) light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.semaNone);
   else if(det==="ok"&&full&&count>0) light("#E9F7EF","#C6EBD5","#12864a","#23b364","rgba(35,179,100,.18)",T.semaReady);
   else                   light("#F3F1F9","#E7E3F1","#8a84a6","#c9c2e6","rgba(201,194,230,.18)",T.semaPlace);
-  sema.title=state.detect.detail||"";
+  sema.title=state.pay.detail||state.detect.detail||"";
   /* Blocked, not merely discouraged — disabled so a click cannot land at all. */
   const canPay=payable();
+  $("#payBtnTxt").textContent=(state.pay.status==="paying")?T.paying:T.payBtn;
   $("#pay").disabled=!canPay;
   $("#pay").style.background=canPay?"var(--pri)":"#c9c2e6";
   $("#pay").style.opacity=canPay?"1":".6";
@@ -672,7 +785,14 @@ function render(){
   $("#demo").disabled=(det==="busy");
   // success overlay
   $("#success").style.display=paid?"flex":"none";
-  if(paid){$("#sConfirmed").textContent=T.confirmed.replace("{t}",total);$("#sTicket").textContent=T.ticket.replace("{n}",count)}
+  if(paid){
+    /* A simulated approval never borrows the real confirmation wording — that
+       line promises a charge and a door opening, neither of which happened. */
+    $("#sConfirmed").textContent=state.pay.simulated?T.simConfirmed:T.confirmed.replace("{t}",total);
+    $("#sTicket").textContent=T.ticket.replace("{n}",count);
+    $("#sSim").style.display=state.pay.simulated?"":"none";
+    $("#sSim").textContent=state.pay.simulated?T.simNote:"";
+  }
   /* Camera panel: the analysed photo, the busy veil, and the boxes over it.
      The panel deliberately shows the frame the browser posted, not the server's
      path_server — that is a Windows filesystem path, is not served over HTTP,
@@ -708,13 +828,13 @@ function render(){
       </div></div>`}).join("");
 }
 // events
-/* Empty clears the whole detection with the cart — leaving the last analysis on
-   screen under an "empty" sensor would show a photo and boxes for a cart that
-   is no longer there. */
-$("#btnEmpty").onclick=()=>{state.cartFull=false;state.paid=false;state.cat="Todos";state.query="";$("#search").value="";state.demo="camera";fillDemo();resetDetection()};
-$("#btnFull").onclick=()=>{state.cartFull=true;state.paid=false;render()};
-$("#pay").onclick=()=>{if(payable()){state.paid=true;render()}};
-$("#reset").onclick=()=>{state.paid=false;state.cartFull=false;state.cat="Todos";state.query="";$("#search").value="";state.demo="camera";fillDemo();resetDetection()};
+/* All four go through the two seams — no handler writes state.cartFull or fakes
+   a payment directly, so replacing either backend touches one function. */
+const clearFilters=()=>{state.cat="Todos";state.query="";$("#search").value=""};
+$("#btnEmpty").onclick=()=>{clearFilters();setCartPresent(false,"manual toggle (sensor stand-in)")};
+$("#btnFull").onclick=()=>{state.pay={status:"idle",simulated:false,ref:"",detail:""};setCartPresent(true,"manual toggle (sensor stand-in)")};
+$("#pay").onclick=pay;
+$("#reset").onclick=()=>{clearFilters();setCartPresent(false,"new purchase")};
 $("#client").onchange=e=>{state.client=e.target.value;state.cat="Todos";state.query="";$("#search").value="";render()};
 $("#lang").onchange=e=>{state.lang=e.target.value;fillDemo();render()};
 /* A real round-trip: fetch the frame, post it to /upload, render what comes
@@ -730,7 +850,10 @@ $("#listen").onclick=()=>{const sy=window.speechSynthesis;if(!sy)return;const[a,
    has to hand it a blob. The rest is exposed so automated checks and the
    remaining integration steps share one entry point. */
 window.iaCarry={submitFrame,runDemo,resetDetection,applyDetections,adaptDetections,payable,state,render,
-                DETECTION_MIN_SCORE,UPLOAD_ENDPOINT,DETECTION_TIMEOUT_MS,DEMO_SOURCES};
+                DETECTION_MIN_SCORE,UPLOAD_ENDPOINT,DETECTION_TIMEOUT_MS,DEMO_SOURCES,
+                /* The two backend seams. Replace the backend, not the UI. */
+                pay,requestPayment,setCartPresent,
+                PAYMENT_ENDPOINT,PAYMENT_BACKEND,CART_SENSOR_BACKEND};
 // init — render() first so applyI18n() has set T before the demo labels are built.
 render();
 fillDemo();
