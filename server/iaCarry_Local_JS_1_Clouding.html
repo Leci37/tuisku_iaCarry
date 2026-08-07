@@ -261,6 +261,78 @@ const DMAP={
 const shortOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?(c.short||c.name.split(" ")[0]):t};
 const colorOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?c.color:"#6E5AE0"};
 const CATS=[["Todos","catAll"],["Bebidas","catDrinks"],["Snacks","catSnacks"],["Cuidado","catCare"]];
+
+/* ===========================================================================
+   DETECTION ADAPTER — turns a /upload response into renderable scene data.
+
+   Server contract, built by change_format_dict_json_to_client() in
+   server/utils_tuisku_server.py:
+     { path_server, shape_img:[h,w,c],
+       predictions:[{probability, tagInt, tagName, boundingBox}] }
+
+   Output matches the shape render() already consumes from DEMOS, plus a
+   per-tag confidence map and the source image aspect ratio:
+     { qty:{tag:units}, conf:{tag:pct}, boxes:[[l,t,w,h,tag]], aspect, skipped }
+   =========================================================================== */
+
+/* Single home for the detection cut-off. The server stays permissive
+   (MIN_SCORE_TO_CLIENT = 0.1 in RUN_server_py_upload.py) and sends everything
+   above it, so this can be retuned without redeploying Python. */
+const DETECTION_MIN_SCORE = 0.45;
+
+const pct = v => (v * 100).toFixed(2) + "%";
+
+/* The boundingBox keys are misnamed at the source and this is the single most
+   likely defect in the integration. TensorFlow emits [ymin, xmin, ymax, xmax];
+   utils_tuisku_server.py maps them onto keys called left/top/width/height, so
+   `width` actually holds the RIGHT edge and `height` the BOTTOM edge, both
+   normalised 0-1. Sizes therefore need subtracting, not reading directly —
+   skipping that makes boxes grow steadily wronger toward the bottom-right,
+   which looks like a weak model rather than a frontend bug. */
+function boxFromPrediction(bb){
+  const x1=+bb.left, y1=+bb.top, x2=+bb.width, y2=+bb.height;
+  if(![x1,y1,x2,y2].every(Number.isFinite)) return null;
+  const cl=v=>Math.max(0,Math.min(1,v));
+  const l=cl(x1), t=cl(y1), w=cl(x2)-l, h=cl(y2)-t;
+  if(w<=0||h<=0) return null;            // degenerate: count the unit, draw nothing
+  return [pct(l),pct(t),pct(w),pct(h)];
+}
+
+function adaptDetections(json){
+  const qty={}, conf={}, boxes=[], skipped=[];
+  const preds=(json && Array.isArray(json.predictions)) ? json.predictions : [];
+  preds.forEach(p=>{
+    if(!p || !Number.isFinite(+p.probability) || +p.probability < DETECTION_MIN_SCORE) return;
+    const tag=p.tagName;
+    /* An unknown class must never throw: an exception here blanks the whole
+       cart, which on a shop floor is a customer at a dead screen. */
+    if(!CATALOG.some(c=>c.tag===tag)){ skipped.push(tag); return; }
+    const box=boxFromPrediction(p.boundingBox||{});
+    if(box) boxes.push([...box,tag]);
+    qty[tag]=(qty[tag]||0)+1;            // one prediction per instance
+    /* Badge answers "did we recognise this product", not "how did every copy
+       score" — so the strongest detection of the tag wins. */
+    const cf=Math.round(+p.probability*100);
+    if(cf>(conf[tag]||0)) conf[tag]=cf;
+  });
+  if(skipped.length) console.warn("[iaCarry] detections skipped, tag not in CATALOG:",[...new Set(skipped)]);
+  /* shape_img is a numpy shape: [height, width, channels]. Driving the panel's
+     aspect ratio from it keeps percentage-positioned boxes aligned without
+     distorting the photo the way the old fixed 640x640 canvas did. */
+  const s=json && json.shape_img;
+  const aspect=(Array.isArray(s) && +s[0]>0 && +s[1]>0) ? (+s[1]+" / "+(+s[0])) : "1 / 1";
+  return {qty,conf,boxes,aspect,skipped:[...new Set(skipped)]};
+}
+
+/* Entry point for live data: adapt, store, re-render. Kept free of side effects
+   beyond that — the cart-sensor gate (state.cartFull) stays a separate signal. */
+function applyDetections(json){
+  state.live=adaptDetections(json);
+  render();
+  return state.live;
+}
+
+const confOf=(scene,tag)=> (scene.conf && scene.conf[tag]!=null) ? scene.conf[tag] : (CONF[tag] ?? 95);
 const I18N={
   es:{flag:"\uD83C\uDDEA\uD83C\uDDF8",langName:"Español",detActive:"Detección activa",forC:"para",bigText:"Texto grande",step1:"Pon el carro",mtEmpty:"Vacío",mtFull:"Lleno",step2:"Revisa",step3:"Paga",cam:"Cámara cenital",live:"en directo",mProd:"productos",mAcc:"precisión",mInf:"inferencia",wVer:"Peso verificado",antifraud:"Anti-fraude",noAnom:"Sin anomalías",fTitle:"Compra verificada — sin anomalías",fPara:"El sistema cruzó la imagen cenital con el peso de la báscula y no detectó diferencias.",fLi1:"productos reconocidos y casados con su código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sin objetos ocultos ni productos sin escanear",cart:"Tu carrito",uds:"uds",ref:"ref.",confIA:"Confianza IA",dCom:"Cómodo",dCompact:"Compacto",dCols:"3 columnas",search:"Buscar entre +10.000 productos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Cuidado",eMatch:"Sin productos que coincidan",eCart:"El carro está vacío",cReco:"✓ Reconocido",cDoubt:"¿Es esto?",perUd:"/ ud",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Escuchar total",payBtn:"Pagar sin contacto",semaReady:"Todo correcto, ya puedes pagar \uD83D\uDC4D",semaPlace:"Coloca el carro para empezar",thanks:"¡Gracias por tu compra! \uD83C\uDF89",confirmed:"Pago de {t}€ confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",ticket:"Ticket enviado · {n} artículos",newBuy:"Nueva compra",speak:"El total a pagar es {a} euros con {b} céntimos",speechLang:"es-ES"},
   en:{flag:"\uD83C\uDDEC\uD83C\uDDE7",langName:"English",detActive:"Detection active",forC:"for",bigText:"Large text",step1:"Place the cart",mtEmpty:"Empty",mtFull:"Full",step2:"Review",step3:"Pay",cam:"Overhead camera",live:"live",mProd:"products",mAcc:"accuracy",mInf:"inference",wVer:"Verified weight",antifraud:"Anti-fraud",noAnom:"No anomalies",fTitle:"Purchase verified — no anomalies",fPara:"The system cross-checked the overhead image with the scale weight and found no discrepancies.",fLi1:"products recognized and matched to their code",fLi2:"Expected weight 1.94 kg = measured weight 1.94 kg",fLi3:"No hidden items or unscanned products",cart:"Your cart",uds:"items",ref:"ref.",confIA:"AI confidence",dCom:"Comfortable",dCompact:"Compact",dCols:"3 columns",search:"Search +10,000 products…",catAll:"All",catDrinks:"Drinks",catSnacks:"Snacks",catCare:"Care",eMatch:"No matching products",eCart:"The cart is empty",cReco:"✓ Recognized",cDoubt:"Is this it?",perUd:"/ ea",verW:"AI-verified · weight 1.94 kg",totalPay:"Total to pay",listen:"Read total aloud",payBtn:"Contactless pay",semaReady:"All correct, you can pay now \uD83D\uDC4D",semaPlace:"Place the cart to start",thanks:"Thanks for your purchase! \uD83C\uDF89",confirmed:"Payment of €{t} confirmed. The door will open automatically, have a nice day.",ticket:"Receipt sent · {n} items",newBuy:"New purchase",speak:"The total to pay is {a} euros and {b} cents",speechLang:"en-GB"},
@@ -273,7 +345,9 @@ const I18N={
 function detectLang(){const raw=((navigator.language||navigator.userLanguage||"es")+"").toLowerCase();const code=raw.split("-")[0];if(code==="gl")return"es";return ["es","en","eu","ca","pt","fr","de"].includes(code)?code:"en";}
 let T=I18N.es;
 
-const state={client:"iacarry",demo:"realtime",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:true,paid:false,lang:detectLang()};
+/* `live` holds the adapted /upload response once real detection data arrives;
+   until then render() falls back to the bundle's mock DEMOS scenes. */
+const state={client:"iacarry",demo:"realtime",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:true,paid:false,lang:detectLang(),live:null};
 
 const $=s=>document.querySelector(s);
 // language select
@@ -301,7 +375,7 @@ function applyTheme(){const t=THEMES[state.client];const r=document.body.style;
 function render(){
   applyTheme();
   applyI18n();
-  const scene=DEMOS[state.demo],q=state.cartFull?scene.qty:{};
+  const scene=state.live||DEMOS[state.demo],q=state.cartFull?scene.qty:{};
   const inCart=CATALOG.filter(c=>(q[c.tag]||0)>0);
   const total=inCart.reduce((s,c)=>s+c.cost*q[c.tag],0).toFixed(2);
   const count=inCart.reduce((s,c)=>s+q[c.tag],0);
@@ -329,7 +403,7 @@ function render(){
   $("#success").style.display=paid?"flex":"none";
   if(paid){$("#sConfirmed").textContent=T.confirmed.replace("{t}",total);$("#sTicket").textContent=T.ticket.replace("{n}",count)}
   // boxes
-  const cam=$("#cam");cam.querySelectorAll(".box").forEach(e=>e.remove());
+  const cam=$("#cam");cam.style.aspectRatio=scene.aspect||"1 / 1";cam.querySelectorAll(".box").forEach(e=>e.remove());
   (full?scene.boxes:[]).forEach(([l,tp,w,h,tag])=>{const c=colorOf(tag);const d=document.createElement("div");d.className="box";d.style.cssText=`left:${l};top:${tp};width:${w};height:${h};border-color:${c}`;d.innerHTML=`<b style="background:${c}">${shortOf(tag)}</b>`;cam.appendChild(d)});
   // seg + cats active
   $("#seg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.d===state.density));
@@ -340,7 +414,7 @@ function render(){
   const query=state.query.trim().toLowerCase();
   const rows=inCart.filter(c=>state.cat==="Todos"||c.cat===state.cat).filter(c=>!query||c.name.toLowerCase().includes(query));
   if(!rows.length){g.innerHTML=`<div class="empty"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.5 12h10L20 7H6"/></svg><div style="font-weight:700;font-size:15px">${full?T.eMatch:T.eCart}</div></div>`;return}
-  g.innerHTML=rows.map(c=>{const u=q[c.tag],cf=CONF[c.tag]??95,ok=cf>=85;
+  g.innerHTML=rows.map(c=>{const u=q[c.tag],cf=confOf(scene,c.tag),ok=cf>=85;
     const conf=state.showConf?`<span class="cbadge" style="color:${ok?'#12864a':'#9a6a00'};background:${ok?'#E9F7EF':'#FCF3E0'}">${(ok?T.cReco:T.cDoubt)+' · '+cf+'%'}</span>`:"";
     return `<div class="prod" style="padding:${D.pad};gap:${D.cgap}"><span class="strip" style="background:${c.color}"></span>
       <div class="pmeta" style="flex-direction:${D.td};gap:${D.tg};align-items:${D.ta}">
@@ -359,13 +433,18 @@ $("#pay").onclick=()=>{if(state.cartFull){state.paid=true;render()}};
 $("#reset").onclick=()=>{state.paid=false;state.cartFull=false;state.cat="Todos";state.query="";$("#search").value="";render()};
 $("#client").onchange=e=>{state.client=e.target.value;state.cat="Todos";state.query="";$("#search").value="";render()};
 $("#lang").onchange=e=>{state.lang=e.target.value;fillDemo();render()};
-$("#demo").onchange=e=>{state.demo=e.target.value;render()};
+/* Until T3 points this at a real /upload round-trip, picking a scene drops any
+   live detection and falls back to the mock data for that scene. */
+$("#demo").onchange=e=>{state.demo=e.target.value;state.live=null;render()};
 $("#seg").onclick=e=>{const b=e.target.closest("button");if(b){state.density=b.dataset.d;render()}};
 $("#search").oninput=e=>{state.query=e.target.value;render()};
 $("#conf").onclick=()=>{state.showConf=!state.showConf;render()};
 $("#fraudBtn").onclick=()=>{state.fraudOpen=!state.fraudOpen;$("#fraudPanel").style.display=state.fraudOpen?"":"none";$("#fraudChev").style.transform=state.fraudOpen?"rotate(180deg)":"none"};
 $("#big").onclick=()=>{state.big=!state.big;document.body.classList.toggle("big",state.big);$("#big").classList.toggle("on",state.big);render()};
 $("#listen").onclick=()=>{const sy=window.speechSynthesis;if(!sy)return;const[a,b]=$("#total").textContent.replace("€","").split(".");const u=new SpeechSynthesisUtterance(T.speak.replace("{a}",a).replace("{b}",b));u.lang=T.speechLang;u.rate=.95;sy.cancel();sy.speak(u)};
+/* Public surface: the detection backend hands responses in here. Exposed on
+   window so the /upload wiring and automated checks share one entry point. */
+window.iaCarry={applyDetections,adaptDetections,state,render,DETECTION_MIN_SCORE};
 // init
 $("#seg").querySelector('[data-d="cols3"]');
 render();

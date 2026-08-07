@@ -1,0 +1,153 @@
+{
+ "path_server": "..\\iacarry-evaluation\\_upload_img_bbox_results\\img_x\\z_4_.jpg",
+ "shape_img": [
+  720,
+  1280,
+  3
+ ],
+ "predictions": [
+  {
+   "probability": 0.98,
+   "tagInt": 1,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.2,
+    "top": 0.1,
+    "width": 0.35,
+    "height": 0.4
+   }
+  },
+  {
+   "probability": 0.91,
+   "tagInt": 2,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.4,
+    "top": 0.12,
+    "width": 0.55,
+    "height": 0.44
+   }
+  },
+  {
+   "probability": 0.87,
+   "tagInt": 3,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.22,
+    "top": 0.55,
+    "width": 0.37,
+    "height": 0.88
+   }
+  },
+  {
+   "probability": 0.62,
+   "tagInt": 4,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.6,
+    "top": 0.58,
+    "width": 0.76,
+    "height": 0.9
+   }
+  },
+  {
+   "probability": 0.93,
+   "tagInt": 5,
+   "tagName": "fanta_33cl",
+   "boundingBox": {
+    "left": 0.62,
+    "top": 0.08,
+    "width": 0.75,
+    "height": 0.38
+   }
+  },
+  {
+   "probability": 0.88,
+   "tagInt": 6,
+   "tagName": "fanta_33cl",
+   "boundingBox": {
+    "left": 0.78,
+    "top": 0.3,
+    "width": 0.93,
+    "height": 0.62
+   }
+  },
+  {
+   "probability": 0.79,
+   "tagInt": 7,
+   "tagName": "fanta_33cl",
+   "boundingBox": {
+    "left": 0.8,
+    "top": 0.64,
+    "width": 0.95,
+    "height": 0.95
+   }
+  },
+  {
+   "probability": 0.8,
+   "tagInt": 8,
+   "tagName": "chipsahoy_300g",
+   "boundingBox": {
+    "left": 0.04,
+    "top": 0.2,
+    "width": 0.18,
+    "height": 0.46
+   }
+  },
+  {
+   "probability": 0.72,
+   "tagInt": 9,
+   "tagName": "chipsahoy_300g",
+   "boundingBox": {
+    "left": 0.02,
+    "top": 0.5,
+    "width": 0.17,
+    "height": 0.78
+   }
+  },
+  {
+   "probability": 0.91,
+   "tagInt": 10,
+   "tagName": "colacao_383g",
+   "boundingBox": {
+    "left": 0.4,
+    "top": 0.66,
+    "width": 0.56,
+    "height": 0.97
+   }
+  },
+  {
+   "probability": 0.55,
+   "tagInt": 11,
+   "tagName": "colacao_383g",
+   "boundingBox": {
+    "left": 0.5,
+    "top": 0.5,
+    "width": 0.5,
+    "height": 0.5
+   }
+  },
+  {
+   "probability": 0.3,
+   "tagInt": 12,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.01,
+    "top": 0.01,
+    "width": 0.2,
+    "height": 0.2
+   }
+  },
+  {
+   "probability": 0.95,
+   "tagInt": 13,
+   "tagName": "pringles_200g",
+   "boundingBox": {
+    "left": 0.3,
+    "top": 0.3,
+    "width": 0.5,
+    "height": 0.5
+   }
+  }
+ ]
+}
