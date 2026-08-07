@@ -1,786 +1,374 @@
+<!DOCTYPE html>
+<!--
+  iaCarry — Soft Cart self-checkout UI.
+  Origin: design bundle `iacarry-checkout.html` (see HANDOVER.md), landed verbatim.
+  Served by Flask at GET / via render_template("iaCarry_Local_JS_1_Clouding.html").
+  The previous interface is kept as iaCarry_Local_JS_1_Clouding.old.html for reference.
+  Detection data is still mock (DEMOS/CONF) at this stage — backend wiring is a later step.
+-->
+<html lang="es">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link href="https://fonts.googleapis.com/css2?family=Ubuntu&amp;display=swap" rel="stylesheet">
+<title>iaCarry — Auto-checkout</title>
 <style>
-   canvas {
-      display: block;
-      border: 1px solid black;
-      margin-top: 10px;
-      border-radius: 10px;
-   }
-
-   @import url(https://fonts.googleapis.com/css?family=Roboto:300,400,500);
-
-   * {
-      box-sizing: border-box;
-   }
-
-   html,
-   body {
-      width: 100%;
-      /*height: 100%; cuiadado luego no hace scroll*/
-      padding: 10px;
-      margin: 0;
-      background-color: #705fc811;
-      font-family: 'Roboto', sans-serif;
-      border-radius: 40px;
-   }
-
-   .loading_button {
-      /* text-transform: uppercase; */
-      background-image: none;
-      border-style: none;
-      /* letter-spacing: 2px; */
-      margin: 10px auto;
-      padding: 10px;
-      pointer-events: initial;
-      color: #ffffff !important;
-      background-color: #715fc8 !important;
-      border-radius: 36px;
-   }
-
-   .shopping-cart {
-      /* width: 750px; */
-      margin: 20px auto;
-      background: #FFFFFF;
-      box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.10);
-      border-radius: 6px;
-      display: flex;
-      flex-direction: column;
-   }
-
-   /* .title {
-      height: 60px;
-      border-bottom: 1px solid #E1E8EE;
-      padding: 20px 75px;
-      color: #5E6977;
-      font-size: 18px;
-      font-weight: 400;
-   } */
-   .title_cols {
-      height: 60px;
-      border-bottom: 1px solid #E1E8EE;
-      padding: 20px 60px;
-      color: #5E6977;
-      font-size: 18px;
-      font-weight: 400;
-      padding: 17px 30px;
-      /*height: 140px; */
-      display: flex;
-      align-items: center;
-      align-content: center;
-      justify-content: space-around;
-   }
-
-   .item {
-      padding: 17px 30px;
-      height: 140px;
-      display: flex;
-      align-items: center;
-      align-content: center;
-      justify-content: space-around;
-   }
-
-   .box_color {
-      display: inline-block;
-      padding: 10px 10px;
-      height: 20px;
-      width: 50px;
-      border-radius: 18px;
-      margin-top: 4px;
-   }
-
-   .item:nth-child(n) {
-      border-top: 1px solid #E1E8EE;
-      border-bottom: 1px solid #E1E8EE;
-   }
-
-   .div_imgs {
-      padding-bottom: 10px;
-   }
-
-   /* Buttons -  Delete and Like */
-   .buttons {
-      position: relative;
-      padding-top: 30px;
-      margin-right: 60px;
-   }
-
-   .delete-btn {
-      display: inline-block;
-      cursor: pointer;
-      width: 18px;
-      height: 17px;
-      background: url("delete-icn.svg") no-repeat center;
-      margin-right: 20px;
-   }
-
-   .like-btn {
-      position: absolute;
-      top: 9px;
-      left: 15px;
-      display: inline-block;
-      background: url('twitter-heart.png');
-      width: 60px;
-      height: 60px;
-      background-size: 2900%;
-      background-repeat: no-repeat;
-      cursor: pointer;
-   }
-
-   .is-active {
-      animation-name: animate;
-      animation-duration: .8s;
-      animation-iteration-count: 1;
-      animation-timing-function: steps(28);
-      animation-fill-mode: forwards;
-   }
-
-   @keyframes animate {
-      0% {
-         background-position: left;
-      }
-
-      50% {
-         background-position: right;
-      }
-
-      100% {
-         background-position: right;
-      }
-   }
-
-   /* Product Image */
-   /* .image {
-      margin-right: 50px;
-   } */
-   .image_list {
-      margin-right: 10px;
-      float: center;
-      width: 155px;
-      border: 3px solid #715fc8;
-      /* padding: 6px; */
-      border-radius: 10px;
-   }
-
-   #shopping_cart_total_pay {
-      border: 1px solid #715fc8;
-      /*border-bottom*/
-      background-color: rgb(248, 241, 185);
-      border-radius: 10px;
-   }
-
-   /* Product Description */
-   .description {
-      /* padding-top: 10px; */
-      text-align: center;
-      display: inline-block;
-      margin-right: 60px;
-      width: 115px;
-      margin: 6px 0;
-   }
-
-   .description span {
-      display: block;
-      font-size: 14px;
-      color: #43484D;
-      font-weight: 400;
-   }
-
-   .description span:first-child {
-      margin-bottom: 5px;
-   }
-
-   .description span:last-child {
-      font-weight: 300;
-      margin-top: 8px;
-      color: #86939E;
-   }
-
-   td {
-      font-weight: bold;
-      margin: 12px;
-      text-align: center;
-      vertical-align: middle;
-   }
-
-   .title_td .title_td_hide {
-      margin: 12px;
-      text-align: center;
-      vertical-align: middle;
-      display: flex;
-      /* align-items: center;
-      align-content: center;
-      justify-content: space-around; */
-   }
-
-   /* Product Quantity */
-   .quantity {
-      text-align: center;
-      display: inline-block;
-      padding-bottom: 10px;
-   }
-
-   .quantity input {
-      -webkit-appearance: none;
-      border: none;
-      text-align: center;
-      width: 32px;
-      font-size: 16px;
-      color: #43484D;
-      font-weight: 300;
-   }
-
-   button[class*=btn] {
-      width: 22px;
-      height: 22px;
-      background-color: #E1E8EE;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-   }
-
-   .minus-btn img {
-      margin-bottom: 3px;
-   }
-
-   .plus-btn img {
-      margin-top: 2px;
-   }
-
-   button:focus,
-   input:focus {
-      outline: 0;
-   }
-
-   /* Total Price */
-   .total-price {
-      display: inline-block;
-      width: 83px;
-      padding-bottom: 10px;
-      text-align: center;
-      font-size: 16px;
-      color: #43484D;
-      font-weight: 300;
-   }
-
-   /* Responsive */
-   @media (max-width: 724px) {
-      .shopping-cart {
-         width: 100%;
-         height: auto;
-         overflow: hidden;
-      }
-
-      .item {
-         height: auto;
-         flex-wrap: wrap;
-         justify-content: center;
-      }
-
-      .image_list {
-         margin-right: -2px;
-      }
-
-      .image img {
-         width: 50%;
-      }
-
-      .image,
-      .quantity,
-      .description {
-         margin-right: 0px;
-         width: 100%;
-         text-align: center;
-         margin: 6px 0;
-      }
-
-      .buttons {
-         margin-right: 20px;
-      }
-
-      td {
-         margin-right: 0px;
-         margin: -7px;
-      }
-
-      .box_color {
-         visibility: hidden;
-         display: none;
-      }
-
-      .title_td_hide {
-         visibility: hidden;
-         display: none;
-      }
-
-      #gallery_img_container_superior {
-         font-family: 'Arial', sans-serif;
-         background-color: #f4f4f4;
-         margin: 0;
-         padding: 0;
-         display: flex;
-         justify-content: center;
-         align-items: center;
-         height: 100vh;
-      }
-
-      #gallery_img_container {
-         flex-wrap: wrap;
-         align-content: center;
-         display: flex;
-         justify-content: space-between;
-         width: 640px;
-      }
-
-      /*       #containerIntro h4,
-      #containerIntro p {
-         display: inline;
-         vertical-align: top;
-/*          font-family: 'Open Sans', sans-serif;
-         font-size: 16px;
-         line-height: 28px; */
-   }
-
-   */
-   }
+  :root{
+    --pri:#6E5AE0; --ps:#EFEBFC; --pt:#F1EFFA; --bg:#F5F4FA;
+    --mt:#F5F2FD; --seg:#EEECF4; --sa:#efeaf9; --sb:#e7e0f4;
+    --ink:#17142E; --sub:#8a84a6; --ter:#a49ec2;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Manrope,Roboto,sans-serif;color:var(--ink)}
+  body{min-height:100vh;padding:40px 32px;background:radial-gradient(1200px 600px at 20% -10%,#fff 0%,var(--bg) 62%)}
+  .app{max-width:1280px;margin:0 auto;background:#fff;border:1px solid #ECEAF5;border-radius:32px;box-shadow:0 1px 2px rgba(20,16,46,.04),0 30px 60px -30px rgba(60,40,140,.22);overflow:hidden}
+  .tabnum{font-variant-numeric:tabular-nums}
+  /* top bar */
+  .top{display:flex;align-items:center;gap:14px;padding:16px 22px;background:rgba(255,255,255,.72);backdrop-filter:blur(20px);border-bottom:1px solid #F0EEF7}
+  .brand{font-weight:800;font-size:20px;letter-spacing:-.02em}
+  .brand span{color:var(--pri)}
+  .pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+  .pill-live{background:#E9F7EF;color:#12864a}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .logo-slot{background:#fff;border:1px solid #ECEAF5;border-radius:9px;object-fit:contain;padding:3px}
+  .sep{width:1px;height:24px;background:#E1DEEC}
+  .muted{font-size:11px;color:var(--ter);font-weight:600}
+  .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  select.client{appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:700;font-size:13px;color:var(--pri);background:var(--ps);border:1.5px solid var(--pri);border-radius:999px;padding:7px 30px 7px 14px;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%236E5AE0' stroke-width='2.4' stroke-linecap='round'><path d='M4 6l5 5 5-5'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .bigtoggle{display:flex;align-items:center;gap:10px;font-family:inherit;cursor:pointer;border:1.5px solid #E4E1F0;background:#fff;color:#5a5478;border-radius:999px;padding:5px 8px 5px 6px;font-weight:700;font-size:13px;box-shadow:0 1px 2px rgba(20,16,46,.05);transition:all .2s}
+  .bigtoggle.on{border-color:var(--pri);background:var(--pri);color:#fff;box-shadow:0 6px 16px -6px rgba(20,16,46,.4)}
+  .aa{display:flex;align-items:baseline;justify-content:center;gap:1px;width:30px;height:30px;border-radius:999px;background:var(--ps);color:var(--pri)}
+  .bigtoggle.on .aa{background:rgba(255,255,255,.22);color:#fff}
+  .track{width:36px;height:21px;border-radius:999px;background:#DEDAEE;position:relative;transition:background .2s;flex-shrink:0}
+  .bigtoggle.on .track{background:rgba(255,255,255,.45)}
+  .knob{position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+  .bigtoggle.on .knob{left:17px}
+  /* steps */
+  .steps{display:flex;align-items:center;gap:10px;padding:13px 22px;background:#FBFAFE;border-bottom:1px solid #F0EEF7}
+  .step{display:flex;align-items:center;gap:10px}
+  .sc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+  .chev{color:#c9c2e6}
+  /* grid */
+  .grid{display:grid;grid-template-columns:minmax(300px,452px) minmax(0,1fr);gap:22px;padding:22px}
+  .card{background:#fff;border:1px solid #F0EEF7;border-radius:26px;box-shadow:0 1px 2px rgba(20,16,46,.04),0 18px 40px -26px rgba(60,40,140,.28)}
+  .det{padding:16px;display:flex;flex-direction:column;gap:16px}
+  .cam{border-radius:18px;overflow:hidden;aspect-ratio:1/1;position:relative;background-image:repeating-linear-gradient(45deg,var(--sa),var(--sa) 16px,var(--sb) 16px,var(--sb) 32px)}
+  .cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px ui-monospace,monospace;color:#9a8fce}
+  .cam .ph span{background:rgba(255,255,255,.6);padding:6px 12px;border-radius:6px}
+  .box{position:absolute;border:3px solid;border-radius:14px}
+  .box b{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#fff;font-weight:700;font-size:11px;padding:3px 10px;border-radius:999px;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+  .metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .metric{background:var(--mt);border-radius:12px;padding:8px 10px;text-align:center}
+  .metric b{font-weight:800;font-size:15px}
+  .metric i{display:block;font-style:normal;font-size:10px;color:var(--sub);font-weight:600}
+  .facts{display:flex;gap:12px}
+  .fact{flex:1;background:#fff;border:1px solid #F0EEF7;border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(20,16,46,.04);font-family:inherit;text-align:left}
+  .fact .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
+  .fact small{font-size:11px;color:var(--sub);font-weight:600}
+  .fact strong{display:block;font-size:14px}
+  .fraud{background:#fff;border:1px solid #F0EEF7;border-radius:20px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,16,46,.04)}
+  .fraud .li{display:flex;align-items:center;gap:10px;font-size:13px;margin-top:9px}
+  .fraud .ok{width:20px;height:20px;border-radius:50%;background:#E9F7EF;color:#12864a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+  /* cart */
+  .cart{display:flex;flex-direction:column;height:604px;overflow:hidden}
+  .chead{padding:18px 20px 14px;border-bottom:1px solid #F3F1F9}
+  .crow1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .crow1 h2{margin:0;font-weight:800;font-size:20px;letter-spacing:-.02em;white-space:nowrap}
+  .badge-count{background:var(--ps);color:var(--pri);font-weight:700;font-size:12px;border-radius:999px;padding:3px 11px;white-space:nowrap}
+  .conf{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;font-size:12px;color:var(--sub);user-select:none}
+  .conf .cb{width:18px;height:18px;border-radius:6px;border:2px solid #CFC8E6;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
+  .conf.on{color:var(--pri)}.conf.on .cb{background:var(--pri);border-color:var(--pri)}
+  .seg{margin-left:auto;display:flex;background:var(--seg);border-radius:12px;padding:4px;gap:2px}
+  .seg button{border:none;cursor:pointer;font-family:inherit;padding:7px 11px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--sub);background:transparent}
+  .seg button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(20,16,46,.16)}
+  .search{margin-top:12px;display:flex;align-items:center;gap:7px;background:#F5F3FB;border:1px solid #ECEAF5;border-radius:9px;padding:6px 10px}
+  .search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:10px;color:var(--ink);width:100%}
+  .cats{display:flex;gap:5px;margin-top:9px;overflow-x:auto}
+  .cats button{flex-shrink:0;border:1px solid #E2DEF0;cursor:pointer;font-family:inherit;font-weight:600;font-size:10px;padding:3px 10px;border-radius:999px;color:#5a5478;background:#fff}
+  .cats button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .list{flex:1;overflow-y:auto;padding:12px 14px;scrollbar-width:thin;scrollbar-color:var(--pri) transparent;scroll-behavior:smooth}
+  .list::-webkit-scrollbar{width:12px}
+  .list::-webkit-scrollbar-thumb{background:var(--pri);opacity:.5;border-radius:999px;border:4px solid transparent;background-clip:content-box}
+  .seg2{display:flex;background:var(--seg);border-radius:9px;padding:3px;gap:2px;margin-left:2px}
+  .seg2 button{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:11px;padding:4px 10px;border-radius:7px;color:var(--sub);background:transparent}
+  .seg2 button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(20,16,46,.16)}
+  .success{position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:6px}
+  @keyframes popCheck{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .pgrid{display:grid;align-content:start}
+  .prod{position:relative;overflow:hidden;background:#FBFAFE;border:1px solid #F1EEF9;border-radius:16px;display:flex;flex-direction:column}
+  .prod>.strip{position:absolute;left:0;top:0;right:0;height:4px}
+  .prod .pmeta{display:flex;margin-top:3px}
+  .thumb{border-radius:13px;background:#F4F1FC;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+  .pname{font-weight:700;line-height:1.2;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .pcost{font-size:12px;color:var(--sub);font-weight:500;margin-top:2px}
+  .cbadge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-weight:700;font-size:10px;border-radius:999px;padding:3px 8px}
+  .prow{display:flex;justify-content:space-between}
+  .qty{display:inline-flex;align-items:center;gap:5px;background:var(--pt);color:var(--pri);font-weight:700;border-radius:999px;padding:4px 11px}
+  .price{font-weight:800;letter-spacing:-.01em}
+  .empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ter);gap:8px;padding:40px}
+  /* pay */
+  .pay{border-top:1px solid #F3F1F9;padding:14px 20px 16px;background:rgba(255,255,255,.86);backdrop-filter:blur(20px)}
+  .verif{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .btn{border:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:9px;border-radius:999px;font-weight:700}
+  .btn-listen{background:var(--ps);color:var(--pri);font-size:15px;padding:13px 20px}
+  .btn-pay{margin-left:auto;background:var(--pri);color:#fff;font-size:17px;padding:16px 32px;box-shadow:0 8px 20px -6px rgba(20,16,46,.3)}
+  .paybar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .total b{font-weight:800;font-size:34px;letter-spacing:-.03em;line-height:1}
+  .sema{display:flex;align-items:center;gap:9px;margin-top:12px;background:#E9F7EF;border:1px solid #C6EBD5;border-radius:12px;padding:10px 14px;font-weight:700;font-size:15px;color:#12864a}
+  /* big mode */
+  body.big{--ink:#000}
+  body.big .pname{font-size:17px}body.big .price{font-size:19px}
+  body.big .total b{font-size:44px}
+  body.big .btn-pay{font-size:22px;padding:22px 40px}
+  body.big .btn-listen{font-size:19px;padding:20px 26px}
+  body.big .sema{font-size:18px;padding:16px 18px}
+  body.big .prod{border-width:2px;border-color:#17142E}
 </style>
-<title></title>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">ia<span>Carry</span></div>
+    <span id="clientMark" style="display:none;align-items:center;gap:10px"><span class="sep"></span><span class="muted" data-i18n="forC">para</span><img id="logoBig" class="logo-slot" style="height:45px;width:150px" alt=""></span>
+    <span class="pill pill-live"><span class="dot" style="background:#23b364;box-shadow:0 0 0 3px rgba(35,179,100,.18)"></span><span data-i18n="detActive">Detección activa</span></span>
+    <div class="right">
+      <select class="client" id="client">
+        <option value="iacarry">iaCarry</option>
+        <option value="eroski">Eroski</option>
+        <option value="ahorramas">AhorraMas</option>
+        <option value="condis">Condis</option>
+      </select>
+      <button class="bigtoggle" id="big" title="Texto y botones grandes"><span class="aa"><span style="font-size:13px;align-self:center">A</span><span style="font-size:19px;align-self:center">A</span></span><span data-i18n="bigText">Texto grande</span><span class="track"><span class="knob"></span></span></button>
+      <div style="position:relative;display:flex;align-items:center"><select id="lang" title="Idioma / Language" style="appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:600;font-size:12px;color:#5a5478;background:#F5F3FB;border:1px solid #ECEAF5;border-radius:9px;padding:6px 26px 6px 11px;cursor:pointer;outline:none"></select><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a84a6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:8px;pointer-events:none"><path d="M6 9l6 6 6-6"/></svg></div>
+      <span class="muted" style="color:var(--sub);font-weight:400">Estación 04 · Barakaldo</span>
+      <div class="avatar">LC</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><span class="sc" id="s1">1</span><b id="s1b" style="font-size:14px" data-i18n="step1">Pon el carro</b>
+      <div class="seg2"><button id="btnEmpty" data-full="0" data-i18n="mtEmpty">Vacío</button><button id="btnFull" data-full="1" data-i18n="mtFull">Lleno</button></div></div>
+    <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    <div class="step"><span class="sc" id="s2">2</span><b id="s2b" style="font-size:14px" data-i18n="step2">Revisa</b></div>
+    <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+    <div class="step"><span class="sc" id="s3">3</span><b id="s3b" style="font-size:14px" data-i18n="step3">Paga</b></div>
+  </div>
+
+  <div class="grid">
+    <!-- detection -->
+    <div class="card det">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <b style="font-size:15px;white-space:nowrap" data-i18n="cam">Cámara cenital</b>
+        <div style="display:flex;align-items:center;gap:8px">
+          <select class="client" id="demo" style="color:var(--pri)"></select>
+          <span class="pill" style="background:var(--ps);color:var(--pri)"><span class="dot" style="background:var(--pri)"></span><span data-i18n="live">en directo</span></span>
+        </div>
+      </div>
+      <div class="cam" id="cam"><div class="ph"><span>overhead cart photo</span></div></div>
+      <div class="metrics">
+        <div class="metric"><b id="mCount">0</b><i data-i18n="mProd">productos</i></div>
+        <div class="metric"><b>98%</b><i data-i18n="mAcc">precisión</i></div>
+        <div class="metric"><b>1.2s</b><i data-i18n="mInf">inferencia</i></div>
+      </div>
+      <div class="facts">
+        <div class="fact" as="div"><span class="ic" style="background:#E9F7EF;color:#12864a">✓</span><span><small data-i18n="wVer">Peso verificado</small><strong>1.94 kg</strong></span></div>
+        <button class="fact" id="fraudBtn"><span class="ic" style="background:var(--ps);color:var(--pri)">◇</span><span style="flex:1"><small data-i18n="antifraud">Anti-fraude</small><strong data-i18n="noAnom">Sin anomalías</strong></span><svg id="fraudChev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a49ec2" stroke-width="2.4" stroke-linecap="round" style="transition:transform .2s"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="fraud" id="fraudPanel" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span class="ok" style="width:30px;height:30px;border-radius:9px">✓</span><b style="font-size:15px" data-i18n="fTitle">Compra verificada — sin anomalías</b></div>
+        <p style="margin:0;font-size:13px;line-height:1.55;color:#5a5478" data-i18n="fPara">El sistema cruzó la imagen cenital con el peso de la báscula y no detectó diferencias.</p>
+        <div class="li"><span class="ok">✓</span><span><b id="fraudN">0</b> <span data-i18n="fLi1">productos reconocidos y casados</span></span></div>
+        <div class="li"><span class="ok">✓</span><span data-i18n="fLi2">Peso esperado 1.94 kg = medido 1.94 kg</span></div>
+        <div class="li"><span class="ok">✓</span><span data-i18n="fLi3">Sin objetos ocultos ni productos sin escanear</span></div>
+      </div>
+    </div>
+
+    <!-- cart -->
+    <div class="card cart" style="position:relative">
+      <div class="success" id="success" style="display:none">
+        <div style="width:96px;height:96px;border-radius:50%;background:#E9F7EF;display:flex;align-items:center;justify-content:center;animation:popCheck .5s cubic-bezier(.2,.9,.3,1.2) both"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#12864a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div id="sThanks" style="font-weight:800;font-size:26px;letter-spacing:-.02em;margin-top:14px;animation:fadeUp .4s .15s both">¡Gracias por tu compra! 🎉</div>
+        <div id="sConfirmed" style="font-size:15px;color:#5a5478;max-width:340px;animation:fadeUp .4s .25s both">Pago confirmado.</div>
+        <div class="pill pill-live" style="margin-top:4px;animation:fadeUp .4s .35s both"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="sTicket">Ticket enviado</span></div>
+        <button class="btn btn-pay" id="reset" data-i18n="newBuy" style="margin:22px 0 0;animation:fadeUp .4s .45s both">Nueva compra</button>
+      </div>
+      <div class="chead">
+        <div class="crow1">
+          <h2 data-i18n="cart">Tu carrito</h2>
+          <span class="badge-count" id="badgeCount">0 uds · 0 ref.</span>
+          <label class="conf" id="conf"><span class="cb" id="confCb"></span><span data-i18n="confIA">Confianza IA</span></label>
+          <div class="seg" id="seg">
+            <button data-d="comfort" title="Cómodo" data-i18n-title="dCom"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="3" width="12" height="4" rx="1.5"/><rect x="2" y="9" width="12" height="4" rx="1.5"/></svg></button>
+            <button data-d="compact" title="Compacto" data-i18n-title="dCompact"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
+            <button data-d="cols3" title="3 columnas" data-i18n-title="dCols"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="2" width="3.4" height="12" rx="1"/><rect x="6.3" y="2" width="3.4" height="12" rx="1"/><rect x="11.1" y="2" width="3.4" height="12" rx="1"/></svg></button>
+          </div>
+        </div>
+        <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a84a6" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="search" data-i18n-ph="search" placeholder="Buscar entre +10.000 productos…"></div>
+        <div class="cats" id="cats"></div>
+      </div>
+      <div class="list"><div class="pgrid" id="pgrid"></div></div>
+      <div class="pay">
+        <div class="verif"><span class="pill pill-live"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span data-i18n="verW">Verificado por IA · peso 1.94 kg</span></span><img id="logoSmall" class="logo-slot" style="height:31px;width:104px;display:none" alt=""></div>
+        <div class="paybar">
+          <div class="total"><small style="font-size:13px;color:var(--sub);font-weight:600" data-i18n="totalPay">Total a pagar</small><b class="tabnum" id="total">0.00€</b></div>
+          <button class="btn btn-listen" id="listen"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 8a5 5 0 010 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="listen">Escuchar total</span></button>
+          <button class="btn btn-pay" id="pay"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12c4.5-4.5 11.5-4.5 16 0"/><path d="M7.5 15.5c2.5-2.5 6.5-2.5 9 0"/><path d="M11 19h2"/></svg><span data-i18n="payBtn">Pagar sin contacto</span></button>
+        </div>
+        <div class="sema" id="sema"><span class="dot" style="width:12px;height:12px;background:#23b364;box-shadow:0 0 0 4px rgba(35,179,100,.18)"></span>Todo correcto, ya puedes pagar 👍</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-   function getRandomColor() {
-      color = "hsl(" + Math.random() * 360 + ", 100%, 75%)";
-      return color;
-   }
-   // select n integers from the range [from, to] (inclusive at both sides),https://stackoverflow.com/questions/12987719/javascript-how-to-randomly-sample-items-without-replacement
-   // don't use this approach for large values of n
-   // taking random values from the randomSource as needed
-   function randomNumbersWithoutReplacement(n, from, to, randomSource = Math.random) {
-      const result = [];
-      for (let i = 0; i < n; ++i) {
-         const rangeWidth = to - from - i + 1
-         let value = Math.floor(rangeWidth * randomSource()) + from
-         for (let j = 0; j < result.length; ++j) {
-            if (result[j] <= value) {
-               value++
-            }
-         }
-         result.push(value)
-         result.sort((a, b) => a - b)
-      }
-      return result
-   }
-   //GALERIA DE IMAGENES
-   function create_html_galery_img(list_img_id) {
-      var SIZE_IMG = 155
-      var SURL_IMG_GALERY = "https://raw.githubusercontent.com/Leci37/stocks-prediction-Machine-learning-RealTime-TensorFlow/master/readme_img/ziacarry_eval_img%20({i_num_img}).png"
-      var STRING_GALERY = ' <img style="width: ' + SIZE_IMG + 'px;;height:auto;cursor:pointer;border-radius: 10px;"    src="{image1.jpg}" onclick="handleImageClick(\'{image1.jpg}\')" alt="Image {name_image_i}"> ';
-      var full_html_galery = "";
-      for (let i = 0; i < list_img_id.length; i++) {
-         var url_img = SURL_IMG_GALERY.replaceAll("{i_num_img}", list_img_id[i].toString());
-         console.log("\tcreate_html_galery_img() list_img_id id: " + i + "\turl_img: " + url_img);
-         var div_html_galery = STRING_GALERY.replaceAll("{image1.jpg}", url_img);
-         div_html_galery = div_html_galery.replaceAll("{name_image_i}", list_img_id[i].toString());
-         full_html_galery = full_html_galery + div_html_galery + "\n";
-      }
-      return full_html_galery;
-   }
+const THEMES={
+  iacarry:{name:"iaCarry",pri:"#6E5AE0",ps:"#EFEBFC",pt:"#F1EFFA",bg:"#F5F4FA",mt:"#F5F2FD",seg:"#EEECF4",sa:"#efeaf9",sb:"#e7e0f4",logo:""},
+  eroski:{name:"Eroski",pri:"#E30613",ps:"#FCEAEA",pt:"#FBEEEE",bg:"#FBF4F4",mt:"#FCEFEF",seg:"#F4E7E7",sa:"#FAEBEB",sb:"#F4DBDB",logo:"assets/eroski-logo.png"},
+  ahorramas:{name:"AhorraMas",pri:"#57A639",ps:"#EAF5E4",pt:"#EEF6E9",bg:"#F5FAF2",mt:"#EDF6E8",seg:"#E8F1E3",sa:"#EDF6E7",sb:"#DFEFD5",logo:"assets/ahorramas-logo.png"},
+  condis:{name:"Condis",pri:"#17398A",ps:"#E7ECF6",pt:"#EBEFF7",bg:"#F3F6FC",mt:"#E9EEF8",seg:"#E4EAF4",sa:"#E9EEF8",sb:"#DBE4F1",logo:"assets/condis-logo.png"}
+};
+const RAW="https://raw.githubusercontent.com/Leci37/stocks-prediction-Machine-learning-RealTime-TensorFlow/master/readme_img/";
+const CATALOG=[
+  {tag:"aguila_33cl",name:"Águila 33cl",cost:0.98,color:"rgba(141,211,199,1)",cat:"Bebidas"},
+  {tag:"cocacola_33cl",name:"CocaCola 33cl",short:"CocaCola",cost:0.8,color:"rgba(251,128,114,1)",cat:"Bebidas"},
+  {tag:"fanta_33cl",name:"Fanta Limón 33cl",short:"Fanta",cost:0.73,color:"rgba(188,128,189,1)",cat:"Bebidas"},
+  {tag:"estrellag_33cl",name:"Estrella Galicia 33cl",cost:0.78,color:"rgba(179,222,105,1)",cat:"Bebidas"},
+  {tag:"mahou5_33cl",name:"Mahou 5 Estrellas 33cl",cost:0.69,color:"rgba(150,200,160,1)",cat:"Bebidas"},
+  {tag:"mahou00_33cl",name:"Mahou 0,0 33cl",cost:1.02,color:"rgba(180,180,180,1)",cat:"Bebidas"},
+  {tag:"chipsahoy_300g",name:"Chips Ahoy! 300g",short:"Chips Ahoy!",cost:3.12,color:"rgba(160,150,210,1)",cat:"Snacks"},
+  {tag:"colacao_383g",name:"ColaCao 383g",short:"ColaCao",cost:5.6,color:"rgba(128,177,211,1)",cat:"Snacks"},
+  {tag:"smacks_330g",name:"Smacks Kellogg's 330g",cost:3.01,color:"rgba(240,205,60,1)",cat:"Snacks"},
+  {tag:"tostarica_570g",name:"Tostarica 570g",cost:2.99,color:"#6a55e0",cat:"Snacks"},
+  {tag:"axedrak_150ml",name:"Axe Drak 150ml",cost:2.73,color:"rgba(230,200,90,1)",cat:"Cuidado"},
+  {tag:"colgate_75ml",name:"Colgate 75ml",cost:2.3,color:"rgba(253,180,98,1)",cat:"Cuidado"},
+  {tag:"hysori_300ml",name:"H&S Champú 300ml",cost:2.54,color:"rgba(240,170,205,1)",cat:"Cuidado"}
+];
+const CONF={cocacola_33cl:96,fanta_33cl:88,chipsahoy_300g:82,colacao_383g:91,aguila_33cl:94,estrellag_33cl:90,mahou5_33cl:93,mahou00_33cl:79,smacks_330g:87,tostarica_570g:84,axedrak_150ml:92,colgate_75ml:95,hysori_300ml:78};
+const full={aguila_33cl:3,axedrak_150ml:1,chipsahoy_300g:2,cocacola_33cl:4,colacao_383g:1,colgate_75ml:1,estrellag_33cl:2,fanta_33cl:3,hysori_300ml:1,mahou00_33cl:2,mahou5_33cl:2,smacks_330g:1,tostarica_570g:1};
+const DEMOS={
+  realtime:{label:"Realtime (en directo)",qty:full,boxes:[["12%","16%","26%","30%","cocacola_33cl"],["54%","12%","24%","28%","fanta_33cl"],["20%","56%","34%","26%","chipsahoy_300g"],["60%","54%","28%","32%","colacao_383g"]]},
+  demo1:{label:"ziacarry_eval_img (1)",qty:full,boxes:[["12%","16%","26%","30%","cocacola_33cl"],["54%","12%","24%","28%","fanta_33cl"],["20%","56%","34%","26%","chipsahoy_300g"],["60%","54%","28%","32%","colacao_383g"]]},
+  demo2:{label:"ziacarry_eval_img (2)",qty:{cocacola_33cl:2,estrellag_33cl:4,mahou5_33cl:3,smacks_330g:2},boxes:[["10%","20%","22%","34%","estrellag_33cl"],["40%","14%","22%","32%","mahou5_33cl"],["68%","22%","22%","30%","cocacola_33cl"],["34%","58%","36%","28%","smacks_330g"]]},
+  demo3:{label:"ziacarry_eval_img (3)",qty:{axedrak_150ml:1,colgate_75ml:2,hysori_300ml:1,tostarica_570g:2},boxes:[["14%","18%","20%","32%","colgate_75ml"],["46%","16%","20%","30%","axedrak_150ml"],["70%","24%","20%","34%","hysori_300ml"],["30%","58%","38%","26%","tostarica_570g"]]},
+  demo4:{label:"ziacarry_eval_img (4)",qty:{aguila_33cl:6,cocacola_33cl:6,fanta_33cl:4,mahou00_33cl:4,chipsahoy_300g:3,colacao_383g:2},boxes:[["8%","12%","20%","26%","aguila_33cl"],["36%","10%","20%","26%","cocacola_33cl"],["66%","14%","22%","26%","fanta_33cl"],["14%","52%","24%","30%","mahou00_33cl"],["46%","54%","22%","28%","chipsahoy_300g"],["72%","52%","20%","32%","colacao_383g"]]}
+};
+const DMAP={
+  comfort:{cols:"repeat(auto-fill,minmax(300px,1fr))",gap:"12px",pad:"13px 14px",cgap:"10px",thumb:48,img:40,td:"row",tg:"11px",ta:"center",na:"left",bd:"row",ba:"center"},
+  compact:{cols:"repeat(auto-fill,minmax(212px,1fr))",gap:"10px",pad:"10px 12px",cgap:"8px",thumb:40,img:32,td:"row",tg:"10px",ta:"center",na:"left",bd:"row",ba:"center"},
+  cols3:{cols:"repeat(3,minmax(0,1fr))",gap:"9px",pad:"10px 8px",cgap:"7px",thumb:44,img:36,td:"column",tg:"7px",ta:"center",na:"center",bd:"column",ba:"center"}
+};
+const shortOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?(c.short||c.name.split(" ")[0]):t};
+const colorOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?c.color:"#6E5AE0"};
+const CATS=[["Todos","catAll"],["Bebidas","catDrinks"],["Snacks","catSnacks"],["Cuidado","catCare"]];
+const I18N={
+  es:{flag:"\uD83C\uDDEA\uD83C\uDDF8",langName:"Español",detActive:"Detección activa",forC:"para",bigText:"Texto grande",step1:"Pon el carro",mtEmpty:"Vacío",mtFull:"Lleno",step2:"Revisa",step3:"Paga",cam:"Cámara cenital",live:"en directo",mProd:"productos",mAcc:"precisión",mInf:"inferencia",wVer:"Peso verificado",antifraud:"Anti-fraude",noAnom:"Sin anomalías",fTitle:"Compra verificada — sin anomalías",fPara:"El sistema cruzó la imagen cenital con el peso de la báscula y no detectó diferencias.",fLi1:"productos reconocidos y casados con su código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sin objetos ocultos ni productos sin escanear",cart:"Tu carrito",uds:"uds",ref:"ref.",confIA:"Confianza IA",dCom:"Cómodo",dCompact:"Compacto",dCols:"3 columnas",search:"Buscar entre +10.000 productos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Cuidado",eMatch:"Sin productos que coincidan",eCart:"El carro está vacío",cReco:"✓ Reconocido",cDoubt:"¿Es esto?",perUd:"/ ud",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Escuchar total",payBtn:"Pagar sin contacto",semaReady:"Todo correcto, ya puedes pagar \uD83D\uDC4D",semaPlace:"Coloca el carro para empezar",thanks:"¡Gracias por tu compra! \uD83C\uDF89",confirmed:"Pago de {t}€ confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",ticket:"Ticket enviado · {n} artículos",newBuy:"Nueva compra",speak:"El total a pagar es {a} euros con {b} céntimos",speechLang:"es-ES"},
+  en:{flag:"\uD83C\uDDEC\uD83C\uDDE7",langName:"English",detActive:"Detection active",forC:"for",bigText:"Large text",step1:"Place the cart",mtEmpty:"Empty",mtFull:"Full",step2:"Review",step3:"Pay",cam:"Overhead camera",live:"live",mProd:"products",mAcc:"accuracy",mInf:"inference",wVer:"Verified weight",antifraud:"Anti-fraud",noAnom:"No anomalies",fTitle:"Purchase verified — no anomalies",fPara:"The system cross-checked the overhead image with the scale weight and found no discrepancies.",fLi1:"products recognized and matched to their code",fLi2:"Expected weight 1.94 kg = measured weight 1.94 kg",fLi3:"No hidden items or unscanned products",cart:"Your cart",uds:"items",ref:"ref.",confIA:"AI confidence",dCom:"Comfortable",dCompact:"Compact",dCols:"3 columns",search:"Search +10,000 products…",catAll:"All",catDrinks:"Drinks",catSnacks:"Snacks",catCare:"Care",eMatch:"No matching products",eCart:"The cart is empty",cReco:"✓ Recognized",cDoubt:"Is this it?",perUd:"/ ea",verW:"AI-verified · weight 1.94 kg",totalPay:"Total to pay",listen:"Read total aloud",payBtn:"Contactless pay",semaReady:"All correct, you can pay now \uD83D\uDC4D",semaPlace:"Place the cart to start",thanks:"Thanks for your purchase! \uD83C\uDF89",confirmed:"Payment of €{t} confirmed. The door will open automatically, have a nice day.",ticket:"Receipt sent · {n} items",newBuy:"New purchase",speak:"The total to pay is {a} euros and {b} cents",speechLang:"en-GB"},
+  eu:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC70\uDB40\uDC76\uDB40\uDC7F",langName:"Euskera",detActive:"Detekzioa aktibo",forC:"honentzat",bigText:"Testu handia",step1:"Jarri orga",mtEmpty:"Hutsik",mtFull:"Beteta",step2:"Berrikusi",step3:"Ordaindu",cam:"Goiko kamera",live:"zuzenean",mProd:"produktu",mAcc:"zehaztasuna",mInf:"inferentzia",wVer:"Egiaztatutako pisua",antifraud:"Iruzurraren aurka",noAnom:"Anomaliarik ez",fTitle:"Erosketa egiaztatuta — anomaliarik gabe",fPara:"Sistemak goiko irudia balantzaren pisuarekin gurutzatu du eta ez du alderik aurkitu.",fLi1:"produktu ezagututa eta beren kodearekin lotuta",fLi2:"Espero den pisua 1,94 kg = neurtutako pisua 1,94 kg",fLi3:"Ez dago ezkutuko objekturik edo eskaneatu gabeko produkturik",cart:"Zure orga",uds:"unitate",ref:"erref.",confIA:"IA konfiantza",dCom:"Erosoa",dCompact:"Trinkoa",dCols:"3 zutabe",search:"Bilatu +10.000 produktutan…",catAll:"Guztiak",catDrinks:"Edariak",catSnacks:"Mokaduak",catCare:"Zainketa",eMatch:"Ez dago bat datorren produkturik",eCart:"Orga hutsik dago",cReco:"✓ Ezaguna",cDoubt:"Hau al da?",perUd:"/ unit.",verW:"IAk egiaztatua · pisua 1,94 kg",totalPay:"Ordaintzeko guztira",listen:"Entzun guztira",payBtn:"Ordaindu kontakturik gabe",semaReady:"Dena ondo, ordain dezakezu \uD83D\uDC4D",semaPlace:"Jarri orga hasteko",thanks:"Eskerrik asko erosketagatik! \uD83C\uDF89",confirmed:"{t}€-ko ordainketa berretsita. Atea automatikoki irekiko da, ondo izan.",ticket:"Tiketa bidalita · {n} artikulu",newBuy:"Erosketa berria",speak:"Ordaintzeko guztira {a} euro eta {b} zentimo da",speechLang:"eu-ES"},
+  ca:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F",langName:"Català",detActive:"Detecció activa",forC:"per a",bigText:"Text gran",step1:"Posa el carro",mtEmpty:"Buit",mtFull:"Ple",step2:"Revisa",step3:"Paga",cam:"Càmera zenital",live:"en directe",mProd:"productes",mAcc:"precisió",mInf:"inferència",wVer:"Pes verificat",antifraud:"Antiffrau",noAnom:"Sense anomalies",fTitle:"Compra verificada — sense anomalies",fPara:"El sistema ha creuat la imatge zenital amb el pes de la bàscula i no ha detectat diferències.",fLi1:"productes reconeguts i vinculats al seu codi",fLi2:"Pes esperat 1,94 kg = pes mesurat 1,94 kg",fLi3:"Sense objectes amagats ni productes sense escanejar",cart:"El teu carro",uds:"u.",ref:"ref.",confIA:"Confiança IA",dCom:"Còmode",dCompact:"Compacte",dCols:"3 columnes",search:"Cerca entre +10.000 productes…",catAll:"Tots",catDrinks:"Begudes",catSnacks:"Snacks",catCare:"Cura",eMatch:"Cap producte coincident",eCart:"El carro és buit",cReco:"✓ Reconegut",cDoubt:"És això?",perUd:"/ u.",verW:"Verificat per IA · pes 1,94 kg",totalPay:"Total a pagar",listen:"Escolta el total",payBtn:"Paga sense contacte",semaReady:"Tot correcte, ja pots pagar \uD83D\uDC4D",semaPlace:"Posa el carro per començar",thanks:"Gràcies per la teva compra! \uD83C\uDF89",confirmed:"Pagament de {t}€ confirmat. La porta s'obrirà automàticament, que tinguis un bon dia.",ticket:"Tiquet enviat · {n} articles",newBuy:"Nova compra",speak:"El total a pagar és {a} euros amb {b} cèntims",speechLang:"ca-ES"},
+  pt:{flag:"\uD83C\uDDF5\uD83C\uDDF9",langName:"Português",detActive:"Deteção ativa",forC:"para",bigText:"Texto grande",step1:"Coloque o carrinho",mtEmpty:"Vazio",mtFull:"Cheio",step2:"Reveja",step3:"Pague",cam:"Câmara superior",live:"em direto",mProd:"produtos",mAcc:"precisão",mInf:"inferência",wVer:"Peso verificado",antifraud:"Antifraude",noAnom:"Sem anomalias",fTitle:"Compra verificada — sem anomalias",fPara:"O sistema cruzou a imagem superior com o peso da balança e não detetou diferenças.",fLi1:"produtos reconhecidos e associados ao seu código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sem objetos ocultos ou produtos por ler",cart:"O seu carrinho",uds:"un.",ref:"ref.",confIA:"Confiança IA",dCom:"Confortável",dCompact:"Compacto",dCols:"3 colunas",search:"Procurar entre +10.000 produtos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Higiene",eMatch:"Sem produtos correspondentes",eCart:"O carrinho está vazio",cReco:"✓ Reconhecido",cDoubt:"É isto?",perUd:"/ un.",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Ouvir o total",payBtn:"Pagar sem contacto",semaReady:"Tudo certo, já pode pagar \uD83D\uDC4D",semaPlace:"Coloque o carrinho para começar",thanks:"Obrigado pela sua compra! \uD83C\uDF89",confirmed:"Pagamento de {t}€ confirmado. A porta abrir-se-á automaticamente, tenha um bom dia.",ticket:"Recibo enviado · {n} artigos",newBuy:"Nova compra",speak:"O total a pagar é {a} euros e {b} cêntimos",speechLang:"pt-PT"},
+  fr:{flag:"\uD83C\uDDEB\uD83C\uDDF7",langName:"Français",detActive:"Détection active",forC:"pour",bigText:"Texte grand",step1:"Placez le chariot",mtEmpty:"Vide",mtFull:"Plein",step2:"Vérifiez",step3:"Payez",cam:"Caméra en plongée",live:"en direct",mProd:"produits",mAcc:"précision",mInf:"inférence",wVer:"Poids vérifié",antifraud:"Anti-fraude",noAnom:"Aucune anomalie",fTitle:"Achat vérifié — aucune anomalie",fPara:"Le système a comparé l'image en plongée avec le poids de la balance et n'a détecté aucune différence.",fLi1:"produits reconnus et associés à leur code",fLi2:"Poids attendu 1,94 kg = poids mesuré 1,94 kg",fLi3:"Aucun objet caché ni produit non scanné",cart:"Votre chariot",uds:"u.",ref:"réf.",confIA:"Confiance IA",dCom:"Confortable",dCompact:"Compact",dCols:"3 colonnes",search:"Rechercher parmi +10 000 produits…",catAll:"Tous",catDrinks:"Boissons",catSnacks:"Snacks",catCare:"Hygiène",eMatch:"Aucun produit correspondant",eCart:"Le chariot est vide",cReco:"✓ Reconnu",cDoubt:"C'est ça ?",perUd:"/ u.",verW:"Vérifié par IA · poids 1,94 kg",totalPay:"Total à payer",listen:"Écouter le total",payBtn:"Payer sans contact",semaReady:"Tout est correct, vous pouvez payer \uD83D\uDC4D",semaPlace:"Placez le chariot pour commencer",thanks:"Merci pour votre achat ! \uD83C\uDF89",confirmed:"Paiement de {t}€ confirmé. La porte s'ouvrira automatiquement, bonne journée.",ticket:"Ticket envoyé · {n} articles",newBuy:"Nouvel achat",speak:"Le total à payer est de {a} euros et {b} centimes",speechLang:"fr-FR"},
+  de:{flag:"\uD83C\uDDE9\uD83C\uDDEA",langName:"Deutsch",detActive:"Erkennung aktiv",forC:"für",bigText:"Großer Text",step1:"Wagen abstellen",mtEmpty:"Leer",mtFull:"Voll",step2:"Prüfen",step3:"Bezahlen",cam:"Deckenkamera",live:"live",mProd:"Produkte",mAcc:"Genauigkeit",mInf:"Inferenz",wVer:"Geprüftes Gewicht",antifraud:"Betrugsschutz",noAnom:"Keine Auffälligkeiten",fTitle:"Einkauf geprüft — keine Auffälligkeiten",fPara:"Das System hat das Deckenbild mit dem Waagengewicht abgeglichen und keine Abweichungen festgestellt.",fLi1:"Produkte erkannt und ihrem Code zugeordnet",fLi2:"Erwartetes Gewicht 1,94 kg = gemessenes Gewicht 1,94 kg",fLi3:"Keine versteckten Gegenstände oder nicht gescannten Produkte",cart:"Ihr Wagen",uds:"St.",ref:"Ref.",confIA:"KI-Konfidenz",dCom:"Komfortabel",dCompact:"Kompakt",dCols:"3 Spalten",search:"Unter +10.000 Produkten suchen…",catAll:"Alle",catDrinks:"Getränke",catSnacks:"Snacks",catCare:"Pflege",eMatch:"Keine passenden Produkte",eCart:"Der Wagen ist leer",cReco:"✓ Erkannt",cDoubt:"Ist es das?",perUd:"/ St.",verW:"KI-geprüft · Gewicht 1,94 kg",totalPay:"Zu zahlen",listen:"Summe vorlesen",payBtn:"Kontaktlos zahlen",semaReady:"Alles korrekt, Sie können zahlen \uD83D\uDC4D",semaPlace:"Wagen abstellen zum Starten",thanks:"Danke für Ihren Einkauf! \uD83C\uDF89",confirmed:"Zahlung von {t}€ bestätigt. Die Tür öffnet sich automatisch, schönen Tag.",ticket:"Beleg gesendet · {n} Artikel",newBuy:"Neuer Einkauf",speak:"Der zu zahlende Betrag beträgt {a} Euro und {b} Cent",speechLang:"de-DE"}
+};
+function detectLang(){const raw=((navigator.language||navigator.userLanguage||"es")+"").toLowerCase();const code=raw.split("-")[0];if(code==="gl")return"es";return ["es","en","eu","ca","pt","fr","de"].includes(code)?code:"en";}
+let T=I18N.es;
 
-   function RefreshImagesTest() {
-      var list_img_id = randomNumbersWithoutReplacement(n = 4, from = 1, to = 31);
-      var full_html_galery = create_html_galery_img(list_img_id);
-      document.getElementById("gallery_img_container").innerHTML = ""
-      document.getElementById("gallery_img_container").insertAdjacentHTML("beforeend", full_html_galery);
-   }
-   var intervalId = "";
-   function points_loading() {
-      document.getElementById("h5_loading").innerHTML = "LOADING "
-      intervalId = window.setInterval(function () {
-         document.getElementById("h5_loading").innerHTML += "."
-      }, 600);
-   }
+const state={client:"iacarry",demo:"realtime",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:true,paid:false,lang:detectLang()};
 
+const $=s=>document.querySelector(s);
+// language select
+$("#lang").innerHTML=Object.keys(I18N).map(k=>`<option value="${k}">${I18N[k].flag}  ${I18N[k].langName}</option>`).join("");
+$("#lang").value=state.lang;
+function fillDemo(){$("#demo").innerHTML=Object.keys(DEMOS).map(k=>`<option value="${k}">${k==="realtime"?"Realtime · "+T.live:DEMOS[k].label}</option>`).join("");$("#demo").value=state.demo;}
+function applyI18n(){
+  T=I18N[state.lang]||I18N.es;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{const v=T[el.dataset.i18n];if(v!=null)el.textContent=v;});
+  document.querySelectorAll("[data-i18n-ph]").forEach(el=>{const v=T[el.dataset.i18nPh];if(v!=null)el.placeholder=v;});
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{const v=T[el.dataset.i18nTitle];if(v!=null)el.title=v;});
+  $("#cats").querySelectorAll("button").forEach(b=>{const m=CATS.find(c=>c[0]===b.dataset.cat);if(m)b.textContent=T[m[1]];});
+}
+// populate demo select + cats once
+fillDemo();
+CATS.forEach(([key])=>{const b=document.createElement("button");b.dataset.cat=key;b.onclick=()=>{state.cat=key;render()};$("#cats").appendChild(b)});
 
-   //AL CARGAR POR COMPLETO LA PAGINA
-   document.addEventListener('DOMContentLoaded', function () {
-      var list_img_id = randomNumbersWithoutReplacement(n = 4, from = 0, to = 31);
-      var full_html_galery = create_html_galery_img(list_img_id);
-      document.getElementById("gallery_img_container").innerHTML = ""
-      document.getElementById("gallery_img_container").insertAdjacentHTML("beforeend", full_html_galery);
-   }, false);
-
-   //const ENDPOINT = "https://westeurope.api.cognitive.microsoft.com/"
-   const ENDPOINT = "http://iacarry.eval.tuisku.eu:8000/upload";
-   //const ENDPOINT = "http://localhost:5000/upload"
-   var intervalId = "";
-   var DICT_PROD = {
-      "aguila_33cl": { "tag_id": "aguila_33cl", "weight": 0.34, "name_show": "Aguila beer 33cl ", "cost_ud": 0.98, "color": "rgba(141, 211, 199, 1)" },
-      "axedrak_150ml": { "tag_id": "axedrak_150ml", "weight": 0.16, "name_show": "Axe Drak deodorant 150ml ", "cost_ud": 2.73, "color": "rgba(255, 255, 179, 1)" },
-      "chipsahoy_300g": { "tag_id": "chipsahoy_300g", "weight": 0.3, "name_show": "Chips Ahoy! biscuits 300g", "cost_ud": 3.12, "color": "rgba(190, 186, 218, 1)" },
-      "cocacola_33cl": { "tag_id": "cocacola_33cl", "weight": 0.34, "name_show": "CocaCola 33cl ", "cost_ud": 0.8, "color": "rgba(251, 128, 114, 1)" },
-      "colacao_383g": { "tag_id": "colacao_383g", "weight": 0.383, "name_show": "ColaCao 383g ", "cost_ud": 5.6, "color": "rgba(128, 177, 211, 1)" },
-      "colgate_75ml": { "tag_id": "colgate_75ml", "weight": 0.34, "name_show": "Colgate toothpaste  75ml ", "cost_ud": 2.3, "color": "rgba(253, 180, 98, 1)" },
-      "estrellag_33cl": { "tag_id": "estrellag_33cl", "weight": 0.34, "name_show": "Estrella Galicia beer 33cl ", "cost_ud": 0.78, "color": "rgba(179, 222, 105, 1)" },
-      "fanta_33cl": { "tag_id": "fanta_33cl", "weight": 0.34, "name_show": "Fanta Lemon 33cl ", "cost_ud": 0.73, "color": "rgba(188, 128, 189, 1)" },
-      "hysori_300ml": { "tag_id": "hysori_300ml", "weight": 0.65, "name_show": "HyS original shampoo 300ml", "cost_ud": 2.54, "color": "rgba(252, 205, 229, 1)" },
-      "mahou00_33cl": { "tag_id": "mahou00_33cl", "weight": 0.34, "name_show": "Mahou 00 Tostada beer 33cl", "cost_ud": 1.02, "color": "rgba(217, 217, 217, 1)" },
-      "mahou5_33cl": { "tag_id": "mahou5_33cl", "weight": 0.34, "name_show": "Mahou 5 Estrellas beer 33cl", "cost_ud": 0.69, "color": "rgba(204, 235, 197, 1)" },
-      "smacks_330g": { "tag_id": "smacks_330g", "weight": 0.33, "name_show": "Cereales Smacks Kelloggs 330g", "cost_ud": 3.01, "color": "rgba(255, 237, 111, 1)" },
-      "tostarica_570g": { "tag_id": "tostarica_570g", "weight": 0.57, "name_show": "Cuétara Tostarica 570g", "cost_ud": 2.99, "color": "#3c1feb" }
-   };
-   var DICT_PROD_RAW = {
-      "aguila_33cl": 0, "axedrak_150ml": 0, "chipsahoy_300g": 0, "cocacola_33cl": 0, "colacao_383g": 0, "colgate_75ml": 0, "estrellag_33cl": 0,
-      "fanta_33cl": 0, "hysori_300ml": 0, "mahou00_33cl": 0, "mahou5_33cl": 0, "smacks_330g": 0, "tostarica_570g": 0
-   };
-   var RAW_IMG_PROD = "https://raw.githubusercontent.com/Leci37/stocks-prediction-Machine-learning-RealTime-TensorFlow/master/readme_img/{tag_id}_300.png"
-   var STRING_PRODUCT = ' <tr class="item"> ' +
-      '<td class="image_list" height="105"  >' +
-      '<div align="center" > <img src="{url_img}" class="div_imgs"  height="103" alt="alt image,{name_show}" /> </div>' +
-      '</td>' +
-      '<td class="description">' +
-      '<div align="center" > <span  font-family="Ubuntu"  text-align="left" font-weight="bold" ><strong>{name_show}</strong></span> </div>' +
-      // '<svg xmlns="http://www.w3.org/2000/svg">' +
-      //    '<circle cx="15" cy="15" r="15" fill="{color_box}" ></circle>' +
-      // '</svg>' +
-      '<div> <div class="box_color"  style="background:{color_box}; " > </div> </div>' +
-      '</td>' +
-      // '<td class="total-price">' +
-      // '<div align="center" > <span  font-family="Ubuntu"  text-align="left" font-weight="bold" >{cost_ud}</span> </div>' +
-      // '</td>' +
-      '<td  class="total-price"><pre> {cost_ud}€ </pre></td>' +
-      '<td class="quantity">' +
-      '<button class="plus-btn" type="button" name="button" style="background:{color_box}; ">' +
-      '<img src="plus.svg" alt="" />' +
-      '</button>' +
-      '<input id="units_{idname}" type="text" name="name" value="0">' +
-      '<button class="minus-btn" type="button" name="button"  style="background:{color_box}; " >' +
-      '<img src="minus.svg" alt="" />' +
-      '</button>' +
-      '</td>' +
-      // '</div>' +
-      '<td id="total_price_{total_price}" class="total-price"><div><pre> € </pre></div></td>' +
-      '</tr>'
-   /**
-   * Function draws the image from provided file
-   * and bounding boxes of detected objects on
-   * top of the image
-   * @param file Uploaded file object
-   * @param boxes Array of bounding boxes in format
-   [[x1,y1,x2,y2,object_type,probability],...]
-   */
-   function draw_image_and_boxes(file, r_prediction) {
-      var dict_prod_count = structuredClone(DICT_PROD_RAW); //reset all values
-      var total_a_pagar = 0;
-      const img = new Image()
-      img.src = URL.createObjectURL(file);
-      console.log("draw_image_and_boxes() Path_blod: " + img.src + " Path_local: " + img.baseURI);
-      console.log("draw_image_and_boxes() Prediciones Number: " + r_prediction.length);
-      img.onload = () => {
-         //remove old elemets
-/*          var tbl = document.getElementById("shopping_cart_table_idid"); // Get the table
-         deleteRow_all_tbody(tbl) */
-/*          if ((tbl != null) && (tbl.getElementsByTagName("tbody")[0]))
-            tbl.removeChild(tbl.getElementsByTagName("tbody")); //el primer y unico tbody */
-
-         var divs_ele = ""
-         const canvas = document.querySelector("canvas");
-         var ctx = canvas.getContext('2d');
-         canvas.width = 640;// img.width;
-         canvas.height = 640;//img.height;
-         var img_corrector_wigth = 640 / img.width
-         var img_corrector_height = 640 / img.height
-         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-         ctx.lineWidth = 3;
-         ctx.font = "bold 18px Ubuntu";
-         for (let i = 0; i < r_prediction.length; i++) {
-            if (r_prediction[i]['probability'] > 0.45) {
-               tagName = r_prediction[i]['tagName']
-               var dict_a_prod = DICT_PROD[tagName];
-               var ram_Color = dict_a_prod["color"];
-               ctx.strokeStyle = ram_Color;//"#00FF00";
-               bbox = r_prediction[i]['boundingBox']
-               probability = parseInt(r_prediction[i]['probability'] * 100)
-               bbox = r_prediction[i]['boundingBox']
-               /*                FORMATO AZURE
-                              x = bbox['left'] * img.width * img_corrector_wigth
-                              y = bbox['top'] * img.height * img_corrector_height
-                              w = bbox['width'] * img.width * img_corrector_wigth
-                              h = bbox['height'] * img.height * img_corrector_height */
-               //FORMATO detector tuisku local
-               x = bbox['left'] * img.width //* img_corrector_wigth
-               y = bbox['top'] * img.height // * img_corrector_height
-               w = bbox['width'] * img.width - x //* img_corrector_wigth
-               h = bbox['height'] * img.height - y //* img_corrector_height
-               console.log("img.onload() \tProbability: " + probability + "\ttagName: " + tagName + "\tBbox(x, y, w, h): " + x + " " + y + " " + w + " " + h);
-               ctx.strokeRect(x, y, w, h);
-               ctx.fillStyle = ram_Color;//   "#00ff00";
-               const width = ctx.measureText(tagName + " " + probability + "%").width;
-               ctx.fillRect(x, y - 14, width, +24);
-               ctx.fillStyle = "#000000"; //color fuente
-               ctx.fillText(tagName + " " + probability + "%", x, y + 2);
-               dict_prod_count[tagName] += 1
-               if (dict_prod_count[tagName] == 1) {
-                  var url_img_prod = RAW_IMG_PROD.replace("{tag_id}", tagName)
-                  divs_ele = STRING_PRODUCT.replace("{url_img}", url_img_prod);
-                  divs_ele = divs_ele.replaceAll("{name_show}", dict_a_prod["name_show"]);
-                  // divs_ele = divs_ele.replaceAll("{units}", dict_prod_count[tagName]);
-                  divs_ele = divs_ele.replaceAll("units_{idname}", "units_" + tagName);
-                  divs_ele = divs_ele.replaceAll("total_price_{total_price}", "total_price_" + tagName);
-                  divs_ele = divs_ele.replaceAll("{cost_ud}", dict_a_prod["cost_ud"]);
-                  divs_ele = divs_ele.replaceAll("{color_box}", ram_Color);
-                  document.getElementById("shopping_cart_idid").insertAdjacentHTML('afterEnd', divs_ele);
-               }
-               document.getElementById("units_" + tagName).value = dict_prod_count[tagName]
-               document.querySelector("#total_price_" + tagName + " div > pre").innerHTML = (dict_prod_count[tagName] * dict_a_prod["cost_ud"]).toFixed(2) + "€"
-               //document.getElementById("total_price_" + tagName).innerHTML = (dict_prod_count[tagName] * dict_a_prod["cost_ud"]).toFixed(2) + "€"
-               total_a_pagar += dict_a_prod["cost_ud"];
-            }
-         }
-
-         //TOTAL final
-         document.querySelector("#shopping_cart_total_pay > div > strong > pre").innerHTML = "  " + total_a_pagar.toFixed(2) + "€  "
-         //document.getElementById("shopping_cart_total_pay").innerHTML = "  "+ total_a_pagar.toFixed(2) + "€  "
-      }
-   }
-   function readImage(element) {
-      // from https://stackoverflow.com/questions/70906006/how-to-use-azure-custom-vision-prediction-api-by-url-method-in-javascript
-      [...document.getElementsByClassName("item")].map(n => n && n.remove());//borar las listas anteriores
-      var file = element.files[0];
-      var reader = new FileReader();
-
-      reader.onloadstart = function () {
-         /*          document.getElementById("h5_loading").innerHTML = "LOADING "
-                  intervalId = window.setInterval(function () {
-                     document.getElementById("h5_loading").innerHTML += ".."
-                  }, 600); */
-         points_loading();
-      }
-      reader.onloadend = function () {
-         //load_img_in_canvas(file);
-         $.ajax({
-            url: ENDPOINT, //ENDPOINT + "customvision/v3.0/Prediction/bb92520b-5d96-436e-ae98-84af06f0dee0/detect/iterations/Iteration7/image",
-            data: reader.result,
-            processData: false,
-            contentType: "application/octet-streama",
-            headers: {
-               'Prediction-key': "e0454c07b84f4c76b9750e4b74710a3c"
-            },
-            type: 'POST',
-            success: function (response) {
-               var r_prediction = response["predictions"];
-               // document.getElementById("demo1").innerHTML = "id: " + JSON.stringify(response["id"])
-               // document.getElementById("demo2").innerHTML = "project: " + JSON.stringify(response["project"])
-               // document.getElementById("demo3").innerHTML = "iteration: " + JSON.stringify(response["iteration"])
-               // document.getElementById("demo4").innerHTML = "created: " + JSON.stringify(response["created"])
-               // document.getElementById("demo5").innerHTML = "-" // "predictions: "+ JSON.stringify(response["predictions"])
-               r_prediction.forEach(function (valor, indice, array) {
-                  var info_pred = "valor " + JSON.stringify(valor) + " Valor: " + JSON.stringify(indice)
-                  console.log(info_pred); //+ " Array: " + JSON.stringify(array));
-               });
-               for (let i = 0; i < r_prediction.length; i++) {
-                  console.log(r_prediction);
-               }
-               //const boxes = response["predictions"]['boundingBox'];
-               draw_image_and_boxes(file, response["predictions"]);
-               clearInterval(intervalId)
-               document.getElementById("h5_loading").innerHTML = "LOADED"
-               //alert(result);
-            },
-            error: function (error) {
-               document.getElementById("demo").innerHTML = "ERROR: " + JSON.stringify(error)
-               alert('error: ' + error);
-            }
-         });
-      }
-      reader.readAsArrayBuffer(file);
-   }
-   //ON FULL LOADED THE html
-   document.addEventListener('DOMContentLoaded', function () {
-      var form_img = document.getElementById("upload_img");
-      // FROM https://uploadcare.com/blog/how-to-upload-files-using-js/
-      /*       form_img.addEventListener('submit', handleSubmit);
-            function handleSubmit(event) {
-
-            } */
-
-      var reader = new FileReader();
-      form_img.onchange = async (e) => {
-         points_loading();
-         [...document.getElementsByClassName("item")].map(n => n && n.remove());//borar las listas anteriores
-         e.preventDefault();
-         console.log("Load image to show in upload in the server ENDPOINT:" + ENDPOINT);
-         const formData = new FormData(form_img);
-         const fetchOptions = {
-            method: 'post',
-            body: formData
-         };
-         const file_img_bytes = e.target.files[0]
-         console.log("Load image to show in Local Path: " + file_img_bytes.name);
-         var reader = new FileReader();
-         reader.readAsArrayBuffer(file_img_bytes);
-
-         fetch(ENDPOINT, fetchOptions) //Enviar el paquete
-            .then(response => response.json())
-            .then(json => {// Bajarlo y recibirlo
-               console.log("form_img.onchange() => have recived response  : " + ENDPOINT);
-               download_amd_manage_predict_and_show(json, file_img_bytes, intervalId)
-            })
-         console.log("form_img.onchange() Have sent img to: " + ENDPOINT);
-      }
-      form_img.onloadend = async (e) => {
-         e.preventDefault();
-      }
-   }, false);
-
-   function download_amd_manage_predict_and_show(json, file_img_bytes, intervalId,) {
-      console.log(json);
-      //document.getElementById("demo8").innerHTML = JSON.stringify(json);
-      let response = json
-      //var r_prediction = response["predictions"];
-      /*       document.getElementById("demo1").innerHTML = "path_server: " + JSON.stringify(response["path_server"])
-            document.getElementById("demo2").innerHTML = "shape_img: " + JSON.stringify(response["shape_img"])
-            document.getElementById("demo3").innerHTML = "detection_classes: " + JSON.stringify(response["predictions"]) */
-      //const boxes = response["predictions"]['boundingBox'];
-      draw_image_and_boxes(file_img_bytes, response["predictions"]);
-      clearInterval(intervalId)
-      document.getElementById("h5_loading").innerHTML = "LOADED"
-   }
-
-   var image_galery_name = ""
-   function handleImageClick(imageSrc) {
-      [...document.getElementsByClassName("item")].map(n => n && n.remove());//borar las listas anteriores
-      console.log("handleImageClick() " + imageSrc);
-      points_loading();
-      image_galery_name = imageSrc.split('/').pop().replaceAll("%20", "_")
-
-      fetch(imageSrc) //descargar la imagen de nuevo
-         .then(response => response.blob())
-         .then(blob => {
-            const formData = new FormData();
-            formData.append('file', blob, image_galery_name); //'file' is a key for the server
-            for (var pair of formData.entries()) {
-               console.log(pair[0] + ', ' + pair[1]);
-            }
-            console.log("Load image to show in upload in the server. Image Name: "+image_galery_name+" ENDPOINT:" + ENDPOINT);
-            //const formData = new FormData(form_img);
-            const fetchOptions = {
-               method: 'post',
-               body: formData
-            };
-            var reader = new FileReader();
-            reader.readAsArrayBuffer(blob);
-
-            fetch(ENDPOINT, fetchOptions) //Enviar el paquete
-               .then(response => response.json())
-               .then(json => {// Bajarlo y recibirlo
-                  console.log("form_img.onchange() => have recived response  : " + ENDPOINT);
-                  download_amd_manage_predict_and_show(json, blob, intervalId)
-               })
-            console.log("form_img.onchange() Have sent img to: " + ENDPOINT);
-         })
-         .catch(error => console.error('Error loading image:', error));
-   }
-
-
-
-
+function applyTheme(){const t=THEMES[state.client];const r=document.body.style;
+  r.setProperty("--pri",t.pri);r.setProperty("--ps",t.ps);r.setProperty("--pt",t.pt);r.setProperty("--bg",t.bg);r.setProperty("--mt",t.mt);r.setProperty("--seg",t.seg);r.setProperty("--sa",t.sa);r.setProperty("--sb",t.sb);
+  const isC=state.client!=="iacarry";
+  $("#clientMark").style.display=isC?"inline-flex":"none";
+  $("#logoSmall").style.display=isC?"":"none";
+  if(isC){$("#logoBig").src=t.logo;$("#logoSmall").src=t.logo}
+}
+function render(){
+  applyTheme();
+  applyI18n();
+  const scene=DEMOS[state.demo],q=state.cartFull?scene.qty:{};
+  const inCart=CATALOG.filter(c=>(q[c.tag]||0)>0);
+  const total=inCart.reduce((s,c)=>s+c.cost*q[c.tag],0).toFixed(2);
+  const count=inCart.reduce((s,c)=>s+q[c.tag],0);
+  $("#mCount").textContent=count;$("#fraudN").textContent=count;
+  $("#badgeCount").textContent=`${count} ${T.uds} · ${inCart.length} ${T.ref}`;
+  $("#total").textContent=total+"€";
+  // steps
+  const full=state.cartFull,paid=state.paid;
+  const done=b=>{b.style.background="#E9F7EF";b.style.color="#12864a";b.style.boxShadow="none";b.textContent="\u2713"};
+  const act=(b,t)=>{b.style.background="var(--pri)";b.style.color="#fff";b.style.boxShadow="0 0 0 4px var(--ps)";b.textContent=t};
+  const idle=(b,t)=>{b.style.background="#EDEAF6";b.style.color="var(--ter)";b.style.boxShadow="none";b.textContent=t};
+  full?done($("#s1")):act($("#s1"),"1");
+  paid?done($("#s2")):(full?act($("#s2"),"2"):idle($("#s2"),"2"));
+  paid?done($("#s3")):idle($("#s3"),"3");
+  $("#s1b").style.color=full?"#12864a":"var(--ink)";
+  $("#s2b").style.color=paid?"#12864a":(full?"var(--ink)":"var(--ter)");
+  $("#s3b").style.color=paid?"#12864a":"var(--ter)";
+  $("#btnEmpty").classList.toggle("on",!full);$("#btnFull").classList.toggle("on",full);
+  // sema + pay button state
+  const sema=$("#sema"),dot=sema.querySelector(".dot");
+  if(full){sema.style.background="#E9F7EF";sema.style.border="1px solid #C6EBD5";sema.style.color="#12864a";dot.style.background="#23b364";sema.lastChild.textContent=T.semaReady}
+  else{sema.style.background="#F3F1F9";sema.style.border="1px solid #E7E3F1";sema.style.color="#8a84a6";dot.style.background="#c9c2e6";sema.lastChild.textContent=T.semaPlace}
+  $("#pay").style.background=full?"var(--pri)":"#c9c2e6";$("#pay").style.opacity=full?"1":".6";
+  // success overlay
+  $("#success").style.display=paid?"flex":"none";
+  if(paid){$("#sConfirmed").textContent=T.confirmed.replace("{t}",total);$("#sTicket").textContent=T.ticket.replace("{n}",count)}
+  // boxes
+  const cam=$("#cam");cam.querySelectorAll(".box").forEach(e=>e.remove());
+  (full?scene.boxes:[]).forEach(([l,tp,w,h,tag])=>{const c=colorOf(tag);const d=document.createElement("div");d.className="box";d.style.cssText=`left:${l};top:${tp};width:${w};height:${h};border-color:${c}`;d.innerHTML=`<b style="background:${c}">${shortOf(tag)}</b>`;cam.appendChild(d)});
+  // seg + cats active
+  $("#seg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.d===state.density));
+  $("#cats").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.cat===state.cat));
+  $("#conf").classList.toggle("on",state.showConf);$("#confCb").textContent=state.showConf?"\u2713":"";
+  // products
+  const D=DMAP[state.density];const g=$("#pgrid");g.style.gridTemplateColumns=D.cols;g.style.gap=D.gap;
+  const query=state.query.trim().toLowerCase();
+  const rows=inCart.filter(c=>state.cat==="Todos"||c.cat===state.cat).filter(c=>!query||c.name.toLowerCase().includes(query));
+  if(!rows.length){g.innerHTML=`<div class="empty"><svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.5 12h10L20 7H6"/></svg><div style="font-weight:700;font-size:15px">${full?T.eMatch:T.eCart}</div></div>`;return}
+  g.innerHTML=rows.map(c=>{const u=q[c.tag],cf=CONF[c.tag]??95,ok=cf>=85;
+    const conf=state.showConf?`<span class="cbadge" style="color:${ok?'#12864a':'#9a6a00'};background:${ok?'#E9F7EF':'#FCF3E0'}">${(ok?T.cReco:T.cDoubt)+' · '+cf+'%'}</span>`:"";
+    return `<div class="prod" style="padding:${D.pad};gap:${D.cgap}"><span class="strip" style="background:${c.color}"></span>
+      <div class="pmeta" style="flex-direction:${D.td};gap:${D.tg};align-items:${D.ta}">
+        <div class="thumb" style="width:${D.thumb}px;height:${D.thumb}px"><img src="${RAW+c.tag}_300.png" alt="" style="height:${D.img}px"></div>
+        <div style="flex:1;min-width:0;width:100%;align-self:stretch;text-align:${D.na}"><div class="pname" style="font-size:${state.big?17:(state.density==='cols3'?13:14)}px">${c.name}</div><div class="pcost tabnum">${c.cost.toFixed(2)}€ ${T.perUd}</div>${conf}</div>
+      </div>
+      <div class="prow" style="flex-direction:${D.bd};align-items:${D.ba};gap:6px">
+        <span class="qty tabnum" style="font-size:${state.big?15:13}px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>× ${u}</span>
+        <div class="price tabnum" style="font-size:${state.big?19:15}px">${(c.cost*u).toFixed(2)}€</div>
+      </div></div>`}).join("");
+}
+// events
+$("#btnEmpty").onclick=()=>{state.cartFull=false;state.paid=false;state.cat="Todos";state.query="";$("#search").value="";render()};
+$("#btnFull").onclick=()=>{state.cartFull=true;state.paid=false;render()};
+$("#pay").onclick=()=>{if(state.cartFull){state.paid=true;render()}};
+$("#reset").onclick=()=>{state.paid=false;state.cartFull=false;state.cat="Todos";state.query="";$("#search").value="";render()};
+$("#client").onchange=e=>{state.client=e.target.value;state.cat="Todos";state.query="";$("#search").value="";render()};
+$("#lang").onchange=e=>{state.lang=e.target.value;fillDemo();render()};
+$("#demo").onchange=e=>{state.demo=e.target.value;render()};
+$("#seg").onclick=e=>{const b=e.target.closest("button");if(b){state.density=b.dataset.d;render()}};
+$("#search").oninput=e=>{state.query=e.target.value;render()};
+$("#conf").onclick=()=>{state.showConf=!state.showConf;render()};
+$("#fraudBtn").onclick=()=>{state.fraudOpen=!state.fraudOpen;$("#fraudPanel").style.display=state.fraudOpen?"":"none";$("#fraudChev").style.transform=state.fraudOpen?"rotate(180deg)":"none"};
+$("#big").onclick=()=>{state.big=!state.big;document.body.classList.toggle("big",state.big);$("#big").classList.toggle("on",state.big);render()};
+$("#listen").onclick=()=>{const sy=window.speechSynthesis;if(!sy)return;const[a,b]=$("#total").textContent.replace("€","").split(".");const u=new SpeechSynthesisUtterance(T.speak.replace("{a}",a).replace("{b}",b));u.lang=T.speechLang;u.rate=.95;sy.cancel();sy.speak(u)};
+// init
+$("#seg").querySelector('[data-d="cols3"]');
+render();
 </script>
-
-<div style="display: flex;flex-direction: column-reverse;flex-wrap: wrap;align-content: center;">
-   <div style="width:640;">
-      <div id="gallery_img_container"> </div> <!-- para desplegar la galeria de imagenes  -->
-      <div
-         style="display: flex;flex-direction: row;flex-wrap: wrap;align-content: stretch;justify-content: center;align-items: stretch;">
-         <h4 id="h5_loading" style="margin-left: 10px;  width: 400px;;float:letf">*</h4>
-         <p style="margin-right: 10px;width: 200px;float:right;">ALLOWED_EXTENSIONS: { 'jpg', 'png','jpge'}</p>
-      </div>
-      <div style="margin-left: 10px;">
-         <form id="upload_img" class="loading_button" method="post" enctype="multipart/form-data"
-            accept="capture=camera, image/jpg, image/jpeg, image/png">
-            <div>
-               <input type="file" name="file">
-               <button type="button" style="margin-right: 10px;float:right;vertical-align: middle;"
-                  onclick="RefreshImagesTest()">Refresh Images Test</button>
-               <!-- onchange="this.form.submit()" -->
-            </div>
-            <!--    <div style="margin-left: 10px;display: block; display: inline-block;">
-      <h4 id="h5_loading" style="margin-left: 10px;"></h4>
-            <form>
-         <input type="file" class="loading_button" onchange="readImage(this)" accept="capture=camera,image/*">
-      </form> -->
-
-
-            <!--        <form action="http://200.234.227.11:8000/upload" method="post" enctype="multipart/form-data">-->
-            <!--          <form id="upload_img" action="http://localhost:8000/upload" method="post" enctype="multipart/form-data"></form> -->
-
-            <!-- </section> -->
-         </form>
-
-      </div>
-      <div style="width:640; height:640; margin:0 auto;">
-         <canvas id="canvas_id" class="shopping-cart" width="640" height="640" style="border:2px solid black">
-            Your browser doesn't support html5! Please download a fitable browser.
-         </canvas>
-      </div>
-   </div>
-</div><br>
-<div id="shopping_cart_total_to_buy" class="shopping-cart">
-   <!-- Title -->
-   <!-- <div class="title">
-      <span style="text-align:left; float: left;">Total to be paid:</span>
-      <span id="shopping_cart_total_pay" style="text-align:right; float: right;">€€€</span>
-   </div> -->
-   <table>
-      <tbody id="shopping_cart_id_to_pay" class="shopping-cart">
-         <!-- Title -->
-         <tr class="title_cols">
-            <td class="title_td" style="margin-right: 20px;">Total to be paid:</td>
-            <td class="title_td_hide"></td>
-            <td class="title_td_hide"></td>
-            <td class="title_td_hide"></td>
-            <td id="shopping_cart_total_pay" class="title_td">
-               <div style="margin: -8px;">
-                  <strong>
-                     <pre>  €€€  </pre>
-                  </strong>
-               </div>
-            </td>
-         </tr>
-      </tbody>
-   </table>
-</div>
-<div class="shopping-cart">
-   <table id="shopping_cart_table_idid">
-      <thead id="shopping_cart_idid" class="shopping-cart">
-         <!-- Title -->
-         <tr class="title_cols">
-            <td class="title_td">
-               <p>Shopping Trolley</p>
-            </td>
-            <td class="title_td_hide">
-               <p> Product </p>
-            </td>
-            <td class="title_td_hide">
-               <p> Cost unit </p>
-            </td>
-            <td class="title_td_hide">
-               <p> Units </p>
-            </td>
-            <td class="title_td_hide">
-               <p> Price </p>
-            </td>
-         </tr>
-      </thead>
-   </table>
-</div>
-<!-- <br>
-<p id="demo1">Log text here</p>
-<p id="demo2">Log text here</p>
-<p id="demo3">Log text here</p>
-<p id="demo4">Log text here</p>
-<p id="demo5">Log text here</p>
-<p id="demo6">probability</p>
-<p id="demo7">tagName</p>
-<p id="demo8">boundingBox</p> -->
+</body>
+</html>

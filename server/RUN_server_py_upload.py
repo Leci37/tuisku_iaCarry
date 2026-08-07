@@ -39,6 +39,10 @@ from werkzeug.utils import secure_filename
 # img_np_boxes, img_np_raw, detections, df_d, path_img_box =    all_load
 
 TEMPLATE_FOLDER = r"..\iacarry-evaluation"
+# Directory holding this file (server/). It is the versioned home of the template
+# served at GET /, so the file under version control is the file Flask renders.
+SERVER_DIR = os.path.dirname(os.path.abspath(__file__))
+logging.info("SERVER_DIR (primary template folder): " + SERVER_DIR)
 DATE_NAME_FOLDER = datetime.now().strftime("%Y_%m_%d")
 UPLOAD_FOLDER = os.path.abspath(TEMPLATE_FOLDER +r"\_uploads_img_for_test_from_web"  )
 logging.info("UPLOAD_FOLDER: "+UPLOAD_FOLDER)
@@ -52,7 +56,12 @@ PATH_TO_SAVED = "..\iacarry-evaluation\_upload_img_bbox_results" # "model_efi_d1
 
 
 logging.info("Folder:\t" +__name__ + ":"+str(TEMPLATE_FOLDER))
-app = Flask(__name__, template_folder=TEMPLATE_FOLDER)
+app = Flask(__name__, template_folder=SERVER_DIR)
+# Templates are looked up in server/ first, then in the legacy deploy folder
+# (..\iacarry-evaluation). Editing the versioned file therefore takes effect on
+# reload, while deployments that still copy the template across keep working.
+from jinja2 import ChoiceLoader, FileSystemLoader
+app.jinja_loader = ChoiceLoader([FileSystemLoader(SERVER_DIR), FileSystemLoader(TEMPLATE_FOLDER)])
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 from server_Detector_model  import Detector_model
 # @app.before_first_request
