@@ -4,7 +4,8 @@
   Origin: design bundle `iacarry-checkout.html` (see HANDOVER.md), landed verbatim.
   Served by Flask at GET / via render_template("iaCarry_Local_JS_1_Clouding.html").
   The previous interface is kept as iaCarry_Local_JS_1_Clouding.old.html for reference.
-  Detection data is still mock (DEMOS/CONF) at this stage — backend wiring is a later step.
+  Detection data is live: every quantity, box and confidence on this screen comes
+  from a real POST to /upload. There are no mock scenes left in this file.
 -->
 <html lang="es">
 <head>
@@ -53,9 +54,23 @@
   .card{background:#fff;border:1px solid #F0EEF7;border-radius:26px;box-shadow:0 1px 2px rgba(20,16,46,.04),0 18px 40px -26px rgba(60,40,140,.28)}
   .det{padding:16px;display:flex;flex-direction:column;gap:16px}
   .cam{border-radius:18px;overflow:hidden;aspect-ratio:1/1;position:relative;background-image:repeating-linear-gradient(45deg,var(--sa),var(--sa) 16px,var(--sb) 16px,var(--sb) 32px)}
-  .cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px ui-monospace,monospace;color:#9a8fce}
+  .cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px ui-monospace,monospace;color:#9a8fce;text-align:center;padding:16px}
   .cam .ph span{background:rgba(255,255,255,.6);padding:6px 12px;border-radius:6px}
-  .box{position:absolute;border:3px solid;border-radius:14px}
+  /* The analysed photo. object-fit:fill makes the image cover exactly the same
+     box the detection percentages are measured against, so the overlay stays
+     aligned whatever aspect ratio the frame has. The panel's aspect-ratio is set
+     from the image's own dimensions, so "fill" does not actually distort it. */
+  .cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none}
+  .cam.has-img img{display:block}
+  .cam.has-img{background-image:none}
+  .cam.has-img .ph{display:none}
+  /* Busy state. The design assumes detection is instant; it is not — the server
+     runs inference under a thread lock, so requests queue and take seconds. */
+  .busy{position:absolute;inset:0;z-index:3;display:none;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:16px;text-align:center;background:rgba(255,255,255,.74);backdrop-filter:blur(3px);font-weight:700;font-size:13px;color:var(--pri)}
+  .cam.busy-on .busy{display:flex}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--ps);border-top-color:var(--pri);animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .box{position:absolute;border:3px solid;border-radius:14px;z-index:2}
   .box b{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#fff;font-weight:700;font-size:11px;padding:3px 10px;border-radius:999px;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.15)}
   .metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .metric{background:var(--mt);border-radius:12px;padding:8px 10px;text-align:center}
@@ -165,7 +180,13 @@
           <span class="pill" style="background:var(--ps);color:var(--pri)"><span class="dot" style="background:var(--pri)"></span><span data-i18n="live">en directo</span></span>
         </div>
       </div>
-      <div class="cam" id="cam"><div class="ph"><span>overhead cart photo</span></div></div>
+      <div class="cam" id="cam">
+        <img id="camImg" alt="">
+        <!-- Both strings depend on detection state, so render() sets them rather
+             than applyI18n(); no data-i18n here or the two would fight. -->
+        <div class="ph"><span id="camPh">Sin imagen analizada todavía</span></div>
+        <div class="busy"><span class="spin"></span><span id="busyMsg">Analizando el carro…</span></div>
+      </div>
       <div class="metrics">
         <div class="metric"><b id="mCount">0</b><i data-i18n="mProd">productos</i></div>
         <div class="metric"><b>98%</b><i data-i18n="mAcc">precisión</i></div>
@@ -244,15 +265,25 @@ const CATALOG=[
   {tag:"colgate_75ml",name:"Colgate 75ml",cost:2.3,color:"rgba(253,180,98,1)",cat:"Cuidado"},
   {tag:"hysori_300ml",name:"H&S Champú 300ml",cost:2.54,color:"rgba(240,170,205,1)",cat:"Cuidado"}
 ];
-const CONF={cocacola_33cl:96,fanta_33cl:88,chipsahoy_300g:82,colacao_383g:91,aguila_33cl:94,estrellag_33cl:90,mahou5_33cl:93,mahou00_33cl:79,smacks_330g:87,tostarica_570g:84,axedrak_150ml:92,colgate_75ml:95,hysori_300ml:78};
-const full={aguila_33cl:3,axedrak_150ml:1,chipsahoy_300g:2,cocacola_33cl:4,colacao_383g:1,colgate_75ml:1,estrellag_33cl:2,fanta_33cl:3,hysori_300ml:1,mahou00_33cl:2,mahou5_33cl:2,smacks_330g:1,tostarica_570g:1};
-const DEMOS={
-  realtime:{label:"Realtime (en directo)",qty:full,boxes:[["12%","16%","26%","30%","cocacola_33cl"],["54%","12%","24%","28%","fanta_33cl"],["20%","56%","34%","26%","chipsahoy_300g"],["60%","54%","28%","32%","colacao_383g"]]},
-  demo1:{label:"ziacarry_eval_img (1)",qty:full,boxes:[["12%","16%","26%","30%","cocacola_33cl"],["54%","12%","24%","28%","fanta_33cl"],["20%","56%","34%","26%","chipsahoy_300g"],["60%","54%","28%","32%","colacao_383g"]]},
-  demo2:{label:"ziacarry_eval_img (2)",qty:{cocacola_33cl:2,estrellag_33cl:4,mahou5_33cl:3,smacks_330g:2},boxes:[["10%","20%","22%","34%","estrellag_33cl"],["40%","14%","22%","32%","mahou5_33cl"],["68%","22%","22%","30%","cocacola_33cl"],["34%","58%","36%","28%","smacks_330g"]]},
-  demo3:{label:"ziacarry_eval_img (3)",qty:{axedrak_150ml:1,colgate_75ml:2,hysori_300ml:1,tostarica_570g:2},boxes:[["14%","18%","20%","32%","colgate_75ml"],["46%","16%","20%","30%","axedrak_150ml"],["70%","24%","20%","34%","hysori_300ml"],["30%","58%","38%","26%","tostarica_570g"]]},
-  demo4:{label:"ziacarry_eval_img (4)",qty:{aguila_33cl:6,cocacola_33cl:6,fanta_33cl:4,mahou00_33cl:4,chipsahoy_300g:3,colacao_383g:2},boxes:[["8%","12%","20%","26%","aguila_33cl"],["36%","10%","20%","26%","cocacola_33cl"],["66%","14%","22%","26%","fanta_33cl"],["14%","52%","24%","30%","mahou00_33cl"],["46%","54%","22%","28%","chipsahoy_300g"],["72%","52%","20%","32%","colacao_383g"]]}
+/* The mock scenes (DEMOS) and the mock confidence table (CONF) are gone. Every
+   number on this screen now comes from a real /upload round-trip, so a demo is
+   live proof that detection works rather than a canned animation.
+
+   `camera` is the seam for the overhead feed. No endpoint streams frames yet, so
+   selecting it clears the panel instead of pretending; when a feed exists it
+   only has to call submitFrame(blob, filename) — the same path the demos use. */
+const DEMO_SOURCES={
+  camera:{live:true},
+  demo1:{label:"ziacarry_eval_img (1)",file:"ziacarry_eval_img (1).png",local:"ziacarry_eval_img_1.png"},
+  demo2:{label:"ziacarry_eval_img (2)",file:"ziacarry_eval_img (2).png",local:"ziacarry_eval_img_2.png"},
+  demo3:{label:"ziacarry_eval_img (3)",file:"ziacarry_eval_img (3).png",local:"ziacarry_eval_img_3.png"},
+  demo4:{label:"ziacarry_eval_img (4)",file:"ziacarry_eval_img (4).png",local:"ziacarry_eval_img_4.png"}
 };
+/* Demo frames are looked up locally first so the screen keeps working with
+   outbound internet blocked, then fall back to the GitHub folder the old UI
+   used. Once T5 commits the files under server/static/, the fallback goes cold
+   on its own and nothing here needs changing. */
+const DEMO_LOCAL="/static/assets/demo/";
 const DMAP={
   comfort:{cols:"repeat(auto-fill,minmax(300px,1fr))",gap:"12px",pad:"13px 14px",cgap:"10px",thumb:48,img:40,td:"row",tg:"11px",ta:"center",na:"left",bd:"row",ba:"center"},
   compact:{cols:"repeat(auto-fill,minmax(212px,1fr))",gap:"10px",pad:"10px 12px",cgap:"8px",thumb:40,img:32,td:"row",tg:"10px",ta:"center",na:"left",bd:"row",ba:"center"},
@@ -332,28 +363,168 @@ function applyDetections(json){
   return state.live;
 }
 
-const confOf=(scene,tag)=> (scene.conf && scene.conf[tag]!=null) ? scene.conf[tag] : (CONF[tag] ?? 95);
+const confOf=(scene,tag)=> (scene.conf && scene.conf[tag]!=null) ? scene.conf[tag] : 95;
+const EMPTY_SCENE={qty:{},conf:{},boxes:[],aspect:"1 / 1",skipped:[]};
+const unitsOf=q=>Object.values(q||{}).reduce((a,b)=>a+b,0);
+
+/* ===========================================================================
+   DETECTION TRANSPORT — one round-trip to /upload, and the two states the
+   design does not have: busy and failed.
+   =========================================================================== */
+
+/* Relative, so the same file works on localhost, on the eval box and in
+   production without editing. The old UI hardcoded an absolute host. */
+const UPLOAD_ENDPOINT="/upload";
+/* Generous: the server loads the image, runs inference under a thread lock,
+   renders a matplotlib figure to disk and appends a CSV row before answering,
+   and the lock means concurrent requests queue behind each other. */
+const DETECTION_TIMEOUT_MS=60000;
+
+/* Requests are tokenised. The server serialises inference, so a second demo
+   picked mid-flight can have its response land after the first — without this,
+   a stale response would overwrite a newer cart. */
+let detectSeq=0;
+
+function setDetect(status,phase,detail){
+  state.detect={status:status,phase:phase||"",detail:detail||""};
+  render();
+}
+function failDetection(detail){
+  console.error("[iaCarry] detection failed:",detail);
+  state.live=null;                 /* never leave a stale cart under a red light */
+  setDetect("error","",detail);
+}
+function resetDetection(){
+  state.live=null;
+  clearCamImage();
+  setDetect("idle","","");
+}
+
+function setCamImage(blob){
+  clearCamImage();
+  state.camUrl=URL.createObjectURL(blob);
+  const img=$("#camImg");
+  img.onload=()=>{
+    if(img.naturalWidth>0&&img.naturalHeight>0){
+      /* The displayed pixels are the truth about the frame's shape, and they
+         arrive before the response does. shape_img is the fallback. */
+      state.camAspect=img.naturalWidth+" / "+img.naturalHeight;
+      render();
+    }
+  };
+  img.src=state.camUrl;
+}
+function clearCamImage(){
+  if(state.camUrl){URL.revokeObjectURL(state.camUrl);state.camUrl=null}
+  state.camAspect=null;
+  $("#camImg").removeAttribute("src");
+}
+
+/* THE camera seam. Anything holding a frame — a demo image, a file picker, a
+   live overhead feed — hands it here and gets the whole flow for free. */
+async function submitFrame(blob,filename,seq){
+  if(seq===undefined) seq=++detectSeq;
+  const stale=()=>seq!==detectSeq;
+  setCamImage(blob);
+  setDetect("busy","analysing","");
+
+  const fd=new FormData();
+  /* The filename matters: allowed_file() in RUN_server_py_upload.py checks the
+     extension, and a blob posted without one is rejected as "File not allowed". */
+  fd.append("file",blob,filename);
+
+  const ac=new AbortController();
+  const timer=setTimeout(()=>ac.abort(),DETECTION_TIMEOUT_MS);
+  try{
+    const res=await fetch(UPLOAD_ENDPOINT,{method:"POST",body:fd,signal:ac.signal});
+    /* Read as text first: the route answers plain strings on its error paths
+       ("No file part in the form.", "File not allowed. …"), so response.json()
+       would throw an opaque parse error instead of the server's own reason. */
+    const text=await res.text();
+    if(stale()) return null;
+    if(!res.ok) throw new Error("HTTP "+res.status+" "+text.slice(0,120));
+    let json;
+    try{ json=JSON.parse(text) }
+    catch(e){ throw new Error("server said: "+(text.trim().slice(0,140)||"empty response")) }
+
+    const adapted=adaptDetections(json);
+    if(stale()) return null;
+    state.live=adapted;
+    /* A detection that found products is itself evidence the cart is there.
+       Without this a result can land while the sensor stand-in says Empty and
+       be silently discarded — an invisible success. */
+    if(unitsOf(adapted.qty)>0) state.cartFull=true;
+    setDetect("ok","","");
+    return adapted;
+  }catch(err){
+    if(stale()) return null;
+    failDetection(err&&err.name==="AbortError"
+      ? "timed out after "+(DETECTION_TIMEOUT_MS/1000)+"s"
+      : String(err&&err.message||err));
+    return null;
+  }finally{
+    clearTimeout(timer);
+  }
+}
+
+async function fetchDemoBlob(src){
+  const urls=[DEMO_LOCAL+src.local, RAW+encodeURIComponent(src.file)];
+  let last="";
+  for(const url of urls){
+    try{
+      const r=await fetch(url);
+      if(r.ok) return await r.blob();
+      last="HTTP "+r.status+" for "+url;
+    }catch(e){ last=String(e&&e.message||e)+" for "+url }
+  }
+  throw new Error("demo image unavailable ("+last+")");
+}
+
+/* Picking a demo posts that image to /upload exactly like a camera frame. */
+async function runDemo(key){
+  const src=DEMO_SOURCES[key];
+  if(!src||src.live){ resetDetection(); return }
+  const seq=++detectSeq;
+  state.live=null; state.paid=false;
+  setDetect("busy","loading","");
+  let blob;
+  try{ blob=await fetchDemoBlob(src) }
+  catch(err){ if(seq===detectSeq) failDetection(String(err&&err.message||err)); return }
+  if(seq!==detectSeq) return;
+  await submitFrame(blob,src.local,seq);
+}
+
+/* Payment is blocked, not merely discouraged, unless a detection actually
+   succeeded and produced something to charge for. */
+function payable(){
+  return state.detect.status==="ok" && state.cartFull && !state.paid
+      && unitsOf(state.live&&state.live.qty)>0;
+}
 const I18N={
-  es:{flag:"\uD83C\uDDEA\uD83C\uDDF8",langName:"Español",detActive:"Detección activa",forC:"para",bigText:"Texto grande",step1:"Pon el carro",mtEmpty:"Vacío",mtFull:"Lleno",step2:"Revisa",step3:"Paga",cam:"Cámara cenital",live:"en directo",mProd:"productos",mAcc:"precisión",mInf:"inferencia",wVer:"Peso verificado",antifraud:"Anti-fraude",noAnom:"Sin anomalías",fTitle:"Compra verificada — sin anomalías",fPara:"El sistema cruzó la imagen cenital con el peso de la báscula y no detectó diferencias.",fLi1:"productos reconocidos y casados con su código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sin objetos ocultos ni productos sin escanear",cart:"Tu carrito",uds:"uds",ref:"ref.",confIA:"Confianza IA",dCom:"Cómodo",dCompact:"Compacto",dCols:"3 columnas",search:"Buscar entre +10.000 productos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Cuidado",eMatch:"Sin productos que coincidan",eCart:"El carro está vacío",cReco:"✓ Reconocido",cDoubt:"¿Es esto?",perUd:"/ ud",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Escuchar total",payBtn:"Pagar sin contacto",semaReady:"Todo correcto, ya puedes pagar \uD83D\uDC4D",semaPlace:"Coloca el carro para empezar",thanks:"¡Gracias por tu compra! \uD83C\uDF89",confirmed:"Pago de {t}€ confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",ticket:"Ticket enviado · {n} artículos",newBuy:"Nueva compra",speak:"El total a pagar es {a} euros con {b} céntimos",speechLang:"es-ES"},
-  en:{flag:"\uD83C\uDDEC\uD83C\uDDE7",langName:"English",detActive:"Detection active",forC:"for",bigText:"Large text",step1:"Place the cart",mtEmpty:"Empty",mtFull:"Full",step2:"Review",step3:"Pay",cam:"Overhead camera",live:"live",mProd:"products",mAcc:"accuracy",mInf:"inference",wVer:"Verified weight",antifraud:"Anti-fraud",noAnom:"No anomalies",fTitle:"Purchase verified — no anomalies",fPara:"The system cross-checked the overhead image with the scale weight and found no discrepancies.",fLi1:"products recognized and matched to their code",fLi2:"Expected weight 1.94 kg = measured weight 1.94 kg",fLi3:"No hidden items or unscanned products",cart:"Your cart",uds:"items",ref:"ref.",confIA:"AI confidence",dCom:"Comfortable",dCompact:"Compact",dCols:"3 columns",search:"Search +10,000 products…",catAll:"All",catDrinks:"Drinks",catSnacks:"Snacks",catCare:"Care",eMatch:"No matching products",eCart:"The cart is empty",cReco:"✓ Recognized",cDoubt:"Is this it?",perUd:"/ ea",verW:"AI-verified · weight 1.94 kg",totalPay:"Total to pay",listen:"Read total aloud",payBtn:"Contactless pay",semaReady:"All correct, you can pay now \uD83D\uDC4D",semaPlace:"Place the cart to start",thanks:"Thanks for your purchase! \uD83C\uDF89",confirmed:"Payment of €{t} confirmed. The door will open automatically, have a nice day.",ticket:"Receipt sent · {n} items",newBuy:"New purchase",speak:"The total to pay is {a} euros and {b} cents",speechLang:"en-GB"},
-  eu:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC70\uDB40\uDC76\uDB40\uDC7F",langName:"Euskera",detActive:"Detekzioa aktibo",forC:"honentzat",bigText:"Testu handia",step1:"Jarri orga",mtEmpty:"Hutsik",mtFull:"Beteta",step2:"Berrikusi",step3:"Ordaindu",cam:"Goiko kamera",live:"zuzenean",mProd:"produktu",mAcc:"zehaztasuna",mInf:"inferentzia",wVer:"Egiaztatutako pisua",antifraud:"Iruzurraren aurka",noAnom:"Anomaliarik ez",fTitle:"Erosketa egiaztatuta — anomaliarik gabe",fPara:"Sistemak goiko irudia balantzaren pisuarekin gurutzatu du eta ez du alderik aurkitu.",fLi1:"produktu ezagututa eta beren kodearekin lotuta",fLi2:"Espero den pisua 1,94 kg = neurtutako pisua 1,94 kg",fLi3:"Ez dago ezkutuko objekturik edo eskaneatu gabeko produkturik",cart:"Zure orga",uds:"unitate",ref:"erref.",confIA:"IA konfiantza",dCom:"Erosoa",dCompact:"Trinkoa",dCols:"3 zutabe",search:"Bilatu +10.000 produktutan…",catAll:"Guztiak",catDrinks:"Edariak",catSnacks:"Mokaduak",catCare:"Zainketa",eMatch:"Ez dago bat datorren produkturik",eCart:"Orga hutsik dago",cReco:"✓ Ezaguna",cDoubt:"Hau al da?",perUd:"/ unit.",verW:"IAk egiaztatua · pisua 1,94 kg",totalPay:"Ordaintzeko guztira",listen:"Entzun guztira",payBtn:"Ordaindu kontakturik gabe",semaReady:"Dena ondo, ordain dezakezu \uD83D\uDC4D",semaPlace:"Jarri orga hasteko",thanks:"Eskerrik asko erosketagatik! \uD83C\uDF89",confirmed:"{t}€-ko ordainketa berretsita. Atea automatikoki irekiko da, ondo izan.",ticket:"Tiketa bidalita · {n} artikulu",newBuy:"Erosketa berria",speak:"Ordaintzeko guztira {a} euro eta {b} zentimo da",speechLang:"eu-ES"},
-  ca:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F",langName:"Català",detActive:"Detecció activa",forC:"per a",bigText:"Text gran",step1:"Posa el carro",mtEmpty:"Buit",mtFull:"Ple",step2:"Revisa",step3:"Paga",cam:"Càmera zenital",live:"en directe",mProd:"productes",mAcc:"precisió",mInf:"inferència",wVer:"Pes verificat",antifraud:"Antiffrau",noAnom:"Sense anomalies",fTitle:"Compra verificada — sense anomalies",fPara:"El sistema ha creuat la imatge zenital amb el pes de la bàscula i no ha detectat diferències.",fLi1:"productes reconeguts i vinculats al seu codi",fLi2:"Pes esperat 1,94 kg = pes mesurat 1,94 kg",fLi3:"Sense objectes amagats ni productes sense escanejar",cart:"El teu carro",uds:"u.",ref:"ref.",confIA:"Confiança IA",dCom:"Còmode",dCompact:"Compacte",dCols:"3 columnes",search:"Cerca entre +10.000 productes…",catAll:"Tots",catDrinks:"Begudes",catSnacks:"Snacks",catCare:"Cura",eMatch:"Cap producte coincident",eCart:"El carro és buit",cReco:"✓ Reconegut",cDoubt:"És això?",perUd:"/ u.",verW:"Verificat per IA · pes 1,94 kg",totalPay:"Total a pagar",listen:"Escolta el total",payBtn:"Paga sense contacte",semaReady:"Tot correcte, ja pots pagar \uD83D\uDC4D",semaPlace:"Posa el carro per començar",thanks:"Gràcies per la teva compra! \uD83C\uDF89",confirmed:"Pagament de {t}€ confirmat. La porta s'obrirà automàticament, que tinguis un bon dia.",ticket:"Tiquet enviat · {n} articles",newBuy:"Nova compra",speak:"El total a pagar és {a} euros amb {b} cèntims",speechLang:"ca-ES"},
-  pt:{flag:"\uD83C\uDDF5\uD83C\uDDF9",langName:"Português",detActive:"Deteção ativa",forC:"para",bigText:"Texto grande",step1:"Coloque o carrinho",mtEmpty:"Vazio",mtFull:"Cheio",step2:"Reveja",step3:"Pague",cam:"Câmara superior",live:"em direto",mProd:"produtos",mAcc:"precisão",mInf:"inferência",wVer:"Peso verificado",antifraud:"Antifraude",noAnom:"Sem anomalias",fTitle:"Compra verificada — sem anomalias",fPara:"O sistema cruzou a imagem superior com o peso da balança e não detetou diferenças.",fLi1:"produtos reconhecidos e associados ao seu código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sem objetos ocultos ou produtos por ler",cart:"O seu carrinho",uds:"un.",ref:"ref.",confIA:"Confiança IA",dCom:"Confortável",dCompact:"Compacto",dCols:"3 colunas",search:"Procurar entre +10.000 produtos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Higiene",eMatch:"Sem produtos correspondentes",eCart:"O carrinho está vazio",cReco:"✓ Reconhecido",cDoubt:"É isto?",perUd:"/ un.",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Ouvir o total",payBtn:"Pagar sem contacto",semaReady:"Tudo certo, já pode pagar \uD83D\uDC4D",semaPlace:"Coloque o carrinho para começar",thanks:"Obrigado pela sua compra! \uD83C\uDF89",confirmed:"Pagamento de {t}€ confirmado. A porta abrir-se-á automaticamente, tenha um bom dia.",ticket:"Recibo enviado · {n} artigos",newBuy:"Nova compra",speak:"O total a pagar é {a} euros e {b} cêntimos",speechLang:"pt-PT"},
-  fr:{flag:"\uD83C\uDDEB\uD83C\uDDF7",langName:"Français",detActive:"Détection active",forC:"pour",bigText:"Texte grand",step1:"Placez le chariot",mtEmpty:"Vide",mtFull:"Plein",step2:"Vérifiez",step3:"Payez",cam:"Caméra en plongée",live:"en direct",mProd:"produits",mAcc:"précision",mInf:"inférence",wVer:"Poids vérifié",antifraud:"Anti-fraude",noAnom:"Aucune anomalie",fTitle:"Achat vérifié — aucune anomalie",fPara:"Le système a comparé l'image en plongée avec le poids de la balance et n'a détecté aucune différence.",fLi1:"produits reconnus et associés à leur code",fLi2:"Poids attendu 1,94 kg = poids mesuré 1,94 kg",fLi3:"Aucun objet caché ni produit non scanné",cart:"Votre chariot",uds:"u.",ref:"réf.",confIA:"Confiance IA",dCom:"Confortable",dCompact:"Compact",dCols:"3 colonnes",search:"Rechercher parmi +10 000 produits…",catAll:"Tous",catDrinks:"Boissons",catSnacks:"Snacks",catCare:"Hygiène",eMatch:"Aucun produit correspondant",eCart:"Le chariot est vide",cReco:"✓ Reconnu",cDoubt:"C'est ça ?",perUd:"/ u.",verW:"Vérifié par IA · poids 1,94 kg",totalPay:"Total à payer",listen:"Écouter le total",payBtn:"Payer sans contact",semaReady:"Tout est correct, vous pouvez payer \uD83D\uDC4D",semaPlace:"Placez le chariot pour commencer",thanks:"Merci pour votre achat ! \uD83C\uDF89",confirmed:"Paiement de {t}€ confirmé. La porte s'ouvrira automatiquement, bonne journée.",ticket:"Ticket envoyé · {n} articles",newBuy:"Nouvel achat",speak:"Le total à payer est de {a} euros et {b} centimes",speechLang:"fr-FR"},
-  de:{flag:"\uD83C\uDDE9\uD83C\uDDEA",langName:"Deutsch",detActive:"Erkennung aktiv",forC:"für",bigText:"Großer Text",step1:"Wagen abstellen",mtEmpty:"Leer",mtFull:"Voll",step2:"Prüfen",step3:"Bezahlen",cam:"Deckenkamera",live:"live",mProd:"Produkte",mAcc:"Genauigkeit",mInf:"Inferenz",wVer:"Geprüftes Gewicht",antifraud:"Betrugsschutz",noAnom:"Keine Auffälligkeiten",fTitle:"Einkauf geprüft — keine Auffälligkeiten",fPara:"Das System hat das Deckenbild mit dem Waagengewicht abgeglichen und keine Abweichungen festgestellt.",fLi1:"Produkte erkannt und ihrem Code zugeordnet",fLi2:"Erwartetes Gewicht 1,94 kg = gemessenes Gewicht 1,94 kg",fLi3:"Keine versteckten Gegenstände oder nicht gescannten Produkte",cart:"Ihr Wagen",uds:"St.",ref:"Ref.",confIA:"KI-Konfidenz",dCom:"Komfortabel",dCompact:"Kompakt",dCols:"3 Spalten",search:"Unter +10.000 Produkten suchen…",catAll:"Alle",catDrinks:"Getränke",catSnacks:"Snacks",catCare:"Pflege",eMatch:"Keine passenden Produkte",eCart:"Der Wagen ist leer",cReco:"✓ Erkannt",cDoubt:"Ist es das?",perUd:"/ St.",verW:"KI-geprüft · Gewicht 1,94 kg",totalPay:"Zu zahlen",listen:"Summe vorlesen",payBtn:"Kontaktlos zahlen",semaReady:"Alles korrekt, Sie können zahlen \uD83D\uDC4D",semaPlace:"Wagen abstellen zum Starten",thanks:"Danke für Ihren Einkauf! \uD83C\uDF89",confirmed:"Zahlung von {t}€ bestätigt. Die Tür öffnet sich automatisch, schönen Tag.",ticket:"Beleg gesendet · {n} Artikel",newBuy:"Neuer Einkauf",speak:"Der zu zahlende Betrag beträgt {a} Euro und {b} Cent",speechLang:"de-DE"}
+  es:{flag:"\uD83C\uDDEA\uD83C\uDDF8",langName:"Español",detActive:"Detección activa",forC:"para",bigText:"Texto grande",step1:"Pon el carro",mtEmpty:"Vacío",mtFull:"Lleno",step2:"Revisa",step3:"Paga",cam:"Cámara cenital",live:"en directo",mProd:"productos",mAcc:"precisión",mInf:"inferencia",wVer:"Peso verificado",antifraud:"Anti-fraude",noAnom:"Sin anomalías",fTitle:"Compra verificada — sin anomalías",fPara:"El sistema cruzó la imagen cenital con el peso de la báscula y no detectó diferencias.",fLi1:"productos reconocidos y casados con su código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sin objetos ocultos ni productos sin escanear",cart:"Tu carrito",uds:"uds",ref:"ref.",confIA:"Confianza IA",dCom:"Cómodo",dCompact:"Compacto",dCols:"3 columnas",search:"Buscar entre +10.000 productos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Cuidado",eMatch:"Sin productos que coincidan",eCart:"El carro está vacío",cReco:"✓ Reconocido",cDoubt:"¿Es esto?",perUd:"/ ud",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Escuchar total",payBtn:"Pagar sin contacto",semaReady:"Todo correcto, ya puedes pagar \uD83D\uDC4D",semaPlace:"Coloca el carro para empezar",thanks:"¡Gracias por tu compra! \uD83C\uDF89",confirmed:"Pago de {t}€ confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",ticket:"Ticket enviado · {n} artículos",newBuy:"Nueva compra",speak:"El total a pagar es {a} euros con {b} céntimos",speechLang:"es-ES",camLive:"Cámara en directo",camIdle:"Aún no se ha analizado ninguna imagen",camLoading:"Cargando imagen…",camAnalysing:"Analizando el carro…",semaBusy:"Analizando el carro…",semaFail:"Fallo de detección — avisa a un asistente",semaNone:"No se ha reconocido ningún producto — avisa a un asistente"},
+  en:{flag:"\uD83C\uDDEC\uD83C\uDDE7",langName:"English",detActive:"Detection active",forC:"for",bigText:"Large text",step1:"Place the cart",mtEmpty:"Empty",mtFull:"Full",step2:"Review",step3:"Pay",cam:"Overhead camera",live:"live",mProd:"products",mAcc:"accuracy",mInf:"inference",wVer:"Verified weight",antifraud:"Anti-fraud",noAnom:"No anomalies",fTitle:"Purchase verified — no anomalies",fPara:"The system cross-checked the overhead image with the scale weight and found no discrepancies.",fLi1:"products recognized and matched to their code",fLi2:"Expected weight 1.94 kg = measured weight 1.94 kg",fLi3:"No hidden items or unscanned products",cart:"Your cart",uds:"items",ref:"ref.",confIA:"AI confidence",dCom:"Comfortable",dCompact:"Compact",dCols:"3 columns",search:"Search +10,000 products…",catAll:"All",catDrinks:"Drinks",catSnacks:"Snacks",catCare:"Care",eMatch:"No matching products",eCart:"The cart is empty",cReco:"✓ Recognized",cDoubt:"Is this it?",perUd:"/ ea",verW:"AI-verified · weight 1.94 kg",totalPay:"Total to pay",listen:"Read total aloud",payBtn:"Contactless pay",semaReady:"All correct, you can pay now \uD83D\uDC4D",semaPlace:"Place the cart to start",thanks:"Thanks for your purchase! \uD83C\uDF89",confirmed:"Payment of €{t} confirmed. The door will open automatically, have a nice day.",ticket:"Receipt sent · {n} items",newBuy:"New purchase",speak:"The total to pay is {a} euros and {b} cents",speechLang:"en-GB",camLive:"Live camera",camIdle:"No image analysed yet",camLoading:"Loading image…",camAnalysing:"Analysing the cart…",semaBusy:"Analysing your cart…",semaFail:"Detection failed — please call an assistant",semaNone:"No products recognised — please call an assistant"},
+  eu:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC70\uDB40\uDC76\uDB40\uDC7F",langName:"Euskera",detActive:"Detekzioa aktibo",forC:"honentzat",bigText:"Testu handia",step1:"Jarri orga",mtEmpty:"Hutsik",mtFull:"Beteta",step2:"Berrikusi",step3:"Ordaindu",cam:"Goiko kamera",live:"zuzenean",mProd:"produktu",mAcc:"zehaztasuna",mInf:"inferentzia",wVer:"Egiaztatutako pisua",antifraud:"Iruzurraren aurka",noAnom:"Anomaliarik ez",fTitle:"Erosketa egiaztatuta — anomaliarik gabe",fPara:"Sistemak goiko irudia balantzaren pisuarekin gurutzatu du eta ez du alderik aurkitu.",fLi1:"produktu ezagututa eta beren kodearekin lotuta",fLi2:"Espero den pisua 1,94 kg = neurtutako pisua 1,94 kg",fLi3:"Ez dago ezkutuko objekturik edo eskaneatu gabeko produkturik",cart:"Zure orga",uds:"unitate",ref:"erref.",confIA:"IA konfiantza",dCom:"Erosoa",dCompact:"Trinkoa",dCols:"3 zutabe",search:"Bilatu +10.000 produktutan…",catAll:"Guztiak",catDrinks:"Edariak",catSnacks:"Mokaduak",catCare:"Zainketa",eMatch:"Ez dago bat datorren produkturik",eCart:"Orga hutsik dago",cReco:"✓ Ezaguna",cDoubt:"Hau al da?",perUd:"/ unit.",verW:"IAk egiaztatua · pisua 1,94 kg",totalPay:"Ordaintzeko guztira",listen:"Entzun guztira",payBtn:"Ordaindu kontakturik gabe",semaReady:"Dena ondo, ordain dezakezu \uD83D\uDC4D",semaPlace:"Jarri orga hasteko",thanks:"Eskerrik asko erosketagatik! \uD83C\uDF89",confirmed:"{t}€-ko ordainketa berretsita. Atea automatikoki irekiko da, ondo izan.",ticket:"Tiketa bidalita · {n} artikulu",newBuy:"Erosketa berria",speak:"Ordaintzeko guztira {a} euro eta {b} zentimo da",speechLang:"eu-ES",camLive:"Zuzeneko kamera",camIdle:"Oraindik ez da irudirik aztertu",camLoading:"Irudia kargatzen…",camAnalysing:"Orga aztertzen…",semaBusy:"Orga aztertzen…",semaFail:"Detekzio-errorea — deitu langile bati",semaNone:"Ez da produkturik ezagutu — deitu langile bati"},
+  ca:{flag:"\uD83C\uDFF4\uDB40\uDC65\uDB40\uDC73\uDB40\uDC63\uDB40\uDC74\uDB40\uDC7F",langName:"Català",detActive:"Detecció activa",forC:"per a",bigText:"Text gran",step1:"Posa el carro",mtEmpty:"Buit",mtFull:"Ple",step2:"Revisa",step3:"Paga",cam:"Càmera zenital",live:"en directe",mProd:"productes",mAcc:"precisió",mInf:"inferència",wVer:"Pes verificat",antifraud:"Antiffrau",noAnom:"Sense anomalies",fTitle:"Compra verificada — sense anomalies",fPara:"El sistema ha creuat la imatge zenital amb el pes de la bàscula i no ha detectat diferències.",fLi1:"productes reconeguts i vinculats al seu codi",fLi2:"Pes esperat 1,94 kg = pes mesurat 1,94 kg",fLi3:"Sense objectes amagats ni productes sense escanejar",cart:"El teu carro",uds:"u.",ref:"ref.",confIA:"Confiança IA",dCom:"Còmode",dCompact:"Compacte",dCols:"3 columnes",search:"Cerca entre +10.000 productes…",catAll:"Tots",catDrinks:"Begudes",catSnacks:"Snacks",catCare:"Cura",eMatch:"Cap producte coincident",eCart:"El carro és buit",cReco:"✓ Reconegut",cDoubt:"És això?",perUd:"/ u.",verW:"Verificat per IA · pes 1,94 kg",totalPay:"Total a pagar",listen:"Escolta el total",payBtn:"Paga sense contacte",semaReady:"Tot correcte, ja pots pagar \uD83D\uDC4D",semaPlace:"Posa el carro per començar",thanks:"Gràcies per la teva compra! \uD83C\uDF89",confirmed:"Pagament de {t}€ confirmat. La porta s'obrirà automàticament, que tinguis un bon dia.",ticket:"Tiquet enviat · {n} articles",newBuy:"Nova compra",speak:"El total a pagar és {a} euros amb {b} cèntims",speechLang:"ca-ES",camLive:"Càmera en directe",camIdle:"Encara no s'ha analitzat cap imatge",camLoading:"Carregant la imatge…",camAnalysing:"Analitzant el carro…",semaBusy:"Analitzant el carro…",semaFail:"Error de detecció — avisa un assistent",semaNone:"No s'ha reconegut cap producte — avisa un assistent"},
+  pt:{flag:"\uD83C\uDDF5\uD83C\uDDF9",langName:"Português",detActive:"Deteção ativa",forC:"para",bigText:"Texto grande",step1:"Coloque o carrinho",mtEmpty:"Vazio",mtFull:"Cheio",step2:"Reveja",step3:"Pague",cam:"Câmara superior",live:"em direto",mProd:"produtos",mAcc:"precisão",mInf:"inferência",wVer:"Peso verificado",antifraud:"Antifraude",noAnom:"Sem anomalias",fTitle:"Compra verificada — sem anomalias",fPara:"O sistema cruzou a imagem superior com o peso da balança e não detetou diferenças.",fLi1:"produtos reconhecidos e associados ao seu código",fLi2:"Peso esperado 1,94 kg = peso medido 1,94 kg",fLi3:"Sem objetos ocultos ou produtos por ler",cart:"O seu carrinho",uds:"un.",ref:"ref.",confIA:"Confiança IA",dCom:"Confortável",dCompact:"Compacto",dCols:"3 colunas",search:"Procurar entre +10.000 produtos…",catAll:"Todos",catDrinks:"Bebidas",catSnacks:"Snacks",catCare:"Higiene",eMatch:"Sem produtos correspondentes",eCart:"O carrinho está vazio",cReco:"✓ Reconhecido",cDoubt:"É isto?",perUd:"/ un.",verW:"Verificado por IA · peso 1,94 kg",totalPay:"Total a pagar",listen:"Ouvir o total",payBtn:"Pagar sem contacto",semaReady:"Tudo certo, já pode pagar \uD83D\uDC4D",semaPlace:"Coloque o carrinho para começar",thanks:"Obrigado pela sua compra! \uD83C\uDF89",confirmed:"Pagamento de {t}€ confirmado. A porta abrir-se-á automaticamente, tenha um bom dia.",ticket:"Recibo enviado · {n} artigos",newBuy:"Nova compra",speak:"O total a pagar é {a} euros e {b} cêntimos",speechLang:"pt-PT",camLive:"Câmara em direto",camIdle:"Ainda não foi analisada nenhuma imagem",camLoading:"A carregar a imagem…",camAnalysing:"A analisar o carrinho…",semaBusy:"A analisar o carrinho…",semaFail:"Falha na deteção — chame um assistente",semaNone:"Nenhum produto reconhecido — chame um assistente"},
+  fr:{flag:"\uD83C\uDDEB\uD83C\uDDF7",langName:"Français",detActive:"Détection active",forC:"pour",bigText:"Texte grand",step1:"Placez le chariot",mtEmpty:"Vide",mtFull:"Plein",step2:"Vérifiez",step3:"Payez",cam:"Caméra en plongée",live:"en direct",mProd:"produits",mAcc:"précision",mInf:"inférence",wVer:"Poids vérifié",antifraud:"Anti-fraude",noAnom:"Aucune anomalie",fTitle:"Achat vérifié — aucune anomalie",fPara:"Le système a comparé l'image en plongée avec le poids de la balance et n'a détecté aucune différence.",fLi1:"produits reconnus et associés à leur code",fLi2:"Poids attendu 1,94 kg = poids mesuré 1,94 kg",fLi3:"Aucun objet caché ni produit non scanné",cart:"Votre chariot",uds:"u.",ref:"réf.",confIA:"Confiance IA",dCom:"Confortable",dCompact:"Compact",dCols:"3 colonnes",search:"Rechercher parmi +10 000 produits…",catAll:"Tous",catDrinks:"Boissons",catSnacks:"Snacks",catCare:"Hygiène",eMatch:"Aucun produit correspondant",eCart:"Le chariot est vide",cReco:"✓ Reconnu",cDoubt:"C'est ça ?",perUd:"/ u.",verW:"Vérifié par IA · poids 1,94 kg",totalPay:"Total à payer",listen:"Écouter le total",payBtn:"Payer sans contact",semaReady:"Tout est correct, vous pouvez payer \uD83D\uDC4D",semaPlace:"Placez le chariot pour commencer",thanks:"Merci pour votre achat ! \uD83C\uDF89",confirmed:"Paiement de {t}€ confirmé. La porte s'ouvrira automatiquement, bonne journée.",ticket:"Ticket envoyé · {n} articles",newBuy:"Nouvel achat",speak:"Le total à payer est de {a} euros et {b} centimes",speechLang:"fr-FR",camLive:"Caméra en direct",camIdle:"Aucune image analysée pour l'instant",camLoading:"Chargement de l'image…",camAnalysing:"Analyse du chariot…",semaBusy:"Analyse du chariot…",semaFail:"Échec de la détection — appelez un assistant",semaNone:"Aucun produit reconnu — appelez un assistant"},
+  de:{flag:"\uD83C\uDDE9\uD83C\uDDEA",langName:"Deutsch",detActive:"Erkennung aktiv",forC:"für",bigText:"Großer Text",step1:"Wagen abstellen",mtEmpty:"Leer",mtFull:"Voll",step2:"Prüfen",step3:"Bezahlen",cam:"Deckenkamera",live:"live",mProd:"Produkte",mAcc:"Genauigkeit",mInf:"Inferenz",wVer:"Geprüftes Gewicht",antifraud:"Betrugsschutz",noAnom:"Keine Auffälligkeiten",fTitle:"Einkauf geprüft — keine Auffälligkeiten",fPara:"Das System hat das Deckenbild mit dem Waagengewicht abgeglichen und keine Abweichungen festgestellt.",fLi1:"Produkte erkannt und ihrem Code zugeordnet",fLi2:"Erwartetes Gewicht 1,94 kg = gemessenes Gewicht 1,94 kg",fLi3:"Keine versteckten Gegenstände oder nicht gescannten Produkte",cart:"Ihr Wagen",uds:"St.",ref:"Ref.",confIA:"KI-Konfidenz",dCom:"Komfortabel",dCompact:"Kompakt",dCols:"3 Spalten",search:"Unter +10.000 Produkten suchen…",catAll:"Alle",catDrinks:"Getränke",catSnacks:"Snacks",catCare:"Pflege",eMatch:"Keine passenden Produkte",eCart:"Der Wagen ist leer",cReco:"✓ Erkannt",cDoubt:"Ist es das?",perUd:"/ St.",verW:"KI-geprüft · Gewicht 1,94 kg",totalPay:"Zu zahlen",listen:"Summe vorlesen",payBtn:"Kontaktlos zahlen",semaReady:"Alles korrekt, Sie können zahlen \uD83D\uDC4D",semaPlace:"Wagen abstellen zum Starten",thanks:"Danke für Ihren Einkauf! \uD83C\uDF89",confirmed:"Zahlung von {t}€ bestätigt. Die Tür öffnet sich automatisch, schönen Tag.",ticket:"Beleg gesendet · {n} Artikel",newBuy:"Neuer Einkauf",speak:"Der zu zahlende Betrag beträgt {a} Euro und {b} Cent",speechLang:"de-DE",camLive:"Live-Kamera",camIdle:"Noch kein Bild analysiert",camLoading:"Bild wird geladen…",camAnalysing:"Wagen wird analysiert…",semaBusy:"Wagen wird analysiert…",semaFail:"Erkennung fehlgeschlagen — bitte Personal rufen",semaNone:"Keine Produkte erkannt — bitte Personal rufen"}
 };
 function detectLang(){const raw=((navigator.language||navigator.userLanguage||"es")+"").toLowerCase();const code=raw.split("-")[0];if(code==="gl")return"es";return ["es","en","eu","ca","pt","fr","de"].includes(code)?code:"en";}
 let T=I18N.es;
 
-/* `live` holds the adapted /upload response once real detection data arrives;
-   until then render() falls back to the bundle's mock DEMOS scenes. */
-const state={client:"iacarry",demo:"realtime",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:true,paid:false,lang:detectLang(),live:null};
+/* `live`   — the adapted /upload response; null until a detection succeeds.
+   `detect` — status of the round-trip: idle | busy | ok | error. There is no
+              mock fallback any more, so an empty cart is either "nothing has
+              been analysed" or "detection failed", and the two must not look
+              alike to a customer standing at the screen.
+   `camUrl` / `camAspect` — the analysed photo shown in the panel. */
+const state={client:"iacarry",demo:"camera",density:"cols3",cat:"Todos",query:"",big:false,showConf:false,fraudOpen:false,cartFull:false,paid:false,lang:detectLang(),live:null,detect:{status:"idle",phase:"",detail:""},camUrl:null,camAspect:null};
 
 const $=s=>document.querySelector(s);
 // language select
 $("#lang").innerHTML=Object.keys(I18N).map(k=>`<option value="${k}">${I18N[k].flag}  ${I18N[k].langName}</option>`).join("");
 $("#lang").value=state.lang;
-function fillDemo(){$("#demo").innerHTML=Object.keys(DEMOS).map(k=>`<option value="${k}">${k==="realtime"?"Realtime · "+T.live:DEMOS[k].label}</option>`).join("");$("#demo").value=state.demo;}
+function fillDemo(){$("#demo").innerHTML=Object.keys(DEMO_SOURCES).map(k=>{const s=DEMO_SOURCES[k];return `<option value="${k}">${s.live?T.camLive:s.label}</option>`}).join("");$("#demo").value=state.demo;}
 function applyI18n(){
   T=I18N[state.lang]||I18N.es;
   document.querySelectorAll("[data-i18n]").forEach(el=>{const v=T[el.dataset.i18n];if(v!=null)el.textContent=v;});
@@ -375,7 +546,8 @@ function applyTheme(){const t=THEMES[state.client];const r=document.body.style;
 function render(){
   applyTheme();
   applyI18n();
-  const scene=state.live||DEMOS[state.demo],q=state.cartFull?scene.qty:{};
+  const scene=state.live||EMPTY_SCENE,q=state.cartFull?scene.qty:{};
+  const det=state.detect.status;
   const inCart=CATALOG.filter(c=>(q[c.tag]||0)>0);
   const total=inCart.reduce((s,c)=>s+c.cost*q[c.tag],0).toFixed(2);
   const count=inCart.reduce((s,c)=>s+q[c.tag],0);
@@ -394,16 +566,49 @@ function render(){
   $("#s2b").style.color=paid?"#12864a":(full?"var(--ink)":"var(--ter)");
   $("#s3b").style.color=paid?"#12864a":"var(--ter)";
   $("#btnEmpty").classList.toggle("on",!full);$("#btnFull").classList.toggle("on",full);
-  // sema + pay button state
+  /* Traffic light. It now carries the detection state, not just the sensor:
+     an empty cart after a failed round-trip must never read the same as an
+     empty trolley, or the customer walks out unbilled believing they owe 0. */
   const sema=$("#sema"),dot=sema.querySelector(".dot");
-  if(full){sema.style.background="#E9F7EF";sema.style.border="1px solid #C6EBD5";sema.style.color="#12864a";dot.style.background="#23b364";sema.lastChild.textContent=T.semaReady}
-  else{sema.style.background="#F3F1F9";sema.style.border="1px solid #E7E3F1";sema.style.color="#8a84a6";dot.style.background="#c9c2e6";sema.lastChild.textContent=T.semaPlace}
-  $("#pay").style.background=full?"var(--pri)":"#c9c2e6";$("#pay").style.opacity=full?"1":".6";
+  const light=(bg,bd,fg,dc,glow,txt)=>{
+    sema.style.background=bg;sema.style.border="1px solid "+bd;sema.style.color=fg;
+    dot.style.background=dc;dot.style.boxShadow="0 0 0 4px "+glow;
+    sema.lastChild.textContent=txt;
+  };
+  /* Judged on what the analysis itself returned, not on the sensor-gated count:
+     status "ok" is only reachable after a frame was actually submitted, so zero
+     products means "we looked and saw nothing" — an anomaly — whatever the
+     sensor stand-in currently says. */
+  const detUnits=unitsOf(state.live&&state.live.qty);
+  if(det==="busy")       light("var(--ps)","var(--ps)","var(--pri)","var(--pri)","rgba(110,90,224,.18)",T.semaBusy);
+  else if(det==="error") light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.semaFail);
+  else if(det==="ok"&&detUnits===0) light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.semaNone);
+  else if(det==="ok"&&full&&count>0) light("#E9F7EF","#C6EBD5","#12864a","#23b364","rgba(35,179,100,.18)",T.semaReady);
+  else                   light("#F3F1F9","#E7E3F1","#8a84a6","#c9c2e6","rgba(201,194,230,.18)",T.semaPlace);
+  sema.title=state.detect.detail||"";
+  /* Blocked, not merely discouraged — disabled so a click cannot land at all. */
+  const canPay=payable();
+  $("#pay").disabled=!canPay;
+  $("#pay").style.background=canPay?"var(--pri)":"#c9c2e6";
+  $("#pay").style.opacity=canPay?"1":".6";
+  $("#pay").style.cursor=canPay?"pointer":"not-allowed";
+  /* One detection at a time: the server serialises inference anyway. */
+  $("#demo").disabled=(det==="busy");
   // success overlay
   $("#success").style.display=paid?"flex":"none";
   if(paid){$("#sConfirmed").textContent=T.confirmed.replace("{t}",total);$("#sTicket").textContent=T.ticket.replace("{n}",count)}
-  // boxes
-  const cam=$("#cam");cam.style.aspectRatio=scene.aspect||"1 / 1";cam.querySelectorAll(".box").forEach(e=>e.remove());
+  /* Camera panel: the analysed photo, the busy veil, and the boxes over it.
+     The panel deliberately shows the frame the browser posted, not the server's
+     path_server — that is a Windows filesystem path, is not served over HTTP,
+     and already has boxes burned into its pixels, which would double up here. */
+  const cam=$("#cam");
+  cam.classList.toggle("has-img",!!state.camUrl);
+  cam.classList.toggle("busy-on",det==="busy");
+  /* The image's own dimensions when we have them, shape_img otherwise. */
+  cam.style.aspectRatio=state.camAspect||scene.aspect||"1 / 1";
+  $("#busyMsg").textContent=(state.detect.phase==="loading")?T.camLoading:T.camAnalysing;
+  $("#camPh").textContent=T.camIdle;
+  cam.querySelectorAll(".box").forEach(e=>e.remove());
   (full?scene.boxes:[]).forEach(([l,tp,w,h,tag])=>{const c=colorOf(tag);const d=document.createElement("div");d.className="box";d.style.cssText=`left:${l};top:${tp};width:${w};height:${h};border-color:${c}`;d.innerHTML=`<b style="background:${c}">${shortOf(tag)}</b>`;cam.appendChild(d)});
   // seg + cats active
   $("#seg").querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.d===state.density));
@@ -427,27 +632,32 @@ function render(){
       </div></div>`}).join("");
 }
 // events
-$("#btnEmpty").onclick=()=>{state.cartFull=false;state.paid=false;state.cat="Todos";state.query="";$("#search").value="";render()};
+/* Empty clears the whole detection with the cart — leaving the last analysis on
+   screen under an "empty" sensor would show a photo and boxes for a cart that
+   is no longer there. */
+$("#btnEmpty").onclick=()=>{state.cartFull=false;state.paid=false;state.cat="Todos";state.query="";$("#search").value="";state.demo="camera";fillDemo();resetDetection()};
 $("#btnFull").onclick=()=>{state.cartFull=true;state.paid=false;render()};
-$("#pay").onclick=()=>{if(state.cartFull){state.paid=true;render()}};
-$("#reset").onclick=()=>{state.paid=false;state.cartFull=false;state.cat="Todos";state.query="";$("#search").value="";render()};
+$("#pay").onclick=()=>{if(payable()){state.paid=true;render()}};
+$("#reset").onclick=()=>{state.paid=false;state.cartFull=false;state.cat="Todos";state.query="";$("#search").value="";state.demo="camera";fillDemo();resetDetection()};
 $("#client").onchange=e=>{state.client=e.target.value;state.cat="Todos";state.query="";$("#search").value="";render()};
 $("#lang").onchange=e=>{state.lang=e.target.value;fillDemo();render()};
-/* Until T3 points this at a real /upload round-trip, picking a scene drops any
-   live detection and falls back to the mock data for that scene. */
-$("#demo").onchange=e=>{state.demo=e.target.value;state.live=null;render()};
+/* A real round-trip: fetch the frame, post it to /upload, render what comes
+   back. Same code path a live camera frame will take. */
+$("#demo").onchange=e=>{state.demo=e.target.value;runDemo(state.demo)};
 $("#seg").onclick=e=>{const b=e.target.closest("button");if(b){state.density=b.dataset.d;render()}};
 $("#search").oninput=e=>{state.query=e.target.value;render()};
 $("#conf").onclick=()=>{state.showConf=!state.showConf;render()};
 $("#fraudBtn").onclick=()=>{state.fraudOpen=!state.fraudOpen;$("#fraudPanel").style.display=state.fraudOpen?"":"none";$("#fraudChev").style.transform=state.fraudOpen?"rotate(180deg)":"none"};
 $("#big").onclick=()=>{state.big=!state.big;document.body.classList.toggle("big",state.big);$("#big").classList.toggle("on",state.big);render()};
 $("#listen").onclick=()=>{const sy=window.speechSynthesis;if(!sy)return;const[a,b]=$("#total").textContent.replace("€","").split(".");const u=new SpeechSynthesisUtterance(T.speak.replace("{a}",a).replace("{b}",b));u.lang=T.speechLang;u.rate=.95;sy.cancel();sy.speak(u)};
-/* Public surface: the detection backend hands responses in here. Exposed on
-   window so the /upload wiring and automated checks share one entry point. */
-window.iaCarry={applyDetections,adaptDetections,state,render,DETECTION_MIN_SCORE};
-// init
-$("#seg").querySelector('[data-d="cols3"]');
+/* Public surface. submitFrame() is THE camera seam — a live overhead feed only
+   has to hand it a blob. The rest is exposed so automated checks and the
+   remaining integration steps share one entry point. */
+window.iaCarry={submitFrame,runDemo,resetDetection,applyDetections,adaptDetections,payable,state,render,
+                DETECTION_MIN_SCORE,UPLOAD_ENDPOINT,DETECTION_TIMEOUT_MS,DEMO_SOURCES};
+// init — render() first so applyI18n() has set T before the demo labels are built.
 render();
+fillDemo();
 </script>
 </body>
 </html>
