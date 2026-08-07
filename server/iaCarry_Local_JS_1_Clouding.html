@@ -249,11 +249,40 @@
 <script>
 const THEMES={
   iacarry:{name:"iaCarry",pri:"#6E5AE0",ps:"#EFEBFC",pt:"#F1EFFA",bg:"#F5F4FA",mt:"#F5F2FD",seg:"#EEECF4",sa:"#efeaf9",sb:"#e7e0f4",logo:""},
-  eroski:{name:"Eroski",pri:"#E30613",ps:"#FCEAEA",pt:"#FBEEEE",bg:"#FBF4F4",mt:"#FCEFEF",seg:"#F4E7E7",sa:"#FAEBEB",sb:"#F4DBDB",logo:"assets/eroski-logo.png"},
-  ahorramas:{name:"AhorraMas",pri:"#57A639",ps:"#EAF5E4",pt:"#EEF6E9",bg:"#F5FAF2",mt:"#EDF6E8",seg:"#E8F1E3",sa:"#EDF6E7",sb:"#DFEFD5",logo:"assets/ahorramas-logo.png"},
-  condis:{name:"Condis",pri:"#17398A",ps:"#E7ECF6",pt:"#EBEFF7",bg:"#F3F6FC",mt:"#E9EEF8",seg:"#E4EAF4",sa:"#E9EEF8",sb:"#DBE4F1",logo:"assets/condis-logo.png"}
+  eroski:{name:"Eroski",pri:"#E30613",ps:"#FCEAEA",pt:"#FBEEEE",bg:"#FBF4F4",mt:"#FCEFEF",seg:"#F4E7E7",sa:"#FAEBEB",sb:"#F4DBDB",logo:"/static/assets/logos/eroski-logo.png"},
+  ahorramas:{name:"AhorraMas",pri:"#57A639",ps:"#EAF5E4",pt:"#EEF6E9",bg:"#F5FAF2",mt:"#EDF6E8",seg:"#E8F1E3",sa:"#EDF6E7",sb:"#DFEFD5",logo:"/static/assets/logos/ahorramas-logo.png"},
+  condis:{name:"Condis",pri:"#17398A",ps:"#E7ECF6",pt:"#EBEFF7",bg:"#F3F6FC",mt:"#E9EEF8",seg:"#E4EAF4",sa:"#E9EEF8",sb:"#DBE4F1",logo:"/static/assets/logos/condis-logo.png"}
 };
+/* ===========================================================================
+   ASSETS — everything the screen draws is served by this Flask app.
+
+   Flask already exposes server/static/ at /static (its default static folder,
+   rooted at the app module's directory), so this needs no Python change; the
+   directory simply did not exist before. Nothing here reaches the internet, so
+   the screen renders complete on a shop floor with egress locked down.
+
+   RAW is kept only as a per-image fallback for thumbnails, so a tag missing
+   from the local catalogue degrades to the old remote copy instead of leaving
+   a hole. A missing logo hides its slot instead of showing a broken image.
+   =========================================================================== */
+const ASSETS="/static/assets/";
+const PROD_IMG=ASSETS+"products/";      /* <tag>_300.png */
+const LOGO_IMG=ASSETS+"logos/";         /* <client>-logo.png */
 const RAW="https://raw.githubusercontent.com/Leci37/stocks-prediction-Machine-learning-RealTime-TensorFlow/master/readme_img/";
+
+/* Exactly one retry, then give up quietly — never a request loop behind a
+   checkout. The handler stays attached across the retry: clearing it up front
+   leaves a second failure unhandled, which shows a broken-image icon instead of
+   an empty slot. */
+function thumbFallback(img){
+  const remote=img.dataset.remote;
+  if(remote && img.getAttribute("src")!==remote){ img.src=remote; return; }
+  img.onerror=null;
+  img.style.visibility="hidden";
+}
+/* Logos that failed to load once are not asked for again, so a missing file
+   costs one request rather than one per render. */
+const LOGO_MISSING=new Set();
 const CATALOG=[
   {tag:"aguila_33cl",weight:0.34,name:"Águila 33cl",cost:0.98,color:"rgba(141,211,199,1)",cat:"Bebidas"},
   {tag:"cocacola_33cl",weight:0.34,name:"CocaCola 33cl",short:"CocaCola",cost:0.8,color:"rgba(251,128,114,1)",cat:"Bebidas"},
@@ -287,7 +316,7 @@ const DEMO_SOURCES={
    outbound internet blocked, then fall back to the GitHub folder the old UI
    used. Once T5 commits the files under server/static/, the fallback goes cold
    on its own and nothing here needs changing. */
-const DEMO_LOCAL="/static/assets/demo/";
+const DEMO_LOCAL=ASSETS+"demo/";
 const DMAP={
   comfort:{cols:"repeat(auto-fill,minmax(300px,1fr))",gap:"12px",pad:"13px 14px",cgap:"10px",thumb:48,img:40,td:"row",tg:"11px",ta:"center",na:"left",bd:"row",ba:"center"},
   compact:{cols:"repeat(auto-fill,minmax(212px,1fr))",gap:"10px",pad:"10px 12px",cgap:"8px",thumb:40,img:32,td:"row",tg:"10px",ta:"center",na:"left",bd:"row",ba:"center"},
@@ -359,12 +388,17 @@ function adaptDetections(json){
   return {qty,conf,boxes,aspect,skipped:[...new Set(skipped)]};
 }
 
-/* Entry point for live data: adapt, store, re-render. Kept free of side effects
-   beyond that — the cart-sensor gate (state.cartFull) stays a separate signal. */
+/* Entry point for live data: adapt, store, re-render. A detection that found
+   products is itself evidence the cart is there, so it opens the sensor gate —
+   without that, a result can land while the stand-in toggle says Empty and be
+   silently discarded. submitFrame() routes through here so the transport and
+   this public entry point cannot drift apart. */
 function applyDetections(json){
-  state.live=adaptDetections(json);
+  const adapted=adaptDetections(json);
+  state.live=adapted;
+  if(unitsOf(adapted.qty)>0) state.cartFull=true;
   render();
-  return state.live;
+  return adapted;
 }
 
 const confOf=(scene,tag)=> (scene.conf && scene.conf[tag]!=null) ? scene.conf[tag] : 95;
@@ -474,15 +508,9 @@ async function submitFrame(blob,filename,seq){
     try{ json=JSON.parse(text) }
     catch(e){ throw new Error("server said: "+(text.trim().slice(0,140)||"empty response")) }
 
-    const adapted=adaptDetections(json);
     if(stale()) return null;
-    state.live=adapted;
-    /* A detection that found products is itself evidence the cart is there.
-       Without this a result can land while the sensor stand-in says Empty and
-       be silently discarded — an invisible success. */
-    if(unitsOf(adapted.qty)>0) state.cartFull=true;
-    setDetect("ok","","");
-    return adapted;
+    state.detect={status:"ok",phase:"",detail:""};
+    return applyDetections(json);   /* stores, opens the sensor gate, renders */
   }catch(err){
     if(stale()) return null;
     failDetection(err&&err.name==="AbortError"
@@ -565,10 +593,21 @@ CATS.forEach(([key])=>{const b=document.createElement("button");b.dataset.cat=ke
 
 function applyTheme(){const t=THEMES[state.client];const r=document.body.style;
   r.setProperty("--pri",t.pri);r.setProperty("--ps",t.ps);r.setProperty("--pt",t.pt);r.setProperty("--bg",t.bg);r.setProperty("--mt",t.mt);r.setProperty("--seg",t.seg);r.setProperty("--sa",t.sa);r.setProperty("--sb",t.sb);
+  /* A client theme without a usable logo file shows no slot at all, rather than
+     a broken-image icon in the top bar next to the word "for". The palette
+     still swaps, so the theme is intact — only the mark is absent. */
   const isC=state.client!=="iacarry";
-  $("#clientMark").style.display=isC?"inline-flex":"none";
-  $("#logoSmall").style.display=isC?"":"none";
-  if(isC){$("#logoBig").src=t.logo;$("#logoSmall").src=t.logo}
+  const haveLogo=isC && !!t.logo && !LOGO_MISSING.has(t.logo);
+  $("#clientMark").style.display=haveLogo?"inline-flex":"none";
+  $("#logoSmall").style.display=haveLogo?"":"none";
+  if(haveLogo){
+    const big=$("#logoBig"),small=$("#logoSmall");
+    /* Recording the miss before re-rendering stops this repeating: the next
+       applyTheme() sees LOGO_MISSING and never re-assigns src. */
+    const miss=()=>{LOGO_MISSING.add(t.logo);render()};
+    big.onerror=miss;small.onerror=miss;
+    if(big.getAttribute("src")!==t.logo){big.src=t.logo;small.src=t.logo}
+  }
 }
 function render(){
   applyTheme();
@@ -660,7 +699,7 @@ function render(){
     const conf=state.showConf?`<span class="cbadge" style="color:${ok?'#12864a':'#9a6a00'};background:${ok?'#E9F7EF':'#FCF3E0'}">${(ok?T.cReco:T.cDoubt)+' · '+cf+'%'}</span>`:"";
     return `<div class="prod" style="padding:${D.pad};gap:${D.cgap}"><span class="strip" style="background:${c.color}"></span>
       <div class="pmeta" style="flex-direction:${D.td};gap:${D.tg};align-items:${D.ta}">
-        <div class="thumb" style="width:${D.thumb}px;height:${D.thumb}px"><img src="${RAW+c.tag}_300.png" alt="" style="height:${D.img}px"></div>
+        <div class="thumb" style="width:${D.thumb}px;height:${D.thumb}px"><img src="${PROD_IMG+c.tag}_300.png" data-remote="${RAW+c.tag}_300.png" onerror="thumbFallback(this)" alt="" style="height:${D.img}px"></div>
         <div style="flex:1;min-width:0;width:100%;align-self:stretch;text-align:${D.na}"><div class="pname" style="font-size:${state.big?17:(state.density==='cols3'?13:14)}px">${c.name}</div><div class="pcost tabnum">${c.cost.toFixed(2)}€ ${T.perUd}</div>${conf}</div>
       </div>
       <div class="prow" style="flex-direction:${D.bd};align-items:${D.ba};gap:6px">
