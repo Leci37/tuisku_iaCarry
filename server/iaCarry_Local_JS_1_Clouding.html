@@ -387,7 +387,7 @@ function adaptDetections(json){
     const cf=Math.round(+p.probability*100);
     if(cf>(conf[tag]||0)) conf[tag]=cf;
   });
-  if(skipped.length) console.warn("[iaCarry] detections skipped, tag not in CATALOG:",[...new Set(skipped)]);
+  if(skipped.length) console.warn(LOG+" detections skipped, tag not in CATALOG:",[...new Set(skipped)]);
   /* shape_img is a numpy shape: [height, width, channels]. Driving the panel's
      aspect ratio from it keeps percentage-positioned boxes aligned without
      distorting the photo the way the old fixed 640x640 canvas did. */
@@ -401,10 +401,26 @@ function adaptDetections(json){
    without that, a result can land while the stand-in toggle says Empty and be
    silently discarded. submitFrame() routes through here so the transport and
    this public entry point cannot drift apart. */
-function applyDetections(json){
+function applyDetections(json,rid){
+  const t0=performance.now();
   const adapted=adaptDetections(json);
   state.live=adapted;
-  if(unitsOf(adapted.qty)>0) setCartPresent(true,"detection");
+  const sent=(json&&Array.isArray(json.predictions))?json.predictions.length:0;
+  const units=unitsOf(adapted.qty), lines=Object.keys(adapted.qty).length;
+  /* The one line that explains any disagreement between what the model found
+     and what the customer sees: how many the server sent, how many survived the
+     UI threshold, and what was thrown away and why. */
+  log(rid||(json&&json.request_id),"detections adapted",{
+    predictionsFromServer:sent, uiThreshold:DETECTION_MIN_SCORE,
+    unitsShown:units, productLines:lines, boxesDrawn:adapted.boxes.length,
+    droppedBelowThresholdOrUnknown:sent-units,
+    skippedUnknownTags:adapted.skipped,
+    degenerateBoxesNotDrawn:units-adapted.boxes.length,
+    panelAspect:adapted.aspect,
+    totalEur:+cartTotal(adapted.qty).toFixed(2),
+    expectedWeightKg:+expectedWeightKg(adapted.qty).toFixed(3),
+    adaptMs:+(performance.now()-t0).toFixed(1)});
+  if(units>0) setCartPresent(true,"detection");
   render();
   return adapted;
 }
@@ -454,12 +470,28 @@ const DETECTION_TIMEOUT_MS=60000;
    a stale response would overwrite a newer cart. */
 let detectSeq=0;
 
+/* ---- Logging ---------------------------------------------------------------
+   One id per frame, sent to /upload as X-Request-Id and echoed back by Flask in
+   the response body and header. The same id appears in the Flask log and in the
+   detector log, so a slow or wrong purchase can be followed across all three
+   layers by grepping one string instead of correlating timestamps by eye. */
+const LOG="[iaCarry]";
+const newRequestId=()=>"r"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function log(rid,msg,data){
+  const head=LOG+"["+(rid||"-")+"] "+msg;
+  if(data===undefined) console.info(head); else console.info(head,data);
+}
+function logWarn(rid,msg,data){
+  const head=LOG+"["+(rid||"-")+"] "+msg;
+  if(data===undefined) console.warn(head); else console.warn(head,data);
+}
+
 function setDetect(status,phase,detail){
   state.detect={status:status,phase:phase||"",detail:detail||""};
   render();
 }
-function failDetection(detail){
-  console.error("[iaCarry] detection failed:",detail);
+function failDetection(detail,rid){
+  console.error(LOG+"["+(rid||"-")+"] DETECTION FAILED:",detail);
   state.live=null;                 /* never leave a stale cart under a red light */
   setDetect("error","",detail);
 }
@@ -491,9 +523,13 @@ function clearCamImage(){
 
 /* THE camera seam. Anything holding a frame — a demo image, a file picker, a
    live overhead feed — hands it here and gets the whole flow for free. */
-async function submitFrame(blob,filename,seq){
+async function submitFrame(blob,filename,seq,rid){
   if(seq===undefined) seq=++detectSeq;
+  rid=rid||newRequestId();
   const stale=()=>seq!==detectSeq;
+  log(rid,"posting frame to the detector",{
+    filename:filename, bytes:blob.size, type:blob.type,
+    endpoint:UPLOAD_ENDPOINT, timeoutMs:DETECTION_TIMEOUT_MS});
   setCamImage(blob);
   setDetect("busy","analysing","");
 
@@ -504,41 +540,49 @@ async function submitFrame(blob,filename,seq){
 
   const ac=new AbortController();
   const timer=setTimeout(()=>ac.abort(),DETECTION_TIMEOUT_MS);
+  const t0=performance.now();
   try{
-    const res=await fetch(UPLOAD_ENDPOINT,{method:"POST",body:fd,signal:ac.signal});
+    const res=await fetch(UPLOAD_ENDPOINT,{method:"POST",body:fd,signal:ac.signal,
+                                           headers:{"X-Request-Id":rid}});
     /* Read as text first: the route answers plain strings on its error paths
        ("No file part in the form.", "File not allowed. …"), so response.json()
        would throw an opaque parse error instead of the server's own reason. */
     const text=await res.text();
-    if(stale()) return null;
+    const ms=+(performance.now()-t0).toFixed(0);
+    if(stale()){ log(rid,"response discarded, a newer frame is already in flight",{roundTripMs:ms}); return null }
+    log(rid,"detector responded",{status:res.status,bytes:text.length,roundTripMs:ms,
+                                  serverRequestId:res.headers.get("X-Request-Id")});
     if(!res.ok) throw new Error("HTTP "+res.status+" "+text.slice(0,120));
     let json;
     try{ json=JSON.parse(text) }
     catch(e){ throw new Error("server said: "+(text.trim().slice(0,140)||"empty response")) }
 
-    if(stale()) return null;
+    if(stale()){ log(rid,"response discarded after parse, newer frame in flight"); return null }
     state.detect={status:"ok",phase:"",detail:""};
-    return applyDetections(json);   /* stores, opens the sensor gate, renders */
+    return applyDetections(json,rid);   /* stores, opens the sensor gate, renders */
   }catch(err){
     if(stale()) return null;
     failDetection(err&&err.name==="AbortError"
       ? "timed out after "+(DETECTION_TIMEOUT_MS/1000)+"s"
-      : String(err&&err.message||err));
+      : String(err&&err.message||err), rid);
     return null;
   }finally{
     clearTimeout(timer);
   }
 }
 
-async function fetchDemoBlob(src){
+async function fetchDemoBlob(src,rid){
   const urls=[DEMO_LOCAL+src.local, RAW+encodeURIComponent(src.file)];
   let last="";
   for(const url of urls){
     try{
       const r=await fetch(url);
-      if(r.ok) return await r.blob();
+      if(r.ok) return {blob:await r.blob(),url:url};
       last="HTTP "+r.status+" for "+url;
     }catch(e){ last=String(e&&e.message||e)+" for "+url }
+    /* Which source served the frame matters: a silent fall back to GitHub is
+       exactly what breaks later on a shop floor with egress locked down. */
+    logWarn(rid,"frame source unavailable, trying the next one",last);
   }
   throw new Error("demo image unavailable ("+last+")");
 }
@@ -546,15 +590,20 @@ async function fetchDemoBlob(src){
 /* Picking a demo posts that image to /upload exactly like a camera frame. */
 async function runDemo(key){
   const src=DEMO_SOURCES[key];
-  if(!src||src.live){ resetDetection(); return }
-  const seq=++detectSeq;
+  if(!src||src.live){
+    log("-","live camera selected — no feed endpoint exists, panel cleared");
+    resetDetection(); return;
+  }
+  const seq=++detectSeq, rid=newRequestId();
   state.live=null; state.pay={status:"idle",simulated:false,ref:"",detail:""};
   setDetect("busy","loading","");
-  let blob;
-  try{ blob=await fetchDemoBlob(src) }
-  catch(err){ if(seq===detectSeq) failDetection(String(err&&err.message||err)); return }
-  if(seq!==detectSeq) return;
-  await submitFrame(blob,src.local,seq);
+  log(rid,"demo frame requested",{demo:key,localFirst:DEMO_LOCAL+src.local});
+  let got;
+  try{ got=await fetchDemoBlob(src,rid) }
+  catch(err){ if(seq===detectSeq) failDetection(String(err&&err.message||err),rid); return }
+  if(seq!==detectSeq){ log(rid,"frame discarded before submit, newer request in flight"); return }
+  log(rid,"frame loaded",{from:got.url,bytes:got.blob.size});
+  await submitFrame(got.blob,src.local,seq,rid);
 }
 
 /* Payment is blocked, not merely discouraged, unless a detection actually
@@ -616,17 +665,25 @@ async function requestPayment(order){
    on click. */
 async function pay(){
   if(!payable()) return;
+  const rid=newRequestId();
+  const q=state.live?state.live.qty:{};
+  const order={total:Number(cartTotal(q).toFixed(2)),currency:"EUR",
+               units:unitsOf(q),lines:Object.keys(q).length,items:q};
+  /* States in the log which path this went down, so a demo can never be
+     mistaken for a real charge when reading back a session. */
+  log(rid,"payment requested",{
+    mode:PAYMENT_BACKEND?"REAL":"SIMULATED (no /payment route exists)",
+    endpoint:PAYMENT_ENDPOINT, order:order});
   state.pay={status:"paying",simulated:false,ref:"",detail:""};
   render();
-  const q=state.live?state.live.qty:{};
+  const t0=performance.now();
   try{
-    const r=await requestPayment({
-      total:Number(cartTotal(q).toFixed(2)),currency:"EUR",
-      units:unitsOf(q),lines:Object.keys(q).length,items:q
-    });
+    const r=await requestPayment(order);
     state.pay={status:"done",simulated:!!r.simulated,ref:r.ref||"",detail:""};
+    log(rid,r.simulated?"payment SIMULATED — nothing was charged":"payment approved by the server",
+        {ref:r.ref,ms:+(performance.now()-t0).toFixed(0)});
   }catch(err){
-    console.error("[iaCarry] payment failed:",err);
+    console.error(LOG+"["+rid+"] PAYMENT FAILED:",err);
     state.pay={status:"error",simulated:false,ref:"",
                detail:(err&&err.name==="AbortError")
                  ? "timed out after "+(PAYMENT_TIMEOUT_MS/1000)+"s"
@@ -650,7 +707,8 @@ function setCartPresent(present,source){
   const was=state.cartFull;
   state.cartFull=!!present;
   if(was!==state.cartFull)
-    console.info("[iaCarry] cart presence:",state.cartFull,"via",source||"unspecified");
+    log("-","cart presence changed",{present:state.cartFull,via:source||"unspecified",
+                                     sensorBackend:CART_SENSOR_BACKEND?"real":"none (stand-in)"});
   if(!state.cartFull){
     /* No cart means nothing to describe. Leaving the last photo, boxes and
        totals up would be describing a trolley that has gone. */
@@ -857,6 +915,17 @@ window.iaCarry={submitFrame,runDemo,resetDetection,applyDetections,adaptDetectio
 // init — render() first so applyI18n() has set T before the demo labels are built.
 render();
 fillDemo();
+/* One line on boot saying what is actually connected. The seam status goes in
+   the message STRING, not only in the detail object: consoles abbreviate wide
+   objects after a few properties, and "the payment is simulated" is precisely
+   the fact that must not be the one truncated away. */
+console.info(LOG+" ready — detection:"+UPLOAD_ENDPOINT
+  +" | payment:"+(PAYMENT_BACKEND?"REAL "+PAYMENT_ENDPOINT:"SIMULATED (no route)")
+  +" | cart sensor:"+(CART_SENSOR_BACKEND?"REAL":"manual stand-in toggle")
+  +" | camera feed:NONE (demo selector only)",
+  {detectionMinScore:DETECTION_MIN_SCORE, detectionTimeoutMs:DETECTION_TIMEOUT_MS,
+   paymentTimeoutMs:PAYMENT_TIMEOUT_MS, catalogueProducts:CATALOG.length,
+   languages:Object.keys(I18N).length, assets:ASSETS, language:state.lang});
 </script>
 </body>
 </html>

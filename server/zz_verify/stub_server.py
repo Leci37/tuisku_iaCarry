@@ -44,26 +44,37 @@ def home_index():
     return render_template("iaCarry_Local_JS_1_Clouding.html")
 
 
+def _echo_id(resp, rid):
+    """Mirror the real route's correlation headers so the UI can be checked."""
+    resp = Response(resp) if not isinstance(resp, Response) else resp
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["X-Request-Id"] = rid
+    resp.headers["Access-Control-Expose-Headers"] = "X-Request-Id"
+    return resp
+
+
 @app.route("/upload", methods=["GET", "POST"])
 def upload_file():
+    rid = request.headers.get("X-Request-Id") or "stub-no-id"
     if DELAY:
         time.sleep(DELAY)
     f = request.files.get("file")
-    print("[stub] /upload MODE=%s file=%r bytes=%s"
-          % (MODE, getattr(f, "filename", None), len(f.read()) if f else 0), flush=True)
+    print("[stub] /upload MODE=%s rid=%s file=%r bytes=%s"
+          % (MODE, rid, getattr(f, "filename", None), len(f.read()) if f else 0), flush=True)
     if MODE == "hang":
         time.sleep(300)
     if MODE == "error500":
-        return Response("boom", status=500)
+        return _echo_id(Response("boom", status=500), rid)
     if MODE == "texterr":
         # The real route answers plain strings on its error paths.
-        return "File not allowed. Only allowned: png, jpg, jpge"
+        return _echo_id("File not allowed. Only allowned: png, jpg, jpge", rid)
     if MODE == "empty":
-        return json.dumps({**FIXTURE, "predictions": []})
+        return _echo_id(json.dumps({**FIXTURE, "predictions": [], "request_id": rid}), rid)
     body = dict(FIXTURE)
+    body["request_id"] = rid
     if MODE == "square":
         body["shape_img"] = [800, 800, 3]
-    return json.dumps(body)
+    return _echo_id(json.dumps(body), rid)
 
 
 @app.route("/payment", methods=["POST"])
