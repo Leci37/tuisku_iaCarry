@@ -4,6 +4,34 @@ This project is an **end-to-end pipeline** for training and deploying object det
 
 ---
 
+## 🗺️ Where to start
+
+The project has grown four distinct phases, each with its own flow, its own
+files and its own failure modes. This file is the overview; the detail is split
+so you can read only the phase you are working in.
+
+| Phase | File | Covers |
+|---|---|---|
+| 1 · Intake | [`README_1_INTAKE.md`](README_1_INTAKE.md) | Raw video → labelled dataset. Frame extraction, background removal, synthetic composition, the click-once tagging GUI, mask tracking, box review, class balancing |
+| 2 · Training | [`README_2_TRAINING.md`](README_2_TRAINING.md) | Dataset → model file. Transfer learning, checkpoints, the `detect` signature, evaluation, TFLite export |
+| 3 · Server | [`README_3_SERVER.md`](README_3_SERVER.md) | The Flask backend. Routes, the model singleton, the inference lock, the response contract, the three thresholds |
+| 4 · Front end | [`README_4_FRONTEND.md`](README_4_FRONTEND.md) | The checkout screen. State machine, themes and languages, offline rendering, the simulated seams, the verification suite |
+
+Two things to know before reading any of them:
+
+- **There are two parallel pipelines in this repository**, built years apart and
+  sharing no files: track **A** (`GT_*`, synthetic + Azure + TF2) and track **B**
+  (`y_*`, real video + SAM + YOLOv8). Phases 1 and 2 describe both. Track A is
+  what the server runs today; track B has the better labels and its output is not
+  yet wired to anything.
+- Each of the four files ends with a **"what is missing"** section. Those are the
+  open gaps, not a description of what works.
+
+`server/FLOW.md` complements phases 3 and 4 with the customer-level narrative and
+the exact log line each step emits.
+
+---
+
 ## 📌 Core Features
 
 - 🎮 Extract product frames from videos
