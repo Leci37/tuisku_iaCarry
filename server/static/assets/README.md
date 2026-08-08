@@ -26,16 +26,18 @@ The demo frames are the 640×640 evaluation images. They are posted to `/upload`
 unmodified — do not resize or re-encode them, or detection results will drift
 away from the recorded evaluation.
 
-## Missing: the three client logos
+## The three client logos
 
-`logos/` is **empty**. The Eroski, AhorraMas and Condis logos were supplied as
-images rendered in conversation rather than as files, so there were no bytes to
-commit. The design specifies them as 600×180, white background, 10:3.
+`logos/` holds the Eroski, AhorraMas and Condis marks, each 600×180 on a white
+background (the 10:3 the design specifies). The filenames are what the page
+requests — `LOGO_IMG` in `iaCarry_Local_JS_1_Clouding.html` builds
+`/static/assets/logos/<client>-logo.png` from the theme key, so a logo added for
+a new client must be named for that key or it will not be found.
 
-Nothing is broken by their absence. A logo that fails to load is recorded once
-and its slot is hidden, so selecting a client theme swaps the whole palette and
-simply shows no mark. Dropping the three PNGs in here, named as above, is all
-that is needed — no code change.
+The failure path still exists and is worth knowing: a logo that fails to load is
+recorded once and its slot is hidden, so a missing file costs the mark but not
+the theme — the palette still swaps and nothing else breaks. That is why a wrong
+path shows up as "no logo" rather than as an error.
 
 ## Trademark
 

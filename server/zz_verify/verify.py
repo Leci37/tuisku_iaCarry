@@ -313,8 +313,22 @@ def main():
             for theme in ["eroski", "ahorramas", "condis"]:
                 pg.select_option("#client", theme)
                 pg.wait_for_timeout(400)
-                check("F", "%s: missing logo hides its slot, no broken icon" % theme,
-                      not pg.is_visible("#clientMark") and not pg.is_visible("#logoSmall"))
+                logos = pg.evaluate("""() => ['#logoBig','#logoSmall'].map(s=>{
+                    const i=document.querySelector(s);
+                    return {sel:s, src:i.getAttribute('src'),
+                            ok:i.complete && i.naturalWidth>0};
+                })""")
+                check("F", "%s: logo slot shown" % theme,
+                      pg.is_visible("#clientMark") and pg.is_visible("#logoSmall"))
+                check("F", "%s: logo bytes actually decoded" % theme,
+                      all(l["ok"] for l in logos), [l["src"] for l in logos if not l["ok"]])
+                check("F", "%s: logo served locally" % theme,
+                      all((l["src"] or "").startswith("/static/") for l in logos),
+                      [l["src"] for l in logos])
+            pg.select_option("#client", "iacarry")
+            pg.wait_for_timeout(400)
+            check("F", "own brand has no client mark",
+                  not pg.is_visible("#clientMark") and not pg.is_visible("#logoSmall"))
             check("F", "no outbound request even attempted", not outbound, sorted(set(outbound))[:3])
             b.close()
 

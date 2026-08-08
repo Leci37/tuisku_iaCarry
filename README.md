@@ -418,8 +418,8 @@ Founder of tuisku.eu
 The self-checkout screen serves every image it draws from `server/static/assets/`
 (product thumbnails, demo frames, client logos), so it renders completely with
 outbound internet blocked — a requirement on shop floors with restricted egress.
-See `server/static/assets/README.md` for contents and for the three client logos
-that still need to be supplied as files.
+See `server/static/assets/README.md` for contents, including the three client
+logos under `logos/`.
 
 **Trademarks:** the Eroski, AhorraMas and Condis marks are registered trademarks
 of their respective owners, included for demo use with each retailer's permission

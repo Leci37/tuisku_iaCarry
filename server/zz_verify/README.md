@@ -49,8 +49,9 @@ Specifically still unverified, and only testable on the deployment box:
   serialises concurrent requests.
 - The real `path_server` and the matplotlib render written beside it.
 - Whether `shape_img` from the live model matches the frames used here.
-- The three client logos, which are not in the repository — section F confirms
-  their absence degrades quietly, not that they render when present.
+- That the client logos are the *correct* marks. Section F confirms the three
+  files decode and are served locally, not that the artwork is right — no test
+  can tell a real Eroski logo from a convincing wrong one.
 - `/payment` and the door release, which do not exist; section G verifies the
   seam against a stub route, not a payment terminal.
 
