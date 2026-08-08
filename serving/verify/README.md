@@ -58,7 +58,7 @@ Specifically still unverified, and only testable on the deployment box:
 ## Files
 
 - `verify.py` — the suite. Start here.
-- `stub_server.py` — stand-in for `RUN_server_py_upload.py`. Serves the real
+- `stub_server.py` — stand-in for `serving/app.py`. Serves the real
   template, replays `sample_upload_response.json`, and can be told to be
   slow, to fail, to return nothing, or to hang so it can be killed mid-request.
 - `make_ground_truth.py` — generates frames whose contents are the fixture's

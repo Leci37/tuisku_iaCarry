@@ -1,4 +1,4 @@
-"""Stub of RUN_server_py_upload.py, for verifying the checkout UI.
+"""Stub of serving/app.py, for verifying the checkout UI.
 
 Serves the real template and replays a recorded /upload response, so the whole
 front end can be exercised without TensorFlow, the saved model directory or the

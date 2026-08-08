@@ -1,9 +1,8 @@
 # Static assets for the checkout screen
 
 Served by Flask at `/static/assets/…`. Flask's default static folder is
-`server/static`, rooted at the directory holding `RUN_server_py_upload.py`, so
-these are reachable with no Python configuration — the directory simply did not
-exist before.
+`static/`, rooted at the directory holding `app.py` — that is, `serving/static`
+— so these are reachable with no Python configuration.
 
 The point of this folder is that **the checkout screen renders completely with
 outbound internet blocked**. A shop floor with restricted egress must not show a

@@ -52,7 +52,7 @@ The customer never edits a quantity: detection is the only source of truth.
 
 | | |
 |---|---|
-| Route | `GET /` → `home_index()` — `RUN_server_py_upload.py` |
+| Route | `GET /` → `home_index()` — `serving/app.py` |
 | Template | `render_template("iacarry_checkout.html")`, resolved by a `ChoiceLoader`: `server/` first, then the legacy `..\iacarry-evaluation` |
 | Browser | one `<script>` builds `CATALOG`, `I18N`, `DEMO_SOURCES`, `state`, then `render()` + `fillDemo()` |
 | State | `cartFull:false`, `detect.status:"idle"`, `pay.status:"idle"`, `live:null` |

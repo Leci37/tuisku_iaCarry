@@ -73,7 +73,7 @@ class Detector_model:
     def do_prediction_from_list_paths(self, path_img, rid = ""):
         """Run the detector over one frame.
 
-        `rid` is the request id minted by RUN_server_py_upload.upload_file(). It
+        `rid` is the request id minted by app.upload_file(). It
         is stamped on every line here so a single purchase can be followed from
         the browser console, through the Flask route, into the model.
         """

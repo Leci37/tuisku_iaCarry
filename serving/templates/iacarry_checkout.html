@@ -348,7 +348,7 @@ const CATS=[["Todos","catAll"],["Bebidas","catDrinks"],["Snacks","catSnacks"],["
    =========================================================================== */
 
 /* Single home for the detection cut-off. The server stays permissive
-   (MIN_SCORE_TO_CLIENT = 0.1 in RUN_server_py_upload.py) and sends everything
+   (MIN_SCORE_TO_CLIENT = 0.1 in app.py) and sends everything
    above it, so this can be retuned without redeploying Python. */
 const DETECTION_MIN_SCORE = 0.45;
 
@@ -534,7 +534,7 @@ async function submitFrame(blob,filename,seq,rid){
   setDetect("busy","analysing","");
 
   const fd=new FormData();
-  /* The filename matters: allowed_file() in RUN_server_py_upload.py checks the
+  /* The filename matters: allowed_file() in app.py checks the
      extension, and a blob posted without one is rejected as "File not allowed". */
   fd.append("file",blob,filename);
 
@@ -623,7 +623,7 @@ const cartTotal=q=>CATALOG.reduce((s,c)=>s+c.cost*(q&&q[c.tag]||0),0);
    =========================================================================== */
 
 /* ---- Seam 1 of 2: payment and door ---------------------------------------
-   RUN_server_py_upload.py serves GET / and GET|POST /upload and nothing else —
+   app.py serves GET / and GET|POST /upload and nothing else —
    there is no payment route, and no door release anywhere in this codebase.
 
    So requestPayment() returns a clearly-marked simulated approval, and the

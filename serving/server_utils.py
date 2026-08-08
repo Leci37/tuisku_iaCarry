@@ -50,7 +50,7 @@ def register_MULTI_in_zTelegram_Registers(  df_r, PATH_REGISTER_RESULT_REAL_TIME
 def change_format_dict_json_to_client(detections, img_np_raw, path_img_box, MIN_SCORE_TO_CLIENT = 0.5, rid = ""):
     """Shape the detector output into the JSON contract the checkout page reads.
 
-    `rid` is the request id minted in RUN_server_py_upload.upload_file(); it ties
+    `rid` is the request id minted in app.upload_file(); it ties
     these lines to the route's and the detector's for the same frame.
     """
     tag = "[SHAPE][%s]" % (rid or "-")

@@ -59,9 +59,9 @@ back in ingestion A3/A4 → assemble `Train_image_filenames`, `Gt_boxes`, `Gt_la
 the crude class-balancing lever on this track — track B does the same job
 properly with augmentation in ingestion step 06.
 
-`training/tensorflow/04_train_eroski_multi.py` is the multi-object variant. The brackets in
-the filename make it un-importable as a module and awkward to type in a shell;
-it can only be run directly.
+`training/tensorflow/04_train_eroski_multi.py` is the multi-object variant. It
+was `Transfer_L_Train_Eroski_[n,4].py`: the brackets made it un-importable and
+awkward to type in a shell, which is one of the reasons the tree was renamed.
 
 `training/tensorflow/train_colab.py` is the same training ported to Colab, for
 when the local GPU was not enough.
@@ -132,7 +132,7 @@ Inspection tools for this:
 | `training/tensorflow/07_inspect_signature_detect.py` | Same for the `detect` signature |
 | `common/detection_signature.py` | `img_to_tensor()`, `img_proccess()`, box drawing for signature testing |
 
-> ⚠️ Both `model_Detect_sig_*.py` still run against the **cat / dog / zombie**
+> ⚠️ Both `06_inspect_signature_*.py` still run against the **cat / dog / zombie**
 > tutorial images (`list_paths` is a hardcoded list of `cat.2000.jpg` …). They
 > were never repointed at iaCarry data. They are signature probes, not tests.
 

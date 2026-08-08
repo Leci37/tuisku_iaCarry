@@ -439,7 +439,7 @@ tf.saved_model.save(
       'detect': detect.get_concrete_function()
     })
 print("Saved with 'detect' signature in: ", PATH_MODELS_CHECKPOINT_STEP_STPE+'/save_model_detect')
-print("EVALUAR en model_Detect_sig_detect.py con la ruta: ", PATH_MODELS_CHECKPOINT_STEP_STPE+'/save_model_detect')
+print("EVALUAR en 07_inspect_signature_detect.py con la ruta: ", PATH_MODELS_CHECKPOINT_STEP_STPE+'/save_model_detect')
 # Note that the first frame will trigger tracing of the tf.function, which will
 # take some time, after which inference should be fast.
 
