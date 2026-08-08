@@ -12,7 +12,7 @@ so you can read only the phase you are working in.
 
 | Phase | File | Covers |
 |---|---|---|
-| 1 · Intake | [`README_1_INTAKE.md`](README_1_INTAKE.md) | Raw video → labelled dataset. Frame extraction, background removal, synthetic composition, the click-once tagging GUI, mask tracking, box review, class balancing |
+| 1 · Ingestion | [`README_1_INGESTION.md`](README_1_INGESTION.md) | Raw video → labelled dataset. Frame extraction, background removal, synthetic composition, the click-once tagging GUI, mask tracking, box review, class balancing |
 | 2 · Training | [`README_2_TRAINING.md`](README_2_TRAINING.md) | Dataset → model file. Transfer learning, checkpoints, the `detect` signature, evaluation, TFLite export |
 | 3 · Server | [`README_3_SERVER.md`](README_3_SERVER.md) | The Flask backend. Routes, the model singleton, the inference lock, the response contract, the three thresholds |
 | 4 · Front end | [`README_4_FRONTEND.md`](README_4_FRONTEND.md) | The checkout screen. State machine, themes and languages, offline rendering, the simulated seams, the verification suite |

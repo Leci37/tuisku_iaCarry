@@ -2,7 +2,7 @@
 
 From a labelled dataset to a model file the server can load.
 
-As in intake, there are **two tracks**. Track A produced the model in production;
+As in ingestion, there are **two tracks**. Track A produced the model in production;
 track B is newer and its output is not wired to anything.
 
 | | Track A | Track B |
@@ -51,7 +51,7 @@ model_dir       ./ssd_mobilenet_v2_fpnlite_640x640/checkpoint
 ```
 
 Sequence: read the label map → build `category_index` → load the box CSV written
-back in intake A3/A4 → assemble `Train_image_filenames`, `Gt_boxes`, `Gt_labels`
+back in ingestion A3/A4 → assemble `Train_image_filenames`, `Gt_boxes`, `Gt_labels`
 → `model_builder.build(is_training=True)` → restore the base checkpoint via
 `tf.compat.v2.train.Checkpoint` → fine-tune.
 
@@ -224,7 +224,7 @@ Two naming traps:
    `#TODO cambiar esto para RUN` next to them. Nothing records what any past run
    used.
 7. **No experiment tracking.** No TensorBoard export, no run log, no metrics file.
-   Combined with gap 1 in `README_1_INTAKE.md` (no dataset versioning), no result
+   Combined with gap 1 in `README_1_INGESTION.md` (no dataset versioning), no result
    in this project is reproducible.
 8. **Toy leftovers still committed and still runnable**: `model_Detect_sig_default.py`,
    `model_Detect_sig_detect.py` and `TFlite_detect.py` all reference cat/dog/zombie

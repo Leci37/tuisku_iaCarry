@@ -1,9 +1,9 @@
-# 1 — Data intake
+# 1 — Data ingestion
 
 From a raw video of a product to a dataset a trainer can read. This is the
 longest phase in the project and the one with the most hand work in it.
 
-There are **two intake tracks in this repository**, built years apart, and they
+There are **two ingestion tracks in this repository**, built years apart, and they
 share no files:
 
 | | Track A — `GT_*` | Track B — `y_*` / `your_*` |
@@ -260,7 +260,7 @@ to training track B.
 
 ---
 
-## The full intake chain at a glance
+## The full ingestion chain at a glance
 
 ```
 TRACK A   video ─► frames ─► rembg cut-out ─► resize/rotate ─► COMPOSE (boxes born)
@@ -275,7 +275,7 @@ TRACK B   RAW ─► split/rename ─► CLICK ONCE per product (SAM)
 
 ---
 
-## What is missing from intake
+## What is missing from ingestion
 
 1. **No dataset versioning.** Nothing records which frames went into which model.
    There is no manifest, no hash, no run id. Six months on there is no way to
