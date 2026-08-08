@@ -4,7 +4,7 @@ The Flask application that holds the model in memory, takes a frame over HTTP an
 answers with predictions. Everything in `server/` except the page itself, which
 is `README_4_FRONTEND.md`.
 
-`server/FLOW.md` documents the same ground from the customer's point of view,
+`serving/FLOW.md` documents the same ground from the customer's point of view,
 with the exact log line each step emits. This file is the backend's own
 reference: what loads, what each route does, and where a number can change.
 
@@ -35,21 +35,21 @@ line in all three layers. A whole purchase is one `grep`.
 
 | File | Role |
 |---|---|
-| `server/RUN_server_py_upload.py` | The Flask app. Routes, upload handling, response assembly. **Entry point.** |
-| `server/server_Detector_model.py` | `Detector_model` — loads the SavedModel once, runs inference under a lock |
-| `server/utils_tuisku_server.py` | Save/sanitise the upload, reshape detections for the client, render + register results |
-| `server/utils_log.py` | Logging setup |
-| `server/utils_Visualization_utils_Independent_api.py` | Box drawing, lifted out of the Object Detection API so the server does not depend on it at runtime |
-| `server/zz_sample_upload_response.json` | A recorded real `/upload` response — the fixture the verification suite replays |
-| `server/FLOW.md` | End-to-end narrative, user level and code level |
-| `server/zz_verify/` | The verification suite (see `README_4_FRONTEND.md`) |
-| `Utils/server_check_instances_Counter.py` | Ops helper — counts live instances |
+| `serving/app.py` | The Flask app. Routes, upload handling, response assembly. **Entry point.** |
+| `serving/detector.py` | `Detector_model` — loads the SavedModel once, runs inference under a lock |
+| `serving/server_utils.py` | Save/sanitise the upload, reshape detections for the client, render + register results |
+| `serving/log_utils.py` | Logging setup |
+| `serving/visualization_utils.py` | Box drawing, lifted out of the Object Detection API so the server does not depend on it at runtime |
+| `serving/sample_upload_response.json` | A recorded real `/upload` response — the fixture the verification suite replays |
+| `serving/FLOW.md` | End-to-end narrative, user level and code level |
+| `serving/verify/` | The verification suite (see `README_4_FRONTEND.md`) |
+| `serving/check_instances.py` | Ops helper — counts live instances |
 
 ---
 
 ## Startup
 
-`RUN_server_py_upload.py`, in order:
+`serving/app.py`, in order:
 
 1. **Logging first**, before anything else is imported, so import-time failures
    are captured:
@@ -83,7 +83,7 @@ line in all three layers. A whole purchase is one `grep`.
 
 ### `GET /` → `home_index()`
 
-Logs the caller's IP, renders `iaCarry_Local_JS_1_Clouding.html` through the
+Logs the caller's IP, renders `serving/templates/iacarry_checkout.html` through the
 `ChoiceLoader`, logs which file it resolved to.
 
 ### `POST /upload` → `upload_file()`
@@ -122,7 +122,7 @@ see `README_4_FRONTEND.md`.
 
 ---
 
-## The model — `server_Detector_model.py`
+## The model — `serving/detector.py`
 
 ```python
 SIGNATURE_REF = "detect"
@@ -196,8 +196,8 @@ A detection has to clear three separate bars, in three different files:
 
 | Threshold | Where | Effect | Log |
 |---|---|---|---|
-| `MIN_SCORE = 0.5` | `server_Detector_model.py` | rows in the CSV register and the rendered figure | `RESULT raw=… above MIN_SCORE` |
-| `MIN_SCORE_TO_CLIENT = 0.1` | `RUN_server_py_upload.py:88` | what is put on the wire | `shaped response: 100 raw -> 13 sent` |
+| `MIN_SCORE = 0.5` | `serving/detector.py` | rows in the CSV register and the rendered figure | `RESULT raw=… above MIN_SCORE` |
+| `MIN_SCORE_TO_CLIENT = 0.1` | `serving/app.py:88` | what is put on the wire | `shaped response: 100 raw -> 13 sent` |
 | `DETECTION_MIN_SCORE = 0.45` | the page | what the customer sees | `detections adapted {uiThreshold: 0.45}` |
 
 Everything between 0.1 and 0.45 is **sent and never shown**. That gap is
@@ -235,13 +235,13 @@ the model find less, or did a **threshold** drop it? is a disagreement in the
 ## Running it
 
 ```bash
-python server/RUN_server_py_upload.py        # needs TensorFlow + the model folder
-python3 server/zz_verify/verify.py           # 78 checks, no TensorFlow needed
+python serving/app.py        # needs TensorFlow + the model folder
+python3 serving/verify/verify.py           # 78 checks, no TensorFlow needed
 ```
 
-The verification suite runs against `zz_verify/stub_server.py`, which serves the
+The verification suite runs against `verify/stub_server.py`, which serves the
 real template and the real static folder but replays
-`zz_sample_upload_response.json` instead of inferring. That is how the front end
+`sample_upload_response.json` instead of inferring. That is how the front end
 can be exercised without the model — and equally, why **the suite establishes
 nothing about the detector**.
 
@@ -257,7 +257,7 @@ nothing about the detector**.
    the repository. **The server does not start on Linux**, and the folder it
    depends on is not version-controlled.
 3. **`ALLOWED_EXTENSIONS` contains `"jpge"`** — a typo for `"jpeg"`
-   (`RUN_server_py_upload.py:51`). Harmless for the PNG demos; it rejects the
+   (`serving/app.py:51`). Harmless for the PNG demos; it rejects the
    first real `.jpeg` a camera sends.
 4. **`inc_lock` means one customer at a time.** Fine for a demo, not for a shop
    floor with two stations. There is no queue depth limit, no 503 when saturated,
@@ -272,6 +272,6 @@ nothing about the detector**.
    are written and never cleaned up.
 9. **No configuration layer.** Model path, thresholds, folders and port are all
    literals in source. Changing the model means editing Python.
-10. **Nothing tests the server itself.** `zz_verify` covers the browser↔contract
-    seam against a stub; `RUN_server_py_upload.py`, `server_Detector_model.py`
-    and `utils_tuisku_server.py` have no tests at all.
+10. **Nothing tests the server itself.** `verify` covers the browser↔contract
+    seam against a stub; `serving/app.py`, `serving/detector.py`
+    and `serving/server_utils.py` have no tests at all.

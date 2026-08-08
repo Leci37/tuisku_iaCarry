@@ -6,7 +6,7 @@ longest phase in the project and the one with the most hand work in it.
 There are **two ingestion tracks in this repository**, built years apart, and they
 share no files:
 
-| | Track A — `GT_*` | Track B — `y_*` / `your_*` |
+| | Track A — `ingestion/synthetic/` | Track B — `ingestion/video/` |
 |---|---|---|
 | Idea | Photograph products alone, **compose** fake carts from cut-outs | Film **real** carts, segment the products out of the video |
 | Labels come from | The compositor — it knows where it pasted each item | A human clicking once per product, then mask tracking |
@@ -32,8 +32,8 @@ ever draws a box in this track.
 
 | File | In | Out |
 |---|---|---|
-| `GT_01_split_video_in_frames.py` | one video per product | one folder of frames per product |
-| `GT_01_rename.py` | those frames | renamed to the product key |
+| `ingestion/synthetic/01_video_to_frames.py` | one video per product | one folder of frames per product |
+| `ingestion/synthetic/01b_rename_frames.py` | those frames | renamed to the product key |
 
 Keeps **1 frame in every 10** (`COUNT_EACH_FRAME_TAKE_IMAG = 10`). Consecutive
 video frames are nearly identical, so keeping all of them inflates the dataset
@@ -43,10 +43,10 @@ without adding information.
 
 | File | Does |
 |---|---|
-| `GT_02_remove_bg.py` | `rembg` → RGBA with the background transparent |
-| `GT_02.1_remove_bg_Blanc.py` | Same, tuned for the white-backdrop shots |
+| `ingestion/synthetic/02_remove_bg_frames.py` | `rembg` → RGBA with the background transparent |
+| `ingestion/synthetic/02b_remove_bg_white.py` | Same, tuned for the white-backdrop shots |
 
-Both then call `reduce_size_for_transparency_size_png()` (in `GT_Utils.py`) to
+Both then call `reduce_size_for_transparency_size_png()` (in `common/image_utils.py`) to
 **crop to the visible pixels** and record the before/after size into a DataFrame.
 That size table matters later — the compositor uses it to scale products
 plausibly relative to each other.
@@ -56,7 +56,7 @@ Output convention: `…\Blanco_rb\` (background removed) and `…\Blanco_cut\`
 
 ### A3 · Normalise
 
-`GT_03.1_resize_rotate.py` — resize to the `640×640` working frame
+`ingestion/synthetic/03_resize_rotate.py` — resize to the `640×640` working frame
 (`IMAGE_WITHD_BG` / `IMAGE_HIGNT_BG`) and apply random rotations, so the model
 does not learn that every tin is perfectly upright. Writes a CSV of the resulting
 geometry per image.
@@ -65,16 +65,16 @@ geometry per image.
 
 | File | Variant |
 |---|---|
-| `GT_03_add_bg_ramdom.py` | Products onto random backgrounds |
-| `GT_03_add_bg_ramdom_Blanco.py` | The main one — white-backdrop cut-outs onto real scenes |
-| `GT_03_add_bg_ramdom_FRONT.py` | Front-facing arrangement |
-| `GT_03_add_bg_FRONT_1dim_DELETE.py` | Marked for deletion by its own filename, still committed |
+| `ingestion/synthetic/04_compose_from_frames.py` | Products onto random backgrounds |
+| `ingestion/synthetic/04b_compose_from_white.py` | The main one — white-backdrop cut-outs onto real scenes |
+| `ingestion/synthetic/04c_compose_from_front.py` | Front-facing arrangement |
+| `legacy/compose_front_1dim.py` | Marked for deletion by its own filename, still committed |
 
 Helpers:
-- `GT_Utils.py` — overlay, crop, scale, `avoid_overflow_photo_x_y_w_h()` (keeps a
+- `common/image_utils.py` — overlay, crop, scale, `avoid_overflow_photo_x_y_w_h()` (keeps a
   pasted product inside the frame), `get_scalated_00_x_y_w_h()` /
   `get_scalated_00_xmin_ymin_xmax_ymax()` (pixel ↔ normalised box conversion).
-- `GT_Utils_ImageAugmentation_presp.py` — perspective and scale warps, so a
+- `common/perspective.py` — perspective and scale warps, so a
   pasted product looks photographed rather than stuck on.
 
 Seeded (`random.seed(123)`, `np.random.seed(123)`), so a run is reproducible.
@@ -83,18 +83,18 @@ Seeded (`random.seed(123)`, `np.random.seed(123)`), so a run is reproducible.
 
 | File | Direction |
 |---|---|
-| `GT_04_Upload_azure.py` | ↑ Real tagged photos |
-| `GT_04.1_Upload_azure.py` | ↑ Variant |
-| `GT_04.2_Upload_azureAug.py` | ↑ Synthetic/augmented scenes |
-| `GT_04.2_Upload_azureBlanco.py` | ↑ Mixed-background scenes |
-| `GT_05_Azure_API_GetImg_LABELs_coco.py` | ↓ Images + labels back, **as COCO** |
+| `ingestion/synthetic/05_azure_upload.py` | ↑ Real tagged photos |
+| `legacy/carve_test_split.py` | ↑ Variant |
+| `ingestion/synthetic/05b_azure_upload_augmented.py` | ↑ Synthetic/augmented scenes |
+| `ingestion/synthetic/05c_azure_upload_white.py` | ↑ Mixed-background scenes |
+| `ingestion/synthetic/06_azure_download_coco.py` | ↓ Images + labels back, **as COCO** |
 
 Azure is used here as a **dataset store and review UI**, not as the trainer —
 the boxes were already known before upload. The round trip exists so a human can
 inspect and correct the set in the Custom Vision web interface.
 
 > 🔴 The Azure **training key is hardcoded in plaintext** in
-> `GT_04.2_Upload_azureAug.py:14` and `GT_05_Azure_API_GetImg_LABELs_coco.py:22`,
+> `ingestion/synthetic/05b_azure_upload_augmented.py:14` and `ingestion/synthetic/06_azure_download_coco.py:22`,
 > and the repository is public. Rotate that key and move it to an environment
 > variable before anything else on this list.
 
@@ -102,11 +102,11 @@ inspect and correct the set in the Custom Vision web interface.
 
 | File | Does |
 |---|---|
-| `GT_06_Azure_split_coco_train_test_val.py` | COCO → train / val / test |
-| `GT_07.1_COCO_to_TFRecord.bat` | COCO → TFRecord |
-| `GT_07.2_COCO_to_TFRecord_imfolder.bat` | Same, from an image folder |
-| `GT_07.3_COCO_to_TFRecord_show.bat` | Render a TFRecord back to images to eyeball it |
-| `GT_07_COCO_to_TFRecord_check.md` | The notes for the above |
+| `ingestion/synthetic/07_coco_split.py` | COCO → train / val / test |
+| `ingestion/synthetic/08_coco_to_tfrecord.bat` | COCO → TFRecord |
+| `ingestion/synthetic/08b_coco_to_tfrecord_from_folder.bat` | Same, from an image folder |
+| `ingestion/synthetic/08c_tfrecord_preview.bat` | Render a TFRecord back to images to eyeball it |
+| `ingestion/synthetic/README_tfrecord.md` | The notes for the above |
 
 **Track A ends with TFRecord shards + `label_map.pbtxt`.** That is the input to
 training track A.
@@ -123,7 +123,7 @@ through the rest of the video.**
 
 ### B1 · Split the raw footage
 
-`y_01_split_video.py` (and `y_01_split_video_MAX_350frames.py`)
+`ingestion/video/01_split_videos.py` (and `ingestion/video/01b_trim_videos.py`)
 
 ```
 RAW/  ──►  RAW_split2/
@@ -139,13 +139,13 @@ RAW/  ──►  RAW_split2/
 
 ### B2 · Tag by hand — one click per product · **the only manual step**
 
-`y_02_label_gui.py` + `y_020_label_gui_Utils.py` — a **Gradio** app.
+`ingestion/video/02_label_gui.py` + `ingestion/video/label_gui_utils.py` — a **Gradio** app.
 
 Flow per video:
 1. `load_first_frame()` pulls frame 0 of the clip.
 2. The operator picks a label from the legend (`build_legend_html()`, colours and
    names read from `label_map.pbtxt`) and **clicks on the product in the image**.
-3. `segment_objects()` (`your_model_wrapper.py`, SAM) turns those clicks into a
+3. `segment_objects()` (`ingestion/video/sam_wrapper.py`, SAM) turns those clicks into a
    mask. `apply_mask_postprocessing()` drops blobs under `min_area = 500` px.
 4. `draw_bboxes_and_labels()` / `draw_points_on_image()` show the result live.
 5. `validate_masks_before_save()` refuses to save if a mask is empty or the
@@ -166,10 +166,10 @@ through a batch.
 
 ### B3 · Propagate the masks through the video
 
-`y_03_segment_video_from_tagging.py` + `y_030_segment_video_from_tagging_Utils.py`
+`ingestion/video/03_track_masks.py` + `ingestion/video/track_masks_utils.py`
 
 Reads `tagging_metadata.json`, loads the clip, and calls
-`track_with_mask_refinement()` (`your_model_wrapper.py`) to carry each frame-0
+`track_with_mask_refinement()` (`ingestion/video/sam_wrapper.py`) to carry each frame-0
 mask forward across every frame. One click becomes hundreds of labelled frames.
 
 Per frame it then:
@@ -200,13 +200,14 @@ Outputs per clip:
 at the top level, so every clip shares one class ordering. **Getting this wrong
 silently relabels the whole dataset**, which is why it is written centrally.
 
-> ⚠️ **Folder-name break.** `y_03` writes to `base_output = "gui_video_segmen"`,
-> but `y_04` reads `SEGM_DIR = "gui_03_video_segm_pod"`. Nothing renames it —
+> ⚠️ **Folder-name break.** `03_track_masks.py` writes to
+> `base_output = "gui_video_segmen"`, but `04_bbox_review.py` reads
+> `SEGM_DIR = "gui_03_video_segm_pod"`. Nothing renames it —
 > you have to do it by hand between the two steps, and nothing says so.
 
 ### B4 · Review the boxes by hand — **the validation step**
 
-`y_04_bbox_clean_tool.py` + `y_040_bbox_clean_tool_Utils.py` — a second Gradio app.
+`ingestion/video/04_bbox_review.py` + `ingestion/video/bbox_review_utils.py` — a second Gradio app.
 
 - `collect_frames_with_yolo_and_stats()` gathers every frame that has labels.
 - `filter_yolo_center_frames(window_size=5)` keeps the **middle** frame of each
@@ -233,18 +234,18 @@ gui_04_bbox_clean/
 
 | File | Out | Does |
 |---|---|---|
-| `y_041_bbox_rotate_stadistics.py` | `gui_041_bbox_clean/` | Rotate 90° CW to `720×1280` (`rotate_yolo_bbox_90cw()` rotates the boxes with the pixels), write per-class counts |
-| `y_042_bbox_rotate_stadistics_aug.py` | `gui_042_bbox_clean/` | The same **plus `albumentations` augmentation aimed at class balance** |
+| `ingestion/video/05_rotate_and_stats.py` | `gui_041_bbox_clean/` | Rotate 90° CW to `720×1280` (`rotate_yolo_bbox_90cw()` rotates the boxes with the pixels), write per-class counts |
+| `ingestion/video/06_rotate_stats_balance.py` | `gui_042_bbox_clean/` | The same **plus `albumentations` augmentation aimed at class balance** |
 
 `720×1280` is portrait — it matches the overhead camera's mounting, not the
-model's input. Both write a `check/` folder of drawn-on samples; `y_042` also
+model's input. Both write a `check/` folder of drawn-on samples; step 06 also
 writes `check_aug/` every `CHECK_EVERY_N = 60` images. `print_summary()`
-(`y_bbox_utils.py`) reports total labels, per-class counts, how often a class
+(`ingestion/video/bbox_tools.py`) reports total labels, per-class counts, how often a class
 appears **alone** (`only_label_occurrence`), and a histogram of classes-per-image.
 That last one is the number to watch: a set where most images hold one product
 teaches the model nothing about occlusion.
 
-Helpers: `y_bbox_utils.py`, `y_utils_aug.py` (`build_aug_combinations()`,
+Helpers: `ingestion/video/bbox_tools.py`, `ingestion/video/augment_tools.py` (`build_aug_combinations()`,
 `filter_occluded_boxes()`).
 
 **Track B ends at `gui_042_bbox_clean/{frames,yolo_labels}`.** That is the input
@@ -252,11 +253,11 @@ to training track B.
 
 ### Dead and duplicated in track B
 
-- `Track/` — an older fork of the same tools. `your_RUN.py` is byte-identical to
-  the root copy; `your_model_wrapper.py` and `your_utils.py` have **diverged**,
+- `Track/` — an older fork of the same tools. `legacy/run_manual.py` is byte-identical to
+  the root copy; `ingestion/video/sam_wrapper.py` and `ingestion/video/label_tools.py` have **diverged**,
   with nothing saying which is current. `Track/DELETE.txt` is empty.
-- `y_02_label_gui_OLD_video.py`, `your_RUN.py`, `TrackAnythingWrapper.py`,
-  `utils_.py` — superseded.
+- `legacy/label_gui_old_video.py`, `legacy/run_manual.py`, `legacy/track_anything/wrapper.py`,
+  `legacy/utils_old.py` — superseded.
 
 ---
 
@@ -281,23 +282,28 @@ TRACK B   RAW ─► split/rename ─► CLICK ONCE per product (SAM)
    There is no manifest, no hash, no run id. Six months on there is no way to
    answer "what was `save_model_sig_54` trained on?" This is the single biggest
    gap in the phase.
-2. **`label_map.pbtxt` is not in the repository**, yet `y_02`, `y_03` and
-   training A all read it. It is the file that defines the class ordering for
+2. **`label_map.pbtxt` is not in the repository**, yet `02_label_gui.py`,
+   `03_track_masks.py` and training A all read it. Its home in the new layout is
+   `common/label_map.pbtxt`. It is the file that defines the class ordering for
    everything; losing it invalidates every label set.
-3. **`utils_bbox` does not exist** — imported by `GT_05` and `GT_06`. Those two
-   scripts cannot run from a clean clone.
-4. **`from Utils import COCO_json_format_validator` fails** — `Utils/` holds only
-   `server_check_instances_Counter.py` and has no `__init__.py`. So the COCO
-   validator the split step calls is gone.
+3. **`utils_bbox` does not exist** — imported by `06_azure_download_coco.py` and
+   `07_coco_split.py`. Those two scripts cannot run from a clean clone.
+   `tools/check_imports.py` reports it as a known gap rather than as breakage.
+4. **`from Utils import COCO_json_format_validator` fails** — the old `Utils/`
+   folder held only the server instance counter (now `serving/check_instances.py`)
+   and had no `__init__.py`. The COCO validator `07_coco_split.py` calls was never
+   committed.
 5. **Every path is a hardcoded absolute Windows path** (`E:\iaCarry_img_eroski\…`,
    `C:\Users\leci\Documents\GitHub\…`). No config file, no CLI arguments. The
    chain runs on exactly one machine.
 6. **The `gui_video_segmen` → `gui_03_video_segm_pod` rename is undocumented**
-   (B3 above), and `y_05` reads `classes.txt` from `gui_03_video_segm_pod/` while
-   `y_041`/`y_042` read it from `gui_04_bbox_clean/` — two sources for the file
-   that must not disagree.
+   (B3 above), and `training/yolo/01_train_yolov8.py` reads `classes.txt` from
+   `gui_03_video_segm_pod/` while steps 05 and 06 read it from
+   `gui_04_bbox_clean/` — two sources for the file that must not disagree.
 7. **No test covers any of this.** Not frame extraction, not background removal,
    not box rotation, not the COCO/YOLO writers. A rotation bug that silently
    moved every box would be caught only by eye, in `check/`.
-8. **No held-out test set in track B.** `y_05` splits train/val 80/20 and stops.
-   There is no third split kept aside, so there is no honest final number.
+8. **No held-out test set in track B.** `training/yolo/01_train_yolov8.py` splits
+   train/val 80/20 and stops. There is no third split kept aside, so there is no
+   honest final number. `legacy/carve_test_split.py` is the only code that ever
+   carved one, for track A, and its upload path is commented out.

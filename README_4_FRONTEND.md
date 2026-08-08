@@ -3,7 +3,7 @@
 The page the customer looks at. One self-contained file — markup, CSS, catalogue,
 translations and logic — served by Flask at `GET /`.
 
-`server/iaCarry_Local_JS_1_Clouding.html`
+`serving/templates/iacarry_checkout.html`
 
 No build step, no framework, no bundler, no external request. It must render
 completely with **outbound internet blocked**, because shop floors have
@@ -15,16 +15,16 @@ restricted egress and a grid of broken images is not a demo.
 
 | File | Role |
 |---|---|
-| `server/iaCarry_Local_JS_1_Clouding.html` | **The screen.** Everything below lives here |
-| `server/iaCarry_Local_JS_1_Clouding.old.html` | Superseded copy, still committed |
-| `server/static/assets/products/` | 13 product thumbnails, `<tag>_300.png` |
-| `server/static/assets/demo/` | 4 demo frames, 640×640, posted to `/upload` |
-| `server/static/assets/logos/` | 3 client logos, `<client>-logo.png`, 600×180 |
-| `server/static/assets/README.md` | What the assets are and where they came from |
-| `server/zz_verify/verify.py` | 78 browser checks against a stub server |
-| `server/zz_verify/stub_server.py` | Stand-in `/upload`: replays, delays, fails, hangs |
-| `server/zz_verify/make_ground_truth.py` | Builds frames with known boxes, so geometry is measured not asserted |
-| `iaCarry_azure_JS_1.html` (root) | The older Azure-era front end, superseded |
+| `serving/templates/iacarry_checkout.html` | **The screen.** Everything below lives here |
+| `legacy/iacarry_checkout.old.html` | Superseded copy, still committed |
+| `serving/static/assets/products/` | 13 product thumbnails, `<tag>_300.png` |
+| `serving/static/assets/demo/` | 4 demo frames, 640×640, posted to `/upload` |
+| `serving/static/assets/logos/` | 3 client logos, `<client>-logo.png`, 600×180 |
+| `serving/static/assets/README.md` | What the assets are and where they came from |
+| `serving/verify/verify.py` | 78 browser checks against a stub server |
+| `serving/verify/stub_server.py` | Stand-in `/upload`: replays, delays, fails, hangs |
+| `serving/verify/make_ground_truth.py` | Builds frames with known boxes, so geometry is measured not asserted |
+| `legacy/iacarry_azure.html` (root) | The older Azure-era front end, superseded |
 
 ---
 
@@ -221,7 +221,7 @@ even attempted**.
 ## Verification
 
 ```bash
-python3 server/zz_verify/verify.py     # 78 checks, 0 failed
+python3 serving/verify/verify.py     # 78 checks, 0 failed
 ```
 
 Requires `flask`, `pillow`, `playwright` and a Chromium build. It drives the real
@@ -284,8 +284,9 @@ Each is named in the boot log, so a running station states what is real.
 6. **Prices and weights are hardcoded in `CATALOG`.** No POS or SKU integration,
    so a price change means editing the HTML.
 7. **The catalogue is 13 products** while the search box advertises "+10.000".
-8. **`iaCarry_Local_JS_1_Clouding.old.html` and `iaCarry_azure_JS_1.html` are
-   still committed**, with nothing marking which file is live.
+8. **Two superseded front ends are still in the tree**, now parked in `legacy/`
+   (`iacarry_checkout.old.html`, `iacarry_azure.html`) with `legacy/README.md`
+   saying which is live. Kept, not deleted — but neither is maintained.
 9. **Everything is in one file.** It is a deliberate and defensible choice — it
    is what makes the page dependency-free and lets Flask serve it with no build
    step — but at 931 lines of markup, CSS, catalogue, logic and seven languages

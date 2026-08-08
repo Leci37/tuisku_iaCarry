@@ -28,18 +28,18 @@ track B is newer and its output is not wired to anything.
 
 ### A1 · Warm-up: the 3-class model
 
-`Transfer_L_Mediun_Train.py` — the smallest thing that exercises the whole path.
+`training/tensorflow/01_train_medium.py` — the smallest thing that exercises the whole path.
 `num_classes = 3`, ground-truth boxes typed **literally into the source**
 (`gt_boxes`, `gt_labels`), base config
 `./ssd_mobilenet_v2_fpnlite_640x640/pipeline.config`.
 
 Its point is not the model — it is proving the API, the checkpoint restore and
-the fine-tuning loop work before spending hours on the real set. `Transfer_L_Mediun_Eval.py`
-scores it and `Transfer_L_Mediun_utils.py` holds the shared pieces.
+the fine-tuning loop work before spending hours on the real set. `training/tensorflow/02_eval_medium.py`
+scores it and `training/tensorflow/medium_utils.py` holds the shared pieces.
 
 ### A2 · The real training run
 
-`Transfer_L_Train_Eroski.py`
+`training/tensorflow/03_train_eroski.py`
 
 ```
 LABEL_MAP_PATH  ./ssd_mobilenet_v2_fpnlite_640x640/label_map_eroski.pbtxt
@@ -57,19 +57,21 @@ back in ingestion A3/A4 → assemble `Train_image_filenames`, `Gt_boxes`, `Gt_la
 
 `NUM_ELE_PER_CLASS = 50` caps how many examples each class contributes, which is
 the crude class-balancing lever on this track — track B does the same job
-properly with augmentation in `y_042`.
+properly with augmentation in ingestion step 06.
 
-`Transfer_L_Train_Eroski_[n,4].py` is the multi-object variant. The brackets in
+`training/tensorflow/04_train_eroski_multi.py` is the multi-object variant. The brackets in
 the filename make it un-importable as a module and awkward to type in a shell;
 it can only be run directly.
 
-`model_Creation_Rubber_tf2_colab.py` is the same training ported to Colab, for
+`training/tensorflow/train_colab.py` is the same training ported to Colab, for
 when the local GPU was not enough.
 
 ### A3 · Saving — checkpoint *and* SavedModel
 
-`Ultils_model_creation.py :: save_detecion_pd_checkpoint()` (note the `Ultils`
-typo in the filename — it is spelled that way at every import site):
+`common/detection_model.py :: save_detecion_pd_checkpoint()` (this file was
+`Ultils_model_creation.py` — the typo was carried at every import site, and is
+gone now that both `training/tensorflow/` and `training/tflite/` import it from
+`common/`):
 
 ```
 config_util.save_pipeline_config(...)            pipeline.config beside the weights
@@ -84,7 +86,7 @@ Other utilities in that file: `load_image_into_numpy_array()`,
 
 ### A4 · Evaluation
 
-`Transfer_L_Eval_ckt_Eroski.py`
+`training/tensorflow/05_eval_eroski.py`
 
 ```
 MODEL_TO_LOAD    "model_efi_d2_aug"
@@ -111,7 +113,7 @@ The server does **not** load a checkpoint. It loads a SavedModel and asks for a
 named signature:
 
 ```python
-# server/server_Detector_model.py
+# serving/detector.py
 SIGNATURE_REF = "detect"
 PATH_TO_SAVED_MODEL_INTERFACE_GRAPH = "model_efi_d1C/save_model_sig_54"
 PATH_PICKLE_CAT_INDEX = "model_efi_d1C/P_Category_index.pickle"
@@ -119,16 +121,16 @@ PATH_PICKLE_CAT_INDEX = "model_efi_d1C/P_Category_index.pickle"
 
 A plain `tf.saved_model.save()` does **not** produce a `detect` signature — the
 model has to be exported/frozen with `exporter_main_v2.py` from the Object
-Detection API first. `server_Detector_model.py:48` says exactly this in a debug
+Detection API first. `serving/detector.py:48` says exactly this in a debug
 line, and `exporter_main_v2.py` is not in this repository.
 
 Inspection tools for this:
 
 | File | Does |
 |---|---|
-| `model_Detect_sig_default.py` | Loads a SavedModel, prints `serving_default` structured outputs / dtypes / shapes |
-| `model_Detect_sig_detect.py` | Same for the `detect` signature |
-| `Utils_Detect_Signature.py` | `img_to_tensor()`, `img_proccess()`, box drawing for signature testing |
+| `training/tensorflow/06_inspect_signature_default.py` | Loads a SavedModel, prints `serving_default` structured outputs / dtypes / shapes |
+| `training/tensorflow/07_inspect_signature_detect.py` | Same for the `detect` signature |
+| `common/detection_signature.py` | `img_to_tensor()`, `img_proccess()`, box drawing for signature testing |
 
 > ⚠️ Both `model_Detect_sig_*.py` still run against the **cat / dog / zombie**
 > tutorial images (`list_paths` is a hardcoded list of `cat.2000.jpg` …). They
@@ -144,13 +146,13 @@ renames every class silently and the front end then logs the leftovers as
 
 | File | Does |
 |---|---|
-| `TFlite_convert.py` | `TFLiteConverter.from_saved_model()` → `.tflite`, with and without a pinned `signature_keys` |
-| `TFlite_convert_mdata.py` | Attaches metadata + label file (`mdata_write_all_in_tflite_SIMPLE` / `_FULL`, `input_norm_mean=[127.5]`) |
-| `Utils_TFlite_see_info.py` | Dumps input/output tensor details |
-| `TFlite_detect.py` | Runs a `.tflite` interpreter over a folder (`input_mean/std = 127.5`, `HUMBRAL_PREDTIC = 0.5`) |
-| `Utils_detect_TFlite.py` | Interpreter helper |
+| `training/tflite/01_convert.py` | `TFLiteConverter.from_saved_model()` → `.tflite`, with and without a pinned `signature_keys` |
+| `training/tflite/tflite_metadata.py` | Attaches metadata + label file (`mdata_write_all_in_tflite_SIMPLE` / `_FULL`, `input_norm_mean=[127.5]`) |
+| `training/tflite/tflite_info.py` | Dumps input/output tensor details |
+| `training/tflite/02_detect.py` | Runs a `.tflite` interpreter over a folder (`input_mean/std = 127.5`, `HUMBRAL_PREDTIC = 0.5`) |
+| `training/tflite/tflite_detect_utils.py` | Interpreter helper |
 
-`TFlite_convert.py:36` prints the prerequisite it cannot perform itself:
+`training/tflite/01_convert.py:36` prints the prerequisite it cannot perform itself:
 
 ```
 export_tflite_graph_tf2.py --pipeline_config_path=model_101_C/pipeline.config
@@ -160,14 +162,14 @@ export_tflite_graph_tf2.py --pipeline_config_path=model_101_C/pipeline.config
 
 Note there are **two different freezers** in play and they are easy to confuse:
 `export_tflite_graph_tf2.py` for the TFLite path, `exporter_main_v2.py` for the
-server's `detect` signature. `TFlite_detect.py` also still points at the cat/dog
+server's `detect` signature. `training/tflite/02_detect.py` also still points at the cat/dog
 model.
 
 ---
 
 ## Track B — YOLOv8
 
-`y_05_train_yolov8_from_gui041.py` (and `y_05_generate_augmented_bbox_samples.py`,
+`training/yolo/01_train_yolov8.py` (and `legacy/generate_aug_samples.py`,
 which duplicates its dataset-prep half and stops there).
 
 ```
@@ -187,10 +189,11 @@ validation images as a smoke test. `torch.cuda.is_available()` is printed at
 startup, because the difference between GPU and CPU here is hours.
 
 Two naming traps:
-- The filename says **`gui041`**, the code reads **`gui_042_bbox_clean`**. The
-  augmented set is the one actually used.
-- `CLASS_FILE` points at `gui_03_video_segm_pod/classes.txt` while `y_041`/`y_042`
-  read `gui_04_bbox_clean/classes.txt`. If those two files ever diverge, the
+- The old filename said **`gui041`** while the code reads **`gui_042_bbox_clean`**.
+  The augmented set is the one actually used; the misleading name is gone with
+  the rename, the mismatch in the code is not.
+- `CLASS_FILE` points at `gui_03_video_segm_pod/classes.txt` while ingestion
+  steps 05 and 06 read `gui_04_bbox_clean/classes.txt`. If those two files ever diverge, the
   class ids in the labels stop meaning what the trainer thinks they mean.
 
 ---
@@ -210,11 +213,11 @@ Two naming traps:
 3. **No quantitative evaluation, on either track.** No mAP, no per-class PR, no
    confusion matrix committed. Track A evaluates by looking at JPEGs. Meanwhile
    `README.md` advertises **98% accuracy** and the checkout screen shows
-   `98% accuracy` / `1.2s inference` — `server/FLOW.md` §8 confirms both are
+   `98% accuracy` / `1.2s inference` — `serving/FLOW.md` §8 confirms both are
    **hardcoded constants, not measurements**. Either measure them or stop
    displaying them.
 4. **`utils_transfer_learning` does not exist** — imported by
-   `Transfer_L_Train_Eroski.py:22`. That import fails from a clean clone.
+   `training/tensorflow/03_train_eroski.py:22`. That import fails from a clean clone.
 5. **The export step is missing.** `exporter_main_v2.py` is the bridge from a
    trained checkpoint to the `detect` signature the server needs, and it is
    neither vendored nor scripted. It is the one step nobody can reproduce from
@@ -226,8 +229,8 @@ Two naming traps:
 7. **No experiment tracking.** No TensorBoard export, no run log, no metrics file.
    Combined with gap 1 in `README_1_INGESTION.md` (no dataset versioning), no result
    in this project is reproducible.
-8. **Toy leftovers still committed and still runnable**: `model_Detect_sig_default.py`,
-   `model_Detect_sig_detect.py` and `TFlite_detect.py` all reference cat/dog/zombie
+8. **Toy leftovers still committed and still runnable**: `training/tensorflow/06_inspect_signature_default.py`,
+   `training/tensorflow/07_inspect_signature_detect.py` and `training/tflite/02_detect.py` all reference cat/dog/zombie
    images and models.
 9. **`requirements.txt` covers track A only** — no `ultralytics`, `torch`,
    `scikit-learn`, `albumentations`, `gradio`.
