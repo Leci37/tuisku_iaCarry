@@ -48,6 +48,13 @@ SCRIPT_DIRS = [
 # Archived code, kept for reference. Expected to reference modules that moved.
 SKIP_DIRS = {"legacy", "tools", "outputs", "models"}
 
+# Not importable standalone under --runtime: entry points that read sys.argv or
+# open files relative to a directory they are handed. Their imports are still
+# checked statically, which is the part that can break during a rename.
+RUNTIME_SKIP = {
+    "serving/verify/stub_server.py",   # takes its template/fixture dir as argv[1]
+}
+
 # Imported but absent from the repository, and documented as such in the phase
 # READMEs. Listed here so their absence reads as a known gap rather than as
 # damage from a move. Removing a name from this set turns it back into an error.
@@ -196,20 +203,29 @@ def main():
             if not os.path.isdir(full):
                 continue
             sys.path.insert(0, full)
+            saved_argv = sys.argv
             try:
                 for f in sorted(os.listdir(full)):
                     if not f.endswith(".py") or f == "__init__.py":
                         continue
+                    rel = os.path.join(d, f)
+                    if rel.replace(os.sep, "/") in RUNTIME_SKIP:
+                        print("   %-52s skipped (needs argv)" % rel)
+                        continue
+                    path = os.path.join(full, f)
+                    # Scripts read sys.argv at import; hide this tool's own flags.
+                    sys.argv = [path]
                     spec = importlib.util.spec_from_file_location(
-                        "chk_" + f[:-3].replace(".", "_"), os.path.join(full, f))
+                        "chk_" + f[:-3].replace(".", "_"), path)
                     module = importlib.util.module_from_spec(spec)
                     try:
                         spec.loader.exec_module(module)
                     except ModuleNotFoundError as e:
-                        print("   %-52s needs %s" % (os.path.join(d, f), e.name))
+                        print("   %-52s needs %s" % (rel, e.name))
                     except BaseException as e:      # noqa: BLE001 - scripts run at import
-                        print("   %-52s %s: %s" % (os.path.join(d, f), type(e).__name__, e))
+                        print("   %-52s %s: %s" % (rel, type(e).__name__, e))
             finally:
+                sys.argv = saved_argv
                 sys.path.remove(full)
     return 0
 

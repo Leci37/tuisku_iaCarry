@@ -365,8 +365,8 @@ Each is marked in the boot log line, so a running station states what is real.
 ## 9. Verifying
 
 ```bash
-python3 serving/verify/verify.py     # 71 checks against a stub /upload
+python3 serving/verify/verify.py     # 78 checks against a stub /upload
 ```
 
-See `server/verify/README.md`, including what it cannot establish: nothing
+See `serving/verify/README.md`, including what it cannot establish: nothing
 about the detector itself, since responses are replayed rather than inferred.

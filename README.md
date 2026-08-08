@@ -47,6 +47,9 @@ tools/                 check_imports.py
 models/                weights and checkpoints          [gitignored]
 outputs/               everything the pipelines write   [gitignored]
 legacy/                superseded, kept for reference — see legacy/README.md
+
+pyproject.toml         declares `common` as a package, for `pip install -e .`
+.gitignore             outputs/, models/, and the folders the pipelines write
 ```
 
 **Two naming rules, and the reason for them.** A Python module name has to be a

@@ -202,7 +202,7 @@ Two naming traps:
 
 1. **Track B's output goes nowhere.** It produces `gui_05_model/…/best.pt`. The
    server loads a TF SavedModel with a `detect` signature. There is no converter,
-   and no YOLO inference path in `server/`. **All the track B work is currently
+   and no YOLO inference path in `serving/`. **All the track B work is currently
    disconnected from production** — the single most consequential gap in the
    project. Either export YOLOv8 → SavedModel/ONNX and add a loader, or accept
    track B as research and say so.

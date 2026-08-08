@@ -245,7 +245,11 @@ appears **alone** (`only_label_occurrence`), and a histogram of classes-per-imag
 That last one is the number to watch: a set where most images hold one product
 teaches the model nothing about occlusion.
 
-Helpers: `ingestion/video/bbox_tools.py`, `ingestion/video/augment_tools.py` (`build_aug_combinations()`,
+Helpers, shared across track B: `ingestion/video/bbox_tools.py` (box rotation,
+drawing, class names, `print_summary()`), `ingestion/video/label_tools.py`
+(`parse_label_map()`, `overlay_mask()`, `build_legend_html()` — the legend the
+tagging GUI shows), `ingestion/video/sam_wrapper.py` (SAM init, masking,
+tracking) and `ingestion/video/augment_tools.py` (`build_aug_combinations()`,
 `filter_occluded_boxes()`).
 
 **Track B ends at `gui_042_bbox_clean/{frames,yolo_labels}`.** That is the input
@@ -253,11 +257,11 @@ to training track B.
 
 ### Dead and duplicated in track B
 
-- `Track/` — an older fork of the same tools. `legacy/run_manual.py` is byte-identical to
-  the root copy; `ingestion/video/sam_wrapper.py` and `ingestion/video/label_tools.py` have **diverged**,
-  with nothing saying which is current. `Track/DELETE.txt` is empty.
-- `legacy/label_gui_old_video.py`, `legacy/run_manual.py`, `legacy/track_anything/wrapper.py`,
-  `legacy/utils_old.py` — superseded.
+All of it now lives in `legacy/` — see `legacy/README.md`. The one worth knowing
+about: `legacy/track_anything/` was a fork of these tools where the run script was
+byte-identical to the live copy but the model wrapper and utils had **diverged**,
+with nothing marking which was current. That ambiguity is why it is archived
+rather than merged.
 
 ---
 

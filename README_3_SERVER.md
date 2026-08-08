@@ -1,7 +1,7 @@
 # 3 — Real-time server (backend)
 
 The Flask application that holds the model in memory, takes a frame over HTTP and
-answers with predictions. Everything in `server/` except the page itself, which
+answers with predictions. Everything in `serving/` except the page itself, which
 is `README_4_FRONTEND.md`.
 
 `serving/FLOW.md` documents the same ground from the customer's point of view,
@@ -64,11 +64,14 @@ line in all three layers. A whole purchase is one `grep`.
 3. `is_running_from_reloader()` prints a restart banner.
 4. Template lookup — **the detail that costs the most time when it is wrong**:
    ```python
+   TEMPLATE_DIR    = os.path.join(SERVER_DIR, "templates")
    TEMPLATE_FOLDER = r"..\iacarry-evaluation"
-   app.jinja_loader = ChoiceLoader([FileSystemLoader(SERVER_DIR),
+   app.jinja_loader = ChoiceLoader([FileSystemLoader(TEMPLATE_DIR),
                                     FileSystemLoader(TEMPLATE_FOLDER)])
    ```
-   `server/` wins, the legacy folder is the fallback. The app logs
+   `serving/templates/` wins, the legacy deploy folder is the fallback.
+   `templates/` is also Flask's own default, which is why `Flask(__name__)` now
+   takes no `template_folder` argument. The app logs
    `serving template from: <path>` on every page load because editing the copy
    Flask is *not* reading is the classic wasted hour.
 5. Upload folder: `<TEMPLATE_FOLDER>\_uploads_img_for_test_from_web`,
