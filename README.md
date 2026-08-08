@@ -68,10 +68,16 @@ The phase numbers live in the README filenames instead.
 ## ▶️ Running it
 
 ```bash
-pip install -e .                      # makes `from common...` resolve from anywhere
+pip install -e .                      # REQUIRED before running any step script
 python3 tools/check_imports.py        # every local import resolves? (needs no deps)
 python3 serving/verify/verify.py      # 78 browser checks against a stub /upload
 ```
+
+`pip install -e .` is not optional. Python puts only the *script's own* folder on
+the path, so `python ingestion/synthetic/03_resize_rotate.py` cannot see
+`common/` on its own and fails with `ModuleNotFoundError: No module named
+'common'`. The install is what makes the shared helpers reachable from every
+folder.
 
 `tools/check_imports.py` is static — it parses the tree rather than importing it,
 so it works without TensorFlow or torch installed. It exists because the step
@@ -118,6 +124,10 @@ This pipeline enables:
 ---
 
 ## 📁 Project Structure (Overview)
+
+> Track A only, and a selection rather than a full listing — this table predates
+> both `ingestion/video/` (track B) and `serving/`. For the complete tree see
+> **Layout** above; for the detail, the four phase documents.
 
 ### 1. Data Preprocessing
 | File | Description |
@@ -170,11 +180,25 @@ This pipeline enables:
 ### 7. Web Visualization
 | File | Description |
 |------|-------------|
-| `legacy/iacarry_azure.html` | HTML+JS frontend for product visualization. |
+| `serving/templates/iacarry_checkout.html` | The checkout screen served at `GET /`. See `README_4_FRONTEND.md`. |
+| `legacy/iacarry_azure.html` | The older Azure-era viewer, superseded — kept for reference only. |
 
 ---
 
-## 🚀 Example Workflow (Full Pipeline)
+## 🚀 Example Workflow (track A)
+
+> This is the synthetic-composition track end to end. It does not cover track B
+> (`ingestion/video/`, `training/yolo/`) or running the station itself
+> (`serving/`) — see `README_1_INGESTION.md` and `README_3_SERVER.md`.
+
+**Run this first.** Every step below imports `common/`, and Python puts only the
+*script's own* folder on the path, so without the install they fail with
+`ModuleNotFoundError: No module named 'common'`:
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+```
 
 ### 1️⃣ Extract Images from Video
 Extract frames from videos of products. These will be used as raw training data.
