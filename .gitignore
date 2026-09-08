@@ -1,0 +1,48 @@
+# Everything the pipelines write, and the weights they read.
+#
+# Before this file existed there was no root .gitignore at all -- only server/.
+# Running the track B chain dropped gui_output/, gui_04_bbox_clean/frames/ and
+# yolo_dataset/ into the repository root as thousands of untracked images, one
+# `git add -A` away from being committed. That is what outputs/ and models/ are
+# for: one place each, both ignored.
+
+outputs/
+models/
+
+# Legacy output folder names, in case an older script is run before its paths
+# are repointed at outputs/.
+RAW/
+RAW_split2/
+gui_output/
+gui_video_segmen/
+gui_03_video_segm_pod/
+gui_04_bbox_clean/
+gui_041_bbox_clean/
+gui_042_bbox_clean/
+gui_05_model/
+yolo_dataset/
+runs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+
+# Weights and datasets that must never land in git
+*.pt
+*.tflite
+*.pb
+*.ckpt
+*.tfrecord
+saved_model/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
