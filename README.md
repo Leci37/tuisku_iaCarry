@@ -12,6 +12,7 @@ so you can read only the phase you are working in.
 
 | Phase | File | Covers |
 |---|---|---|
+| 0 · Transition | [`TRANSITION.md`](TRANSITION.md) | **What replaces phases 1 and 2, and in what order.** The confirmed defects, the intake steps and the training steps side by side with what they should be, the 2026 tool landscape, and the three decisions the plan cannot make. Read this first if you are about to record video or train a model |
 | 1 · Ingestion | [`README_1_INGESTION.md`](README_1_INGESTION.md) | Raw video → labelled dataset. Frame extraction, background removal, synthetic composition, the click-once tagging GUI, mask tracking, box review, class balancing |
 | 2 · Training | [`README_2_TRAINING.md`](README_2_TRAINING.md) | Dataset → model file. Transfer learning, checkpoints, the `detect` signature, evaluation, TFLite export |
 | 3 · Server | [`README_3_SERVER.md`](README_3_SERVER.md) | The Flask backend. Routes, the model singleton, the inference lock, the response contract, the three thresholds |
@@ -25,7 +26,7 @@ Two things to know before reading any of them:
   both `ingestion/` and `training/`, and phases 1 and 2 describe both. Track A is
   what the server runs today; track B has the better labels and its output is not
   yet wired to anything.
-- Each of the four files ends with a **"what is missing"** section. Those are the
+- Each of the five files ends with a **"what is missing"** section. Those are the
   open gaps, not a description of what works.
 
 `serving/FLOW.md` complements phases 3 and 4 with the customer-level narrative and
