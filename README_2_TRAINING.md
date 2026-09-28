@@ -184,9 +184,26 @@ VAL_RATIO 0.2   SEED 42   IMG_SIZE 1280   epochs 50   base yolov8n.pt
 Steps: intersect image and label basenames (so a frame missing either is dropped)
 → `train_test_split(test_size=0.2, random_state=42)` → copy into
 `yolo_dataset/{train,val}/{images,labels}` → write `yolo_data.yaml` with an
-absolute `path:` → `YOLO("yolov8n.pt").train(...)` → predict on the first five
-validation images as a smoke test. `torch.cuda.is_available()` is printed at
-startup, because the difference between GPU and CPU here is hours.
+absolute `path:` → `YOLO("yolov8n.pt").train(...)` → export TorchScript and ONNX
+→ print a metrics summary → predict on the first five validation images as a
+smoke test. `torch.cuda.is_available()` is printed at startup, because the
+difference between GPU and CPU here is hours.
+
+> ⚠️ **As committed, the script stops right after training.** The export call
+> passes `path=` (`:101`), which is not an Ultralytics argument, so it raises
+> `SyntaxError`: nothing is exported, and the metrics summary and smoke test
+> never run. Were they reached, `results.metrics` (`:106`) would raise
+> `AttributeError` — the values live under `results.box`. What survives is what
+> the trainer wrote itself: `weights/best.pt` and `last.pt`, `results.csv`, PR
+> curves and a confusion matrix under `gui_05_model/yolov8_gui042_augmented/` —
+> or, in recent releases, which resolve a relative `project` inside the runs
+> directory, `runs/detect/gui_05_model/yolov8_gui042_augmented/`. Checked against
+> the Ultralytics 8.0.200 and 8.4.164 source.
+
+> 🔴 **Those validation numbers are optimistic by construction.** The split is
+> over individual frames, after offline augmentation: `X.png` and its
+> `X__aug1.png` can land on opposite sides, and so can neighbouring frames of one
+> clip. B1 in `TRANSITION.md` gives the grouped split that replaces it.
 
 Two naming traps:
 - The old filename said **`gui041`** while the code reads **`gui_042_bbox_clean`**.
@@ -201,8 +218,9 @@ Two naming traps:
 ## What is missing from training
 
 1. **Track B's output goes nowhere.** It produces `gui_05_model/…/best.pt`. The
-   server loads a TF SavedModel with a `detect` signature. There is no converter,
-   and no YOLO inference path in `serving/`. **All the track B work is currently
+   server loads a TF SavedModel with a `detect` signature. There is no working
+   converter — the script's own ONNX/TorchScript export fails (above) — and no
+   YOLO inference path in `serving/`. **All the track B work is currently
    disconnected from production** — the single most consequential gap in the
    project. Either export YOLOv8 → SavedModel/ONNX and add a loader, or accept
    track B as research and say so.
@@ -210,12 +228,12 @@ Two naming traps:
    `P_Category_index.pickle`, `model_efi_d2_aug/`, `ssd_mobilenet_v2_fpnlite_640x640/`,
    `label_map*.pbtxt` — all referenced, none present, no download script, no note
    on where they live. A clean clone cannot train or serve.
-3. **No quantitative evaluation, on either track.** No mAP, no per-class PR, no
-   confusion matrix committed. Track A evaluates by looking at JPEGs. Meanwhile
-   `README.md` advertises **98% accuracy** and the checkout screen shows
-   `98% accuracy` / `1.2s inference` — `serving/FLOW.md` §8 confirms both are
-   **hardcoded constants, not measurements**. Either measure them or stop
-   displaying them.
+3. **No trustworthy quantitative evaluation, on either track.** No mAP, no
+   per-class PR, no confusion matrix committed. Track A evaluates by looking at
+   JPEGs; track B's trainer writes all three to its run folder, but scored on the
+   leaky split. Meanwhile the checkout screen shows `98% accuracy` /
+   `1.2s inference` — `serving/FLOW.md` §8 confirms both are **hardcoded
+   constants, not measurements**. Either measure them or stop displaying them.
 4. **`utils_transfer_learning` does not exist** — imported by
    `training/tensorflow/03_train_eroski.py:22`. That import fails from a clean clone.
 5. **The export step is missing.** `exporter_main_v2.py` is the bridge from a
@@ -233,4 +251,5 @@ Two naming traps:
    `training/tensorflow/07_inspect_signature_detect.py` and `training/tflite/02_detect.py` all reference cat/dog/zombie
    images and models.
 9. **`requirements.txt` covers track A only** — no `ultralytics`, `torch`,
-   `scikit-learn`, `albumentations`, `gradio`.
+   `scikit-learn`, `albumentations`, `gradio` — and pins no exact versions, so
+   the Ultralytics API a past run used cannot be recovered.

@@ -13,9 +13,37 @@ Two parts, matching the two phases being replaced:
 - **[Part B — Training](#part-b--training)** · that dataset → a model you can measure
 
 Everything here is either (a) read in the code on this branch, with `file:line`,
-or (b) checked against a vendor or primary source on 2026-09-09, listed in
-[Sources](#sources). Nothing was measured on iaCarry data — no dataset, weights,
-`label_map.pbtxt` or checkpoint exists on the machine this was written on.
+or (b) checked against a vendor or primary source on 2026-09-09 and again on
+2026-09-28, listed in [Sources](#sources). Nothing was measured on iaCarry data —
+no dataset, weights, `label_map.pbtxt` or checkpoint exists on the machine this
+was written on.
+
+---
+
+## Second review — 2026-09-28
+
+Every code claim was re-read at `0738725` and every tool claim re-checked against
+a primary source. **Verdict: viable.** Click once, propagate, export many boxes
+is the standard way to label video today, and the tools named here are the right
+family. What changed:
+
+1. **SAM 3 finds instances, not SKUs.** Its prompts are simple noun phrases
+   (`can`, `box`), and its own paper says it struggles with fine-grained concepts
+   zero-shot. Six of the 14 catalogue SKUs are 33 cl cans. A person names the SKU
+   of each tracked instance, once per clip — see [A2](#a2--identify--the-one-rewrite).
+2. **Pilot before repairing.** The first sequence spent 2–4 days fixing the Gradio
+   apps and the SAM 1 wrapper, which A3 and A6 then retire. The new
+   [Sequence](#sequence) freezes the old intake, pilots the new one, and repairs
+   only what survives.
+3. **The YOLO script dies at export, not at metrics.** `path=` is not an
+   Ultralytics argument, so line 101 raises as soon as training ends. The weights
+   it tried to export *were* `best.pt` — Ultralytics reloads it after `train()`.
+4. **Four defects the first review missed, and ten of its rows corrected or
+   extended** — see [Confirmed defects](#confirmed-defects). The phase READMEs
+   were corrected where they described behaviour the code does not have.
+5. **A step the plan lacked:** once a model is good enough, it pre-labels new
+   video and people correct it. That loop, not the tracker, removes most
+   labelling in the long run.
 
 ---
 
@@ -33,45 +61,62 @@ industry settled on. What has gone wrong is narrower and worse.
 > the numeric gate marks its own homework. This is the whole reason the project's
 > state cannot currently be assessed.
 
-And one thing changed in the wider world that removes the deepest design flaw for
-free:
+And one thing changed in the wider world that solves the hard half of the
+deepest design flaw:
 
 > ✅ **SAM 3 returns every instance of a concept at once, each with its own ID.**
-> SAM 1 and SAM 2 predicted one object per prompt — which is exactly why
-> `02_label_gui.py:64` stores one mask per product *name*, and why two identical
-> products collapse into one. Prompt `cocacola_33cl` once and all of them come
-> back separately. The counting bug is fixed by the model, not by code anyone has
-> to write. SAM 3 shipped 2025-11-19; SAM 3.1 followed 2026-03-27 and tracks up to
-> **16 objects in a single forward pass**. A cart holds roughly 8–15 items.
+> SAM 1 and SAM 2 predict one object per prompt, and the labelling GUI keys each
+> prompt by product *name* (`02_label_gui.py:64`) — so two identical products
+> collapse into one. Prompt `can` once and every can comes back separately.
+> Instance separation, the root of the counting bug, now comes from the model;
+> the schema that stores it ([A2](#a2--identify--the-one-rewrite)) is still yours
+> to write. SAM 3 shipped 2025-11-19; SAM 3.1 followed 2026-03-27 and tracks
+> objects in buckets of **16 per forward pass** — a speed gain, not a cap. A cart
+> holds roughly 8–15 items.
+>
+> ⚠️ **What SAM 3 does not do is tell SKUs apart.** A concept prompt is a simple
+> noun phrase, and the SAM 3 paper states the model struggles with fine-grained
+> concepts zero-shot. `can` returns the Coca-Cola, the Fanta and both Mahous
+> alike. Whether a brand-level prompt such as `Mahou 5 Estrellas can` separates
+> them is untested. Plan on a person naming the SKU of each tracked ID, and let
+> the pilot show whether prompts can take that over.
 
 ---
 
 ## Confirmed defects
 
 Ranked by damage to final model quality. Every row was read in the source on
-`_co_dev1`. These are the reason for the transition, not a wish list.
+`_co_dev1`, and re-read at `0738725` for the second review; rows marked *(2nd)*
+were added or corrected then. These are the reason for the transition, not a
+wish list.
 
 | Sev | Defect | Where | Effect |
 |---|---|---|---|
-| 🔴 | Masks keyed by product label — no instance identity | `ingestion/video/02_label_gui.py:64`, `label_gui_utils.py:146` | A second click on the same label **overwrites** the first. One `.npy` per label per frame; downstream keeps only the largest connected component. Quantity is unrepresentable — while the checkout screen displays `✓ × N` badges |
-| 🔴 | Review GUI approves the wrong frame | `ingestion/video/04_bbox_review.py:128`, `:187` | `accept_frame()` loads the *next* frame, saves it, marks it accepted, *then* displays it. `demo.load(fn=accept_frame)` auto-accepts frame 1 sight-unseen. The operator judges frame N; the keystroke commits N+1 |
+| 🔴 | Masks keyed by product label — no instance identity *(2nd)* | `ingestion/video/02_label_gui.py:49-64`, `label_gui_utils.py:165` | Clicks accumulate per label into **one point prompt**, and the result replaces that label's mask. A click on a second unit of the same product joins the first unit's prompt — one mask, one `.npy` per label. Downstream keeps only the largest connected component (`track_masks_utils.py:154`). Quantity is unrepresentable — while the checkout screen displays `✓ × N` badges |
+| 🔴 | Review GUI approves the wrong frame *(2nd)* | `ingestion/video/04_bbox_review.py:128`, `:187` | `accept_frame()` loads the *next* frame, saves it, marks it accepted, *then* displays it. `demo.load(fn=accept_frame)` auto-accepts frame 1 sight-unseen. After any Accept the frame on screen is **already saved**: Accept commits the frame after it, and Discard skips one frame and marks the one after that — the frame judged bad stays in the dataset. Only Undo removes the frame on screen, and it then marks the next one discarded unseen |
 | 🔴 | Augmented copies split across train and val | `ingestion/video/06_rotate_stats_balance.py:131`, `training/yolo/01_train_yolov8.py:30` | `X__aug1.png` is written beside `X.png`; the trainer then splits basenames at random. The same photograph, colour-jittered, lands on both sides |
 | 🔴 | Near-duplicate frames split across train and val | `training/yolo/01_train_yolov8.py:30` | Frames pooled from all clips and split individually. Frames 4 and 9 of one clip — same cart, 5/30 s apart — routinely land on opposite sides |
-| ⚠️ | Mask post-processing selects the background | `ingestion/video/sam_wrapper.py:58`, `:69` | `labels` is shifted `+1`, then component `largest_idx + 1` is selected. For a single foreground blob that expression resolves to the background. The mask is inverted |
-| ⚠️ | Inverted masks pass every quality gate | `ingestion/video/track_masks_utils.py:89` | There is a `min_area` and **no maximum**. A near-full-frame mask has aspect ratio 1.78, solidity ≈ 1.0, circularity ≈ 0.79, one contour — it clears all five filters and becomes a whole-image box labelled as that product |
-| ⚠️ | Tracker retry re-prompts with a hardcoded centre box | `ingestion/video/sam_wrapper.py:148` | When a tracked mask drops below `min_area` — i.e. exactly when the product becomes small or occluded — SAM is re-prompted with the middle 50 % of the frame, not the object. Live, via `03_track_masks.py:47` |
-| ⚠️ | Geometry filters reject the target catalogue | `ingestion/video/track_masks_utils.py:89` | `max_aspect_ratio=4.0`, `min_circularity=0.15`. Toothbrushes, toothpaste tubes edge-on, spaghetti boxes, thin visible slivers of occluded items — all systematically discarded |
+| ⚠️ | A lost product is dropped from a kept frame *(2nd)* | `ingestion/video/03_track_masks.py:108-110` | An empty mask is read as "not in view": the label is skipped and the frame is saved. When the tracker has lost a product that is still visible, the frame goes into the dataset with that product unboxed, teaching the model to ignore it. Nothing tells the two cases apart, and review shows only the boxes that exist |
+| ⚠️ | Mask post-processing selects the background *(2nd)* | `ingestion/video/sam_wrapper.py:58`, `:69` | `labels` is shifted `+1`, then component `largest_idx + 1` is selected. For a single foreground blob that expression resolves to the background. The mask is inverted. Reached only through the tracker retry (`:155`); the click path stores SAM's mask untouched |
+| ⚠️ | Inverted masks pass every quality gate *(2nd)* | `ingestion/video/track_masks_utils.py:89` | There is a `min_area` and **no maximum**. A near-full-frame mask of a 16:9 frame has aspect ratio 1.78, solidity ≈ 1.0, circularity ≈ 0.72, one external contour — it clears all five filters. The retry writes a 0/1 mask, so it lands on the product tagged first (id 1, `03_track_masks.py:104`): a whole-image box labelled as that product |
+| ⚠️ | Tracker retry re-prompts with a hardcoded centre box *(2nd)* | `ingestion/video/sam_wrapper.py:142`, `:148` | Fires when the **combined** mask area of all tracked products drops below 500 px — near-total tracking loss, or an empty view — and re-prompts SAM with the middle 50 % of the frame, not the object. Live, via `03_track_masks.py:47` |
+| ⚠️ | Geometry filters reject the target catalogue *(2nd)* | `ingestion/video/track_masks_utils.py:89` | `max_aspect_ratio=4.0`, `min_circularity=0.15`. Toothbrushes, toothpaste tubes edge-on, spaghetti boxes, thin visible slivers of occluded items — all systematically discarded. One failing product discards the **whole frame** (`03_track_masks.py:111-115`), taking every other product's label with it |
+| ⚠️ | Image and label orientation can disagree *(2nd)* | `ingestion/video/bbox_review_utils.py:449-458`, `:467` | Review rotates the *pixels* by the clip's orientation metadata (read through the Windows Shell, `label_tools.py:200`), with filename exceptions for `_n2 (` clips, and rescales the boxes without rotating them. The boxes were computed in step 03, which reads frames with no rotation handling. For a clip review rotates, image and label agree only if the OpenCV that ran step 03 auto-rotated frames and the one that ran step 04 did not. Nothing checks it |
 | ⚠️ | No held-out test set | `training/yolo/01_train_yolov8.py:122` | Train/val only, then `val_ids[:5]` reused as "test predictions". No honest final number even before the leakage |
-| ⚠️ | No correction path in review | `ingestion/video/bbox_review_utils.py:163` | `correct_box()` exists and is wired to no control. A nearly-right box must be discarded |
-| ⚠️ | Metrics block never runs | `training/yolo/01_train_yolov8.py:106-117` | Reads `results.metrics`, `.map50`, `.precision`, `.ap_class` — not where Ultralytics puts them. Raises `AttributeError`, so no metrics summary has ever printed. Verify against the pinned version |
+| ⚠️ | No correction path in review *(2nd)* | `ingestion/video/bbox_review_utils.py:163`, `:258` | `correct_box()` exists and is wired to no control — it is an OpenCV `imshow` loop, so it could not run inside the Gradio page as written. `draw_key_legend()` advertises `s`/`c`/`d`/`q` keys that nothing binds; only ← and → work. A nearly-right box must be discarded |
+| ⚠️ | The YOLO script stops at export *(2nd)* | `training/yolo/01_train_yolov8.py:101`, `:106` | `model.export(..., path=…)`: `path` is not an Ultralytics argument, so the call raises `SyntaxError` the moment training ends — nothing is exported, and the metrics block and sample predictions are never reached. Past that, `results.metrics` would raise `AttributeError`: `train()` returns a `DetMetrics` whose values live under `.box` (`.box.map50`, `.box.map`, `.box.mp`, `.box.mr`). Both checked in the Ultralytics 8.0.200 and 8.4.164 source. The trainer has already written `best.pt`, `results.csv` and its validation plots by then |
 | ⚠️ | Unknown classes dropped from the basket | `serving/FLOW.md:330` | A product the model names but the front-end catalogue lacks is discarded and never charged — classified as "allowed". A correct prediction the application throws away is still a product failure |
-| 🔴 | Azure training key in plaintext, public repo | `ingestion/synthetic/05b_azure_upload_augmented.py:14`, `06_azure_download_coco.py:22` | Rotate it. The only item here with a deadline set by someone else |
-| ℹ️ | "98 % accuracy" is a literal | `serving/templates/iacarry_checkout.html:194` | Hardcoded, as is "1.2s inference". Shown to customers and quoted in `README.md`. Measure it or remove it |
+| 🔴 | Azure keys in plaintext, public repo *(2nd)* | `ingestion/synthetic/05b_azure_upload_augmented.py:14`, `06_azure_download_coco.py:22-23` | Two keys: the Custom Vision training key, in both files, and a second key at `06:23` whose comment links to the Keys page of an Azure AI Search service, beside the subscription id. Rotate both — deleting them from the source leaves them in Git history. The only item here with a deadline set by someone else |
+| ℹ️ | "98 % accuracy" is a literal *(2nd)* | `serving/templates/iacarry_checkout.html:194` | Hardcoded, as is "1.2s inference". Shown to customers. Measure it or remove it. (The first review said `README.md` quotes it; it never has) |
+| ℹ️ | A third class ordering, hardcoded *(2nd)* | `ingestion/video/bbox_review_utils.py:29-44`, `:231` | The review step's `coco_annotations.json` takes category **ids** from the YOLO labels but category **names** from a hardcoded 14-SKU list. If that order differs from `classes.txt`, every name in the file is wrong. The YOLO labels are unaffected — feed trainers that read COCO, RF-DETR included, from those |
+| ℹ️ | Step 03 cannot start from a clean clone *(2nd)* | `ingestion/video/track_masks_utils.py:12` | Imports `parse_label_map` from `utils_`, which does not exist — it lives in `label_tools.py`. `tools/check_imports.py` takes unknown names for third-party packages, so it reports the import as resolved |
 | ✅ | The labelling GUI itself is **not** at fault | `ingestion/video/02_label_gui.py:57` | Clicks *are* passed to SAM correctly via `first_frame_click`. The broken centre-box `segment_objects()` is dead code, reachable only from `legacy/` |
 
-> ⚠️ **The READMEs are reliable on structure and unreliable on behaviour.** They
-> state that quantitative YOLO evaluation and export are absent; the script
-> attempts both. The real problem is subtler — the metrics call throws.
+> ⚠️ **The phase READMEs were reliable on structure and unreliable on
+> behaviour.** The second review corrected them where they described behaviour
+> the code does not have: post-processing in labelling, box correction in
+> review, the orientation step 05 produces, and how far the YOLO script gets.
+> Treat any behavioural claim not tied to a `file:line` as unverified.
 
 ---
 
@@ -83,13 +128,20 @@ every step below is a repair or a tool swap; exactly one is a rewrite.
 ## The target loop
 
 ```
-YOU      prompt each SKU ──────────────► correct once ──────────► review the export
-         text or a few clicks           at the FIRST bad frame    tens, not thousands
-            │                                  ▲   │                      ▲
-            ▼                                  │   ▼                      │
-TOOL     all instances found ─► propagate ─────┘   re-propagate ─► export diverse ─┘
-         separate IDs · SAM 3   through clip        that span only    frames → boxes
+YOU                                         TOOL
+① prompt a concept — "can", "box" —   ──►  ② every instance found, each with
+  or draw one exemplar box                    its own ID (SAM 3)
+③ name the SKU of each ID,            ◄──
+  once per clip                       ──►  ④ propagate every ID through the clip
+⑤ correct at the FIRST bad frame      ◄──
+                                      ──►  ⑥ re-propagate that span only
+                                           ⑦ export diverse frames → boxes
+⑧ review the export — tens,           ◄──
+  not thousands
 ```
+
+Step ③ is the one the first version of this loop left out: SAM 3 separates
+instances, it does not name SKUs (see [A2](#a2--identify--the-one-rewrite)).
 
 Two rules make this work, and both are absent today:
 
@@ -119,7 +171,7 @@ visible parts of one object where occlusion splits the mask. Never invent a box
 for a fully hidden object — it may stay in a temporal inventory record, but it
 gets no image annotation.
 
-**Effort:** half a day *(estimate)*. Also rotate the Azure key here.
+**Effort:** half a day *(estimate)*. Also rotate both Azure keys here.
 
 ## A1 · Capture — variety, not translation
 
@@ -171,20 +223,39 @@ and it is the one judgement worth your time.
 > schema that cannot express instances forces a re-annotation project later, and
 > the instance fields are needed anyway to fix counting.
 
+**Where SAM 3 fits, and where it stops.** A concept prompt (`can`, `bottle`,
+`box`) or one exemplar box drawn round a single unit returns every matching
+instance with its own ID. That fills the **instance** field. The **SKU** field is
+a person's call: name each ID once per clip, and the name holds for every frame
+that ID is tracked through. Six of the 14 SKUs are 33 cl cans (`aguila`,
+`cocacola`, `estrellag`, `fanta`, `mahou00`, `mahou5`), and the catalogue will
+grow — the fine-grained case the SAM 3 paper names as its weakness. Test
+brand-level prompts in the pilot; do not build the workflow on them.
+
 ## A3 · Propagate — swap the engine
 
 | Now | Should be |
 |---|---|
-| SAM 1 ViT-H + XMem through a Track-Anything fork. On low mask area it re-prompts with a hardcoded centre box (`sam_wrapper.py:148`) and then inverts the mask (`:58`, `:69`) | A promptable video segmenter with native memory-based propagation, driven from an annotation tool rather than a bespoke script. Handle entry, exit and reappearance explicitly. Correct at the first bad frame and re-propagate that interval |
+| SAM 1 ViT-H + XMem through a Track-Anything fork. When the combined mask area collapses it re-prompts with a hardcoded centre box (`sam_wrapper.py:148`) and then inverts the mask (`:58`, `:69`) | A promptable video segmenter with native memory-based propagation, driven from an annotation tool where one fits, a thin script over SAM 3 where it does not — never again a bespoke tracking stack. Handle entry, exit and reappearance explicitly. Correct at the first bad frame and re-propagate that interval |
 
 `ingestion/video/sam_wrapper.py` and `03_track_masks.py` are the files this step
 retires. Two generations behind, and both defects above are live.
+
+Two free ways to drive SAM 3 today: from an annotation tool (see
+[Annotation interfaces](#annotation-interfaces)), or from a short script —
+Ultralytics' `SAM3VideoSemanticPredictor` takes several concept prompts in one
+pass. The official `sam3` package asks for Python 3.12+, PyTorch 2.7+ and
+CUDA 12.6+, and documents a Linux setup; on the Windows workstation, budget for
+WSL2 or a Linux GPU box and confirm it in the pilot. (Today's intake is the
+opposite — Windows-only, through `win32com` at `label_tools.py:196`.) The
+checkpoint is 3.45 GB (848 M parameters), and published timings are on
+data-centre GPUs.
 
 ## A4 · Quality filtering — repair, do not delete
 
 | Now | Should be |
 |---|---|
-| Generic geometry gates: `min_area=300`, `max_aspect_ratio=4.0`, `min_circularity=0.15`, `min_solidity=0.10`, `max_components=4`. No maximum area. A frame failing the check is dropped whole | Filters appropriate to product geometry — a toothbrush is legitimately long and thin. **Add a maximum-area gate** so an inverted mask cannot pass. Route suspicious masks to human review rather than deleting them silently. Flag **missing** instances, the error class the current gates cannot see at all |
+| Generic geometry gates: `min_area=300`, `max_aspect_ratio=4.0`, `min_circularity=0.15`, `min_solidity=0.10`, `max_components=4`. No maximum area. A frame failing the check is dropped whole. An empty mask drops the product and keeps the frame | Filters appropriate to product geometry — a toothbrush is legitimately long and thin. **Add a maximum-area gate** so an inverted mask cannot pass. Route suspicious masks to human review rather than deleting them silently. Flag **missing** instances, the error class the current gates cannot see at all |
 
 Automated warnings worth having, in priority order — these prioritise review, they
 do not certify labels:
@@ -207,11 +278,11 @@ Also sample the cases that raise *no* warning — a stable error goes unnoticed.
 This is where FiftyOne earns its place — `compute_near_duplicates()` answers
 "which of my thousands of tracked frames are actually different?"
 
-## A6 · Human validation — repair first, then swap
+## A6 · Human validation — freeze, then swap
 
 | Now | Should be |
 |---|---|
-| A Gradio app that saves and marks accepted the frame it is *about to show*. Loading the page accepts frame 1. No correction control. Accept or discard only | The decision must apply to the frame **on screen** — fix this before anything else in review. Then: accept, correct, reject, **and uncertain**; an explicit "is every visible in-scope product labelled?" check; recorded reviewer identity and timestamp |
+| A Gradio app that saves and marks accepted the frame it is *about to show*. Loading the page accepts frame 1. After any Accept, the frame on screen is already saved, so Discard cannot remove it. No correction control. Accept or discard only | **Do not approve data with the current app.** If it survives the [pilot](#sequence), the first fix is that the decision applies to the frame **on screen**. Then: accept, correct, reject, **and uncertain**; an explicit "is every visible in-scope product labelled?" check; recorded reviewer identity and timestamp |
 
 Five questions that decide whether a label is good. Apply all five, every time:
 
@@ -258,11 +329,13 @@ test set is a pilot diagnostic, not a production gate.
 
 | Now | Should be |
 |---|---|
-| YOLO and COCO files across hand-configured folders, with an undocumented rename between steps 03 and 04. `classes.txt` read from two different directories that must not disagree | One versioned dataset release with a manifest carrying, per image: source video, frame index, instance and SKU ids, annotation origin (proposed vs. approved), reviewer decision, content hash |
+| YOLO and COCO files across hand-configured folders, with an undocumented rename between steps 03 and 04. `classes.txt` read from two different directories that must not disagree — and one of them, `gui_04_bbox_clean/`, is written by no step. A third, hardcoded ordering names the COCO categories | One versioned dataset release with a manifest carrying, per image: source video, frame index, instance and SKU ids, annotation origin (proposed vs. approved), reviewer decision, content hash |
 
 Store training frames **clean** — no painted masks, no drawn boxes. Keep overlays
-separately. Validate that every exported label matches its image's actual
-orientation and dimensions.
+separately. (Today's review step already does this: it re-reads frames from the
+source video.) Validate that every exported label matches its image's actual
+orientation and dimensions — today it may not (see the orientation row in
+[Confirmed defects](#confirmed-defects)).
 
 > 🔴 **`label_map.pbtxt` defines what class id 5 means for every label ever
 > produced, and it exists on exactly one machine and nowhere else.** It is not in
@@ -280,8 +353,9 @@ validation set. If it cannot show a gain there, delete it and reclaim the
 maintenance.
 
 > ⚠️ **Azure Custom Vision retires 2028-09-25**, and Microsoft's guidance was to
-> have a transition plan in place by **2026-09-25** — about two weeks from this
-> writing. The dependency was going to be retired anyway; this makes it scheduled.
+> have a transition plan in place by **2026-09-25**. That date passed three days
+> before the second review; the service itself keeps running until retirement.
+> The dependency was going to be retired anyway; this makes it scheduled.
 
 ---
 
@@ -317,7 +391,7 @@ and every comparison afterwards depends on it existing.
 
 | Now | Should be |
 |---|---|
-| A print block that raises `AttributeError`, with hand-written `ideal >` thresholds beside each line. Track A evaluates by eye on JPEGs. No mAP, PR curve or confusion matrix stored anywhere in the repo | Saved, versioned metrics. Ultralytics already provides mAP, PR curves and confusion matrices — no new architecture is needed to start measuring |
+| A print block the script never reaches — it stops at the export on line 101 — and that would raise `AttributeError` if it did, with hand-written `ideal >` thresholds beside each line. The trainer's own `results.csv`, PR curves and confusion matrix *are* written to the run folder, but scored on the leaky split. Track A evaluates by eye on JPEGs. None of it is in the repo | Saved, versioned metrics. Ultralytics already provides mAP, PR curves and confusion matrices — read them from `results.box`, keep the run folder beside the dataset version. No new architecture is needed to start measuring |
 
 The printed `ideal >` values are **not** release criteria.
 
@@ -371,22 +445,34 @@ COCO accuracy does not transfer to this domain:
 | RF-DETR Medium | 54.7 | 33.7 M | 4.4 ms | Apache 2.0 |
 | RF-DETR Large | 56.5 | 33.9 M | 6.8 ms | Apache 2.0 |
 | RF-DETR XLarge / 2XL | 58.6 / 60.1 | ~126 M | 11.5 / 17.2 ms | PML 1.0 |
-| Ultralytics YOLO26 *(Jan 2026)* | — | — | — | AGPL-3.0 or paid |
-| `yolov8n` *(current)* | — | ~3.2 M | — | AGPL-3.0 or paid |
+| Ultralytics YOLO26 n / s / m *(Jan 2026)* | 40.9 / 48.6 / 53.1 | 2.4 / 9.5 / 20.4 M | 1.7 / 2.5 / 4.7 ms | AGPL-3.0 or paid |
+| `yolov8n` *(current)* | 37.3 | 3.2 M | — | AGPL-3.0 or paid |
 
-RF-DETR figures are vendor-published on **NVIDIA T4, TensorRT FP16, batch 1**, not
-independently reproduced. RF-DETR Large reportedly reaches 56.5 AP at 6.8 ms
-against YOLOv11x at 50.9 AP at comparable latency, and is stronger on
-domain-shift benchmarks — the property that matters most here, because the model
-must work in a store it was not trained in. It accepts **COCO JSON or YOLO
-format**, so existing labels feed it without conversion. Fine-tuning wants a CUDA
-GPU with ≥ 8 GB VRAM.
+RF-DETR and YOLO26 figures are vendor-published on **NVIDIA T4, TensorRT FP16,
+batch 1**, not independently reproduced; `yolov8n`'s come from Ultralytics' own
+table. YOLO26n is the only row with a published CPU figure — 38.9 ms through
+ONNX — which matters if a store station has no GPU.
+
+RF-DETR Large reportedly reaches 56.5 AP at 6.8 ms against YOLOv11x at 50.9 AP
+at comparable latency, and is stronger on domain-shift benchmarks — the property
+that matters most here, because the model must work in a store it was not
+trained in. It accepts **COCO JSON or YOLO format**, so existing labels feed it
+without conversion — use the YOLO labels, not the review step's COCO file (see
+the class-ordering row in [Confirmed defects](#confirmed-defects)). Fine-tuning
+wants a CUDA GPU with ≥ 8 GB VRAM.
 
 > ⚠️ **"Nano" is not a like-for-like swap.** RF-DETR Nano is ~30.5 M parameters
 > against `yolov8n`'s ~3.2 M — roughly ten times the model, at 2.3 ms on a T4. For
 > a fixed station with a GPU that is fine and probably desirable, since nano
 > capacity may well be the current limit. For a battery-powered edge device it is
 > not.
+
+On custom data the gaps shrink. A fine-tuning comparison published by JetBrains
+in August 2026, on Roboflow's RF100-VL datasets, found no family winning
+everywhere; on its soda-bottle set, five of six models — RF-DETR, YOLOv12 and
+YOLO26 variants — finished within two mAP points of each other (0.622–0.642).
+Vendor-adjacent, and not carts, but the direction is clear: expect licence and
+target hardware, more than accuracy, to decide, and measure on held-out sessions.
 
 Also worth settling: detection vs. instance segmentation vs. oriented boxes.
 Products stack at angles. Use masks to derive boxes first; benchmark segmentation
@@ -406,7 +492,9 @@ detector is served over HTTP to in-store stations for named supermarket chains.
 | Benchmark both, licence cost as tiebreaker | Correct in principle — but only **after** B1, or the benchmark picks the wrong winner |
 
 SAM's own licence matters far less: it runs in **annotation**, produces labels, and
-never ships to a store. The output is yours. Spend the legal attention here.
+never ships to a store. The output is yours. The same holds for Ultralytics' SAM 3
+wrapper if the scripted route is used — AGPL, but internal and never shipped.
+Spend the legal attention here.
 
 ## B6 · Augmentation — evidence, not settings
 
@@ -440,7 +528,7 @@ Versioning and tracking solve **different** problems and both are needed:
 
 | Now | Should be |
 |---|---|
-| Exports the in-memory model and passes a `path` argument; `best_model_path` is computed at `01_train_yolov8.py:98` and never used, so the exported artefact is probably not `best.pt` | Export the selected checkpoint explicitly, then evaluate **that exact artefact** for accuracy and latency on target hardware |
+| Passes `path=` to `model.export()`, which Ultralytics rejects, so nothing is exported. (The in-memory model *would* have been `best.pt` — `train()` reloads it; `best_model_path` at `01_train_yolov8.py:98` is simply unused) | Export the selected checkpoint explicitly — `YOLO("…/best.pt").export(format=…)` — then evaluate **that exact artefact** for accuracy and latency on target hardware |
 | Server loads a TF SavedModel by `detect` signature, class names from a pickle that must be exported alongside it. YOLO output has no path in. Thresholds duplicated across eight sites with four different values | One integration for the winning model — preprocessing, output format, class mapping — with the threshold defined **once** |
 
 Export does not preserve behaviour for free. Verify preprocessing, rotation, class
@@ -466,8 +554,8 @@ carefully, with a second reviewer resolving ambiguity.
 ## Tools
 
 Grouped by job. *Verdict* is for this project specifically: one person, limited
-time, ~13 SKUs today, a commercial product for named retailers, a Windows machine
-with a GPU.
+time, 14 SKUs today (`bbox_review_utils.py:9`), a commercial product for named
+retailers, a Windows machine with a GPU.
 
 ### Segmentation and tracking engines
 
@@ -475,8 +563,8 @@ Models, not interfaces. Pick an interface that hosts one.
 
 | Engine | Gives you | Advantages | Constraints | Verdict |
 |---|---|---|---|---|
-| **SAM 3** *(2025-11-19)* | Promptable concept segmentation: text or exemplar prompt returns **every** matching instance with unique IDs, in images and video | Solves multi-instance natively — the fix for [A2](#a2--identify--the-one-rewrite). Open-vocabulary, so "toothbrush" works untrained. ~30 ms for 100+ objects on an H200 | Custom **SAM License**, not Apache/MIT. Commercial use permitted, not copyleft, no revenue thresholds — but modifications inherit the terms, and checkpoints are **gated** behind a Hugging Face access request. Trade-control clauses | **Primary** |
-| **SAM 3.1** *(2026-03-27)* | SAM 3 plus object multiplexing — up to 16 objects per forward pass | ~Doubles video throughput (32 fps vs 16 on one H100). Sixteen objects maps onto a cart | Same licence and gating. Whether the chosen interface has adopted it yet is the practical question | **Prefer if hosted** |
+| **SAM 3** *(2025-11-19)* | Promptable concept segmentation: text or exemplar prompt returns **every** matching instance with unique IDs, in images and video | Solves multi-instance natively — the fix for [A2](#a2--identify--the-one-rewrite). Open-vocabulary, so "toothbrush" works untrained. ~30 ms for 100+ objects on an H200 | Prompts are simple noun phrases, and its paper says it struggles with fine-grained concepts zero-shot — it separates cans, it does not name them. 848 M parameters, 3.45 GB checkpoint; official setup Python 3.12+, PyTorch 2.7+, CUDA 12.6+, Linux-style. Custom **SAM License**, not Apache/MIT. Commercial use permitted, not copyleft, no revenue thresholds — but modifications inherit the terms, and checkpoints are **gated** behind a Hugging Face access request. Trade-control clauses | **Primary** — for instances |
+| **SAM 3.1** *(2026-03-27)* | SAM 3 plus object multiplexing — 16 objects per forward pass, more in further buckets | ~Doubles video throughput (32 fps vs 16 on one H100). Sixteen objects maps onto a cart | Same licence and gating. On 2026-09-28 only the official `sam3` code runs it on video: Ultralytics' video predictors still need `sam3.pt`, CVAT has no SAM 3 video at all, and X-AnyLabeling's support is unconfirmed | **Prefer if hosted** |
 | **SAM 2 / 2.1** | Point/box-guided video masks with memory propagation. One object per prompt | Mature, widely integrated — the only SAM generation CVAT's tracker officially supports today | One object per prompt means instance identity is still assigned by hand. Confirm its licence separately — SAM 3's terms were verified, SAM 2's were not | Fallback |
 | **SAM 1 + XMem** *(current)* | What `sam_wrapper.py` wraps, via a Track-Anything fork | — | Two generations behind, and the wrapper carries a mask-inverting off-by-one plus a hardcoded centre-box retry | **Retire** |
 
@@ -487,20 +575,24 @@ cart is **whether the tool propagates many objects at once, or one at a time**.
 
 | Tool | Multi-object tracking | Advantages | Constraints | Cost |
 |---|---|---|---|---|
-| **CVAT** + SAM 2 Tracker | **Yes — all at once.** *Run Actions*, or `Ctrl+E` with nothing selected, applies the tracker to every visible polygon and mask | Best fit for a cart: annotate eight products on a keyframe, propagate all eight in one action. Mature review features — reference ground-truth jobs, consensus, quality dashboards. Re-run from a corrected frame | 🔴 **Community edition does not support it.** Nuclio variant Enterprise-only; AI Agent variant needs CVAT Online or Enterprise, v2.42.0+, Docker Compose on your hardware, GPU strongly recommended. Masks must be converted to polygons. Skeletons unsupported. Single agent, no concurrency; an agent crash loses tracking state | Paid tier or Enterprise |
-| **X-AnyLabeling** + SAM 3 | **No — one target per session.** Docs are explicit: one target for visual prompting, one category per session for text | Free, fully local desktop, no cloud. Hosts SAM 3, so one text prompt per SKU still returns all instances of that SKU with separate IDs — most of what is needed | Eight SKUs means eight propagation sessions per clip: repetitive, though not per-item. Needs client v3.3.4+ and X-AnyLabeling-Server v0.0.4+, plus checkpoints and a BPE vocab file. ~15-frame warm-up; propagates forward from the current frame only; cancelling mid-task loses results | **Free** |
+| **CVAT** + SAM 2 Tracker | **Yes — all at once.** *Run Actions*, or `Ctrl+E` with nothing selected, applies the tracker to every visible polygon and mask | Best fit for a cart: annotate eight products on a keyframe, propagate all eight in one action. Mature review features — reference ground-truth jobs, consensus, quality dashboards. Re-run from a corrected frame | 🔴 **Community edition does not support it.** Nuclio variant Enterprise-only; AI Agent variant needs CVAT Online or Enterprise, v2.42.0+, Docker Compose on your hardware, GPU strongly recommended. Masks must be converted to polygons. Skeletons unsupported. Single agent, no concurrency; an agent crash loses tracking state. SAM 3 is in CVAT for **images** only (visual prompts Jan 2026, label-text prompts Mar 2026); SAM 3 video tracking is announced, not shipped — the tracker is still SAM 2, one object per prompt | Paid tier or Enterprise |
+| **X-AnyLabeling** + SAM 3 | **No — one target per session.** Docs are explicit: one target for visual prompting, one category per session for text | Free, fully local desktop, no cloud. Hosts SAM 3, so one concept prompt still returns every instance with separate IDs — most of what is needed | A prompt per SKU relies on SAM 3 telling brands apart (see above); a prompt per concept (`can`) returns all cans under one label, and each ID still needs its SKU. **Check in the pilot whether one edit renames an ID across all its frames** — if not, the per-ID step becomes per-frame. Needs client v3.3.4+ and X-AnyLabeling-Server v0.0.4+, plus checkpoints and a BPE vocab file. ~15-frame warm-up; propagates forward from the current frame only; cancelling mid-task loses results | **Free** |
+| **A script** on `sam3` or Ultralytics' `SAM3VideoSemanticPredictor` | **Yes** — several concept prompts in one pass, each instance with its own ID (Ultralytics API; in the official repo, several text prompts in one session is an open issue) | Free, local, no per-concept sessions. Writes straight into the A2/A8 manifest schema | The review UI is yours to build or borrow (FiftyOne, X-AnyLabeling) — a smaller share of the maintenance being retired. Ultralytics' wrapper does not yet run SAM 3.1 on video | **Free** |
 | **Roboflow** | Smart Polygon (SAM 2 one-click); Auto Label across whole datasets | Least setup of anything here, and end-to-end: annotate, train, deploy, dataset versioning built in. RF-DETR is theirs. Label Assist lets your own model pre-label the next batch — the active-learning loop | Cloud. Cart footage and catalogue leave the machine — a question to settle with the retail clients, not just internally. Video-tracking ergonomics less specialised than CVAT's | Free public tier with credits; private from ~$79/mo |
 | **Label Studio** | Timeline video labelling; SAM video tracking weaker than CVAT's | Open source, free to self-host, genuinely multi-modal, plugin architecture | Not the strongest video-tracking story. More integration work — the thing being eliminated | Free self-host |
 | **Supervisely** | Full-stack platform with tracking | Broad: annotation, training, deployment. Strong on 3D/LiDAR if that ever matters | Heavier than needed at this scale | Free tier; Pro from ~€199/mo |
 | **The Gradio apps** *(current)* | One mask per product name — instances collapse | Fully understood by their author | Maintenance falls on this project, and the review GUI approves the wrong frame while the correction helper is wired to nothing | **Retire** |
 
 > **The trade-off, stated plainly.** CVAT gives true multi-object propagation but
-> is not free for this feature. X-AnyLabeling is free and local but needs one
-> session per SKU. **Pilot X-AnyLabeling first** — free, local, hosts SAM 3 — and
-> measure approved frames per hour. If per-SKU session overhead is what dominates,
-> *then* the CVAT subscription has a number to justify it. Do not pay to fix a
-> bottleneck that has not been measured. Data-residency obligations to the retail
-> clients may make this decision instead.
+> is not free for this feature, and its tracker is still SAM 2. X-AnyLabeling is
+> free and local but needs one session per concept. **Pilot X-AnyLabeling first**
+> — free, local, hosts SAM 3 — and measure approved frames per hour. If session
+> overhead is what dominates, try **the scripted route** next: also free, and it
+> propagates every concept in one pass. CVAT earns a subscription only once its
+> SAM 3 video tracking ships, or if SAM 2's one-object-per-prompt proves fast
+> enough on a cart. Do not pay to fix a bottleneck that has not been measured.
+> Data-residency obligations to the retail clients may make this decision
+> instead.
 
 ### Curation, versioning, tracking
 
@@ -511,6 +603,7 @@ cart is **whether the tool propagates many objects at once, or one at a time**.
 | **MLflow** | Experiment tracking | Replaces editing constants in source and hoping | With DVC |
 | **Manifest + hashes** | The lineage chain | Cheapest, highest value-to-effort. DVC preserves versions but does not verify the chain is correct | Day one |
 | **FFmpeg** | Clip trimming, frame extraction | Faster and batch-friendly; keeps source video and timestamps intact for lineage | Optional, low priority |
+| **Your own detector, as pre-labeller** | Proposes boxes and SKUs on new video; people correct | The step that removes most of the remaining labelling: later batches are corrected, not created. Also names SKUs, which SAM 3 cannot. Roboflow's Label Assist is the hosted version | Once a model measured on held-out sessions makes correcting faster than creating — compare approved frames per hour both ways. Proposals go to **review**, never straight into labels |
 
 ---
 
@@ -521,22 +614,30 @@ person who knows this codebase — planning numbers, not commitments.
 
 | # | Step | Deliverable | Done when | Effort |
 |---|---|---|---|---|
-| 0 | [Rules and catalogue](#a0--rules-and-catalogue--before-any-tooling) · rotate the Azure key | SKU catalogue, annotation rules, capture plan | Written down and agreed | ½ day |
-| 1 | **Stop manufacturing bad data** | Fix the review GUI frame offset and wire up `correct_box()`. Give annotations instance identity. Fix the off-by-one, add a max-area gate, fix or remove the centre-box retry. Relax the aspect-ratio and circularity filters | Every 🔴 and ⚠️ intake row above is closed | 2–4 days |
-| 2 | **Make one number honest** | Group the split by session, augmentation at training time only, carve an untouched test set, repair the metrics call. Retrain `yolov8n` unchanged | A saved metrics file exists and the number is believable — expect it to **fall** | 2–3 days + compute |
-| 3 | **Prove the loop on two clips** | Two short clips with repeated units and real occlusion, end to end through the new tool | Approved frames per hour is measured and clearly beats hand-labelling | 1–3 days |
-| 4 | **Scale intake to ten videos** | Varied sessions, manifest written as you go, FiftyOne once review is the bottleneck | Ten sessions with full lineage | several days |
-| 5 | **Lineage, then challengers** | DVC + MLflow. Then `yolov8n` baseline vs. a larger variant vs. RF-DETR Small, one change at a time. Settle the licence | A comparison on the same protocol, measured on the exported artefact | across the quarter |
-| 6 | **Close the serving seam** | One integration for the winner, threshold defined once, explicit unresolved state | End-to-end predictions and quantities agree with approved test annotations | — |
-| 7 | **Expand through observed failures** | Recordings targeted at missed SKUs and hard conditions | Successive dataset versions improve independently measured performance | ongoing |
+| 0 | [Rules and catalogue](#a0--rules-and-catalogue--before-any-tooling) · rotate **both** Azure keys | SKU catalogue, annotation rules, capture plan | Written down and agreed | ½ day |
+| 1 | **Freeze the old intake, pilot the new one** | Stop producing data with the Gradio apps and SAM 1 + XMem — free, and it stops the damage at once. Run two short clips with repeated units and real occlusion through SAM 3 (X-AnyLabeling, or the scripted route). Answer four questions: are instances separated? can prompts name SKUs, or must a person? approved frames per hour? does it run on this workstation? | All four answered with numbers, and one intake tool chosen | 1–3 days |
+| 2 | **Make one number honest** | Group the split by session, augmentation at training time only, carve an untouched test set. Fix the export call and read metrics from `results.box`. Retrain `yolov8n` unchanged | A saved metrics file exists and the number is believable — expect it to **fall** | 2–3 days + compute |
+| 3 | **Repair only what survives** | Engine-independent gates on the chosen path: max-area gate, product-appropriate geometry, missing-instance warnings, an image/label orientation check. The Gradio and SAM 1 fixes — frame offset, `correct_box()`, off-by-one, centre-box retry — only if the pilot sends you back to them | No 🔴 or ⚠️ intake row applies to the chosen path | 1–4 days |
+| 4 | **Scale intake to ten sessions** | Varied sessions, manifest written as you go, FiftyOne once review is the bottleneck | Ten sessions with full lineage | several days |
+| 5 | **Lineage, then challengers** | DVC + MLflow. Then `yolov8n` baseline vs. YOLO26 vs. RF-DETR Small, one change at a time. Settle the licence | A comparison on the same protocol, measured on the exported artefact | across the quarter |
+| 6 | **Pre-label with your own model** | The best model proposes boxes and SKUs on new video; people correct, and the corrections feed the next dataset version | Approved frames per hour clearly beats step 1's figure | ongoing, from the first good model |
+| 7 | **Close the serving seam** | One integration for the winner, threshold defined once, explicit unresolved state | End-to-end predictions and quantities agree with approved test annotations | — |
+| 8 | **Expand through observed failures** | Recordings targeted at missed SKUs and hard conditions | Successive dataset versions improve independently measured performance | ongoing |
 
 > 🔴 **Do not start at step 5.** It is the most interesting step and it is
 > worthless before step 2. Comparing RF-DETR against `yolov8n` on a validation set
 > containing the training images produces a confident, precise, meaningless
 > answer — and it will be acted on.
 
-Steps 1 and 2 are independent of 3 and 4 and can proceed in parallel if the
-review-GUI fix lands first.
+Steps 1 and 2 are independent and can run in parallel: the pilot needs new
+clips, the honest number needs only the existing labels and the training script.
+Step 2 scores the existing labels, intake defects included — its number is
+honest about the split, not about the labels.
+
+> **Why this order changed.** The first version repaired the Gradio apps and the
+> SAM 1 wrapper (2–4 days) before the pilot, although A3 and A6 retire both.
+> Freezing costs nothing and stops bad data just as surely; the pilot then
+> decides which repairs are worth making.
 
 ---
 
@@ -544,9 +645,10 @@ review-GUI fix lands first.
 
 | # | Decision | The trade |
 |---|---|---|
-| 1 | **Free and repetitive, or paid and fast?** | X-AnyLabeling costs nothing and stays local but needs one session per SKU. CVAT propagates everything in one action but the feature is absent from the free edition. Pilot free, measure, let the hourly cost decide. Data-residency obligations may decide instead |
-| 2 | **Buy the AGPL exemption, or move to Apache?** | Ultralytics Enterprise keeps the known stack at recurring cost. RF-DETR Nano–Large is Apache 2.0, reads existing YOLO labels, reports better accuracy — at ten times the parameter count. Needs legal input; the one item with a non-technical consequence |
+| 1 | **Free and repetitive, or paid and fast?** | X-AnyLabeling costs nothing and stays local but needs one session per concept. A script on SAM 3 is free and propagates every concept at once, but its review UI is yours to maintain. CVAT propagates everything in one action but the feature is absent from the free edition, and its tracker is SAM 2 until SAM 3 video ships there. Pilot free, measure, let the hourly cost decide. Data-residency obligations may decide instead |
+| 2 | **Buy the AGPL exemption, or move to Apache?** | Ultralytics Enterprise keeps the known stack at recurring cost. RF-DETR Nano–Large is Apache 2.0, reads existing YOLO labels, reports better accuracy — at ten times the parameter count, and without YOLO26n's CPU option. Needs legal input; the one item with a non-technical consequence |
 | 3 | **Does the synthetic track survive?** | It trained the production model, its Azure dependency retires 2028-09-25, and its labels are pixel-exact on images that do not look like real carts. Keep only as a supplement that *measurably* helps on real held-out carts |
+| 4 | **One detector, or locate then identify?** | One detector with a class per SKU is simplest and fastest, and retrains for every new SKU. A class-agnostic "product" detector plus an SKU classifier matches what SAM 3 already produces, adds a SKU with reference crops rather than a retrain, and can give near-identical packaging its own high-resolution check — at the cost of a second model. Decide from step 5's per-SKU confusion matrix, not before; the A2 schema serves both |
 
 ---
 
@@ -585,20 +687,23 @@ trust**, which is far more expensive.
 
 1. **Nothing here has been measured on iaCarry data.** No dataset, weights,
    `label_map.pbtxt` or checkpoint exists on the machine this was written on, and
-   there is no `E:` drive. Every effort figure is an estimate and every target is
-   a proposal.
+   there is no `E:` drive — still true at the second review. Every effort figure
+   is an estimate and every target is a proposal.
 2. **Benchmark figures are vendor-published and not independently reproduced**,
    and COCO accuracy does not transfer to supermarket carts.
 3. **SAM 2's licence was not verified** — only SAM 3's. Check it if SAM 2 becomes
    the chosen engine.
-4. **Whether any interface has adopted SAM 3.1** was not established. Confirm
-   before assuming the 16-object multiplexing is available.
-5. **The metrics-API mismatch needs checking against the pinned Ultralytics
-   version** in the environment that actually runs training, not from
-   documentation.
-6. **Pricing figures are as advertised** and change without notice. Confirm before
+4. **SAM 3.1 on video is available only from the official `sam3` code** as of
+   2026-09-28 — not in Ultralytics' video predictors, not in CVAT. Whether
+   X-AnyLabeling hosts it was not established.
+5. **The Ultralytics API claims were checked in the 8.0.200 and 8.4.164 source**,
+   not run. `requirements.txt` pins no Ultralytics version; confirm against the
+   one in the environment that actually trains.
+6. **Whether SAM 3 can tell the 14 SKUs apart by name was not tested**, and
+   neither was SAM 3 on Windows. The pilot answers both.
+7. **Pricing figures are as advertised** and change without notice. Confirm before
    budgeting.
-7. **No cost is estimated for the physical changes** the occlusion ceiling may
+8. **No cost is estimated for the physical changes** the occlusion ceiling may
    require — a scale, a second camera, or a changed placement flow. That is a
    product decision with a hardware budget, outside this plan.
 
@@ -620,4 +725,14 @@ Checked 2026-09-09.
 - [FiftyOne Brain — near-duplicate and mistakenness detection](https://docs.voxel51.com/brain/index.html)
 - [Roboflow — annotation tool comparison, 2026](https://blog.roboflow.com/best-image-annotation-tools/) *(vendor-authored; treat comparative claims accordingly)*
 
-Code claims were read in this repository at `f921ba7`, branch `_co_dev1`.
+Added at the second review, checked 2026-09-28.
+
+- [SAM 3: Segment Anything with Concepts — paper](https://arxiv.org/abs/2511.16719) · limitations, Appendix B · [facebookresearch/sam3 issue #206](https://github.com/facebookresearch/sam3/issues/206) *(several text prompts in one video session)*
+- [LearnOpenCV — SAM 3.1 Object Multiplex](https://learnopencv.com/sam-3-whats-new/)
+- [CVAT — SAM 3, Part 1: image segmentation](https://www.cvat.ai/resources/changelog/sam-3-image-segmentation) · [Part 2: label-based text prompts](https://www.cvat.ai/resources/changelog/sam3-text-prompts)
+- [Ultralytics Docs — YOLO26 performance table](https://docs.ultralytics.com/models/yolo26)
+- [JetBrains — Fine-tuning SOTA object detection models on real-world datasets, Aug 2026](https://blog.jetbrains.com/pycharm/2026/08/fine-tuning-sota-object-detection-models-on-real-world-datasets/) *(Roboflow datasets and tooling; vendor-adjacent)*
+- Ultralytics source, [8.0.200](https://pypi.org/project/ultralytics/8.0.200/) and [8.4.164](https://pypi.org/project/ultralytics/8.4.164/) from PyPI — `engine/model.py` (`train()` reloads `best.pt`), `cfg/__init__.py` (`check_dict_alignment` rejects unknown arguments), `utils/metrics.py` (`DetMetrics`)
+
+Code claims were read in this repository at `f921ba7`, and re-read at `0738725`
+for the second review, branch `_co_dev1`.
