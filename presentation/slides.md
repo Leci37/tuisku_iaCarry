@@ -16,7 +16,7 @@ JANUARY 2024
 
 Funding Pitch Deck
 
-![iaCarry station prototype](images/station_basket.jpg)
+![iaCarry basket station, 2025 render](images/station_cesta_2025.jpg)
 
 ## 2 · iaCarry-Station components
 
@@ -33,7 +33,7 @@ Internal / not directly visible:
 
 Video: <https://youtu.be/Sj-IvGnjODE?si=jpAaLexO_-1qCau7>
 
-![iaCarry-Station render](images/station_trolley.jpg)
+![iaCarry trolley station, 2025 render](images/station_cart_2025.jpg)
 
 ## 3 · Revenue model
 

@@ -5,7 +5,7 @@ PowerPoint.
 
 | File | What it is |
 |---|---|
-| `iaCarry_pitch_jose_elias.pptx` | The deck itself, unmodified (17 slides, January 2024). This is the one to present |
+| `iaCarry_pitch_jose_elias.pptx` | The deck itself (17 slides, January 2024). This is the one to present. Only change: the station images on slides 1, 2 and 7 are the 2025 renders |
 | `slides.md` | All of its text, one section per slide, readable on GitHub |
 | `images/` | Ten images: the logo, the station for large and small purchases, and the current checkout screen per retailer. Older ones are in `images/old/` |
 | `make_screens.py` | Regenerates the checkout screenshots |
@@ -28,8 +28,8 @@ that shows the old interface or is no longer used is in `images/old/`.
 | File | Shows | From |
 |---|---|---|
 | `logo_iacarry_full.png` | The iaCarry logo with its tagline, "payment in just 6 seconds!" | own logo |
-| `station_trolley.jpg` | The weighing station for **large purchases**: a trolley on the scale, overhead camera, screen, card terminal, exit gate | this deck, slide 2 |
-| `station_basket.jpg` | The weighing station for **small purchases**: a basket on the scale, overhead camera, card terminal | this deck, slide 1 |
+| `station_cart_2025.jpg` | The weighing station for **large purchases**: a trolley on the scale under the overhead camera, a vertical screen showing the real interface, card terminal, enter / do-not-enter signal, exit gate | Sora, 2025; this deck, slide 2 |
+| `station_cesta_2025.jpg` | The weighing station for **small purchases**: a basket on the scale under the overhead camera, a vertical screen showing the real interface, card terminal | Sora, 2025; this deck, slides 1 and 7 |
 | `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme | screenshot |
 | `screen_1…6_*.jpg` | The current checkout screen per retailer, see below | screenshots |
 
@@ -63,6 +63,8 @@ still shows them under the slides that use them.
 | `detection_boxes_clothing_furniture.jpg` | Box detection for clothing and furniture shops | this deck, slide 13 |
 | `detection_iarecycle_waste.jpg` | iaRecycle detecting waste items | this deck, slide 14 |
 | `chart_supermarket_size_spain_2021.png` | Supermarkets in Spain by size, 2021 | this deck, slide 9 |
+| `station_cart_2024.jpg` | The earlier trolley station render | first Sora version, previously slide 2 |
+| `station_cesta_2024.jpg` | The earlier basket station render | first Sora version, previously slides 1 and 7 |
 | `station_camera_arm.png` | The station's overhead camera arm | this deck, slide 3 |
 | `logo_iacarry.png`, `logo_tuisku.png`, `logo_iarecycle.png` | Icon-only logos | both decks |
 

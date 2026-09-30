@@ -16,9 +16,9 @@ exists. This section is the order the work runs in now, and where each step is
 documented.
 
 <p align="center">
-  <img src="presentation/images/station_trolley.jpg" alt="The iaCarry weighing station for large purchases: a trolley on the scale, overhead camera, screen, card terminal and exit gate" height="380">
+  <img src="presentation/images/station_cart_2025.jpg" alt="The iaCarry weighing station for large purchases: a trolley on the scale under the overhead camera, a vertical screen, card terminal, entry signal and exit gate" height="300">
   &nbsp;
-  <img src="presentation/images/station_basket.jpg" alt="The iaCarry weighing station for small purchases: a basket on the scale under the overhead camera, with a card terminal" height="380">
+  <img src="presentation/images/station_cesta_2025.jpg" alt="The iaCarry weighing station for small purchases: a basket on the scale under the overhead camera, a vertical screen and a card terminal" height="300">
 </p>
 <p align="center"><sub>The weighing station, for large purchases (trolley) and small ones (basket).</sub></p>
 

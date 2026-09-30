@@ -3,6 +3,9 @@
 Two images of the iaCarry weighing station for the presentation: the **basket**
 station for small purchases and the **trolley** station for large ones.
 
+**Result:** `../images/station_cart_2025.jpg` and `../images/station_cesta_2025.jpg`,
+now in the deck (slides 1, 2 and 7). The first renders are in `../images/old/`.
+
 | File | What it is |
 |---|---|
 | `draft_v1_basket.webp`, `draft_v1_trolley.webp` | First Sora results, reviewed below |
