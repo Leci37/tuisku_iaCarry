@@ -9,6 +9,7 @@ PowerPoint.
 | `slides.md` | All of its text, one section per slide, readable on GitHub |
 | `images/` | Ten images: the logo, the station for large and small purchases, and the current checkout screen per retailer. Older ones are in `images/old/` |
 | `make_screens.py` | Regenerates the checkout screenshots |
+| `sora/` | Station renders for Sora: the drafts, the review, the prompts, and the checkout screens they must show |
 
 `slides.md` ends with an appendix taken from an earlier deck
 (`Pitch_deck_iaCarry_iaRecycle_05_1.pptx`, March 2024), which is not kept here.
