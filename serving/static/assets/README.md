@@ -32,6 +32,8 @@ background (the 10:3 the design specifies). The filenames are what the page
 requests — `LOGO_IMG` in `iacarry_checkout.html` builds
 `/static/assets/logos/<client>-logo.png` from the theme key, so a logo added for
 a new client must be named for that key or it will not be found.
+`tools/new_client_theme.py` produces the file with the right name and size; see
+"Adding a client" in `README_4_FRONTEND.md`.
 
 The failure path still exists and is worth knowing: a logo that fails to load is
 recorded once and its slot is hidden, so a missing file costs the mark but not

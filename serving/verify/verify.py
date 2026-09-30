@@ -31,7 +31,6 @@ FIXTURE = os.path.join(SERVER_DIR, "sample_upload_response.json")
 PORT = int(os.environ.get("VERIFY_PORT", "8099"))
 BASE = "http://127.0.0.1:%d" % PORT
 LANGS = ["es", "en", "eu", "ca", "pt", "fr", "de"]
-THEMES = ["iacarry", "eroski", "ahorramas", "condis", "mercadona"]
 
 CHROME = os.environ.get("CHROME_PATH") or next(
     (p for p in ["/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
@@ -245,18 +244,21 @@ def main():
         b.close()
 
         # -- E. themes x languages --------------------------------------------
-        print("\n[E] Five themes x seven languages, and large text")
+        print("\n[E] Every theme x seven languages, and large text")
         with Stub(REAL_STATIC, MODE="ok", DELAY=0):
             for width in (1500, 1280):
                 b, pg = new_page(pw, width=width)
                 pg.goto(BASE + "/", wait_until="networkidle")
                 detect(pg)
                 pg.click("#fraudBtn")                      # open the widest panel
+                # Read the client list from the page, so a client added with
+                # tools/new_client_theme.py is covered without editing this file.
+                themes = pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)")
                 broken = []
                 for big in (False, True):
                     if big:
                         pg.click("#big")
-                    for theme in THEMES:
+                    for theme in themes:
                         pg.select_option("#client", theme)
                         for lang in LANGS:
                             pg.select_option("#lang", lang)
@@ -267,10 +269,10 @@ def main():
                                               % (width, theme, lang, "+big" if big else "", bad[:2]))
                     # palette really did swap, to the last theme's primary
                     pri = pg.evaluate("getComputedStyle(document.body).getPropertyValue('--pri').trim()")
-                    want = pg.evaluate("t => THEMES[t].pri", THEMES[-1])
+                    want = pg.evaluate("t => THEMES[t].pri", themes[-1])
                     check("E", "%dpx%s: theme palette applied" % (width, " +big" if big else ""),
                           pri == want and want not in ("", "#6E5AE0"), pri)
-                check("E", "%dpx: no clipping across 5 themes x 7 langs x 2 text sizes" % width,
+                check("E", "%dpx: no clipping across %d themes x 7 langs x 2 text sizes" % (width, len(themes)),
                       not broken, broken[:3])
                 b.close()
 
@@ -313,7 +315,10 @@ def main():
             check("F", "every thumbnail rendered", imgs and all(i["ok"] for i in imgs),
                   [i["src"] for i in imgs if not i["ok"]])
             check("F", "thumbnails served locally", all(i["src"].startswith("/static/") for i in imgs))
-            for theme in ["eroski", "ahorramas", "condis", "mercadona"]:
+            clients = pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)"
+                                  ".filter(k=>THEMES[k].logo)")
+            check("F", "client logos found in the dropdown", len(clients) >= 1, clients)
+            for theme in clients:
                 pg.select_option("#client", theme)
                 pg.wait_for_timeout(400)
                 logos = pg.evaluate("""() => ['#logoBig','#logoSmall'].map(s=>{

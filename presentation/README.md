@@ -34,6 +34,7 @@ is current before quoting either.
 | `detection_boxes_clothing_furniture.jpg` | Box detection for clothing and furniture shops | this deck, slide 13 |
 | `detection_iarecycle_waste.jpg` | iaRecycle detecting waste items | this deck, slide 14 |
 | `logo_tuisku.png`, `logo_iacarry.png`, `logo_iarecycle.png` | Own logos | both decks |
+| `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme | screenshot, not from a deck |
 
 Large PNGs were saved as JPEG (at most 1600 px on the long side) to keep the
 folder light. The originals are still inside the `.pptx`.
