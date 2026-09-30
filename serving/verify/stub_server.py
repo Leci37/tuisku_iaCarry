@@ -1,6 +1,6 @@
 """Stub of serving/app.py, for verifying the checkout UI.
 
-Serves the real template and replays a recorded /upload response, so the whole
+Serves the real template and replays a canned /upload response, so the whole
 front end can be exercised without TensorFlow, the saved model directory or the
 Windows-path evaluation folder — none of which exist outside the deployment box.
 
@@ -13,6 +13,8 @@ Environment:
   PAY_MODE  ok | decline | http500      (for the /payment route)
   STATIC    static folder to serve at /static
   PORT      listen port
+  LABELS    on | off   on (default): a demo frame gets its own answer from
+                       demo_labels/; off: every frame gets the fixture
 """
 import json
 import os
@@ -37,6 +39,24 @@ app = Flask(
 
 with open(os.path.join(SERVER_DIR, "sample_upload_response.json")) as fh:
     FIXTURE = json.load(fh)
+
+# Hand-labelled answers for the four demo frames, keyed by the filename the
+# page posts (ziacarry_eval_img_N.png -> demo_labels/ziacarry_eval_img_N.json).
+# Without them every frame gets FIXTURE, whose boxes belong to no real photo.
+# LABELS=off restores that, which the verification suite relies on.
+LABELS = os.environ.get("LABELS", "on") != "off"
+LABELS_DIR = os.path.join(SERVER_DIR, "demo_labels")
+
+
+def _labels_for(filename):
+    if not LABELS or not filename:
+        return None
+    stem = os.path.splitext(os.path.basename(filename))[0]
+    path = os.path.join(LABELS_DIR, stem + ".json")
+    if not os.path.isfile(path):
+        return None
+    with open(path) as fh:
+        return json.load(fh)
 
 
 @app.route("/")
@@ -70,7 +90,7 @@ def upload_file():
         return _echo_id("File not allowed. Only allowned: png, jpg, jpge", rid)
     if MODE == "empty":
         return _echo_id(json.dumps({**FIXTURE, "predictions": [], "request_id": rid}), rid)
-    body = dict(FIXTURE)
+    body = dict(_labels_for(getattr(f, "filename", None)) or FIXTURE)
     body["request_id"] = rid
     if MODE == "square":
         body["shape_img"] = [800, 800, 3]

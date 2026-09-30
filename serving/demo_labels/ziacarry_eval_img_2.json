@@ -1,0 +1,110 @@
+{
+ "_comment": "Hand-labelled ground truth for this demo frame, not model output. Same shape as a real /upload response; boundingBox width/height hold the RIGHT and BOTTOM edges, as the server sends them.",
+ "path_server": "demo_labels/ziacarry_eval_img_2.json",
+ "shape_img": [
+  640,
+  640,
+  3
+ ],
+ "predictions": [
+  {
+   "probability": 1.0,
+   "tagInt": 13,
+   "tagName": "tostarica_570g",
+   "boundingBox": {
+    "left": 0.1,
+    "top": 0.04,
+    "width": 0.55,
+    "height": 0.47
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 6,
+   "tagName": "colgate_75ml",
+   "boundingBox": {
+    "left": 0.55,
+    "top": 0.26,
+    "width": 0.63,
+    "height": 0.64
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 7,
+   "tagName": "estrellag_33cl",
+   "boundingBox": {
+    "left": 0.71,
+    "top": 0.36,
+    "width": 0.84,
+    "height": 0.68
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 5,
+   "tagName": "colacao_383g",
+   "boundingBox": {
+    "left": 0.14,
+    "top": 0.37,
+    "width": 0.4,
+    "height": 0.56
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 9,
+   "tagName": "hysori_300ml",
+   "boundingBox": {
+    "left": 0.62,
+    "top": 0.41,
+    "width": 0.73,
+    "height": 0.82
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 8,
+   "tagName": "fanta_33cl",
+   "boundingBox": {
+    "left": 0.38,
+    "top": 0.42,
+    "width": 0.57,
+    "height": 0.61
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 3,
+   "tagName": "chipsahoy_300g",
+   "boundingBox": {
+    "left": 0.11,
+    "top": 0.54,
+    "width": 0.45,
+    "height": 0.9
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 2,
+   "tagName": "axedrak_150ml",
+   "boundingBox": {
+    "left": 0.45,
+    "top": 0.61,
+    "width": 0.68,
+    "height": 0.77
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 4,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.43,
+    "top": 0.73,
+    "width": 0.62,
+    "height": 0.89
+   }
+  }
+ ]
+}

@@ -54,8 +54,10 @@ class Stub:
         self.env = env
 
     def __enter__(self):
-        e = dict(os.environ, STATIC=self.static, PORT=str(PORT),
-                 **{k: str(v) for k, v in self.env.items()})
+        # LABELS=off: the checks below are written against the fixture's counts,
+        # not the hand-labelled demo frames (section H covers those).
+        e = dict(os.environ, STATIC=self.static, PORT=str(PORT), LABELS="off")
+        e.update({k: str(v) for k, v in self.env.items()})
         self.p = subprocess.Popen([sys.executable, os.path.join(HERE, "stub_server.py"), SERVER_DIR],
                                   env=e, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(60):                       # wait for the port to answer
@@ -392,6 +394,25 @@ def main():
                 b.close()
             finally:
                 p.send_signal(signal.SIGKILL); p.wait(); time.sleep(0.5)
+
+        # -- H. demo frames answer with their own labels ---------------------
+        print("\n[H] Each demo frame gets its own hand-labelled answer")
+        with Stub(REAL_STATIC, MODE="ok", DELAY=0, LABELS="on"):
+            b, pg = new_page(pw)
+            pg.goto(BASE + "/", wait_until="networkidle")
+            catalog = set(pg.evaluate("CATALOG.map(c=>c.tag)"))
+            for n in range(1, 5):
+                want = json.load(open(os.path.join(SERVER_DIR, "demo_labels",
+                                                   "ziacarry_eval_img_%d.json" % n)))["predictions"]
+                detect(pg, "demo%d" % n)
+                boxes = pg.evaluate("window.iaCarry.state.live.boxes.length")
+                units = pg.evaluate("Object.values(window.iaCarry.state.live.qty).reduce((a,b)=>a+b,0)")
+                check("H", "demo%d: one box per labelled item" % n,
+                      boxes == len(want) and units == len(want), (boxes, units, len(want)))
+                check("H", "demo%d: every label is a catalogue product" % n,
+                      all(p["tagName"] in catalog for p in want),
+                      [p["tagName"] for p in want if p["tagName"] not in catalog])
+            b.close()
 
     shutil.rmtree(tmp, ignore_errors=True)
 

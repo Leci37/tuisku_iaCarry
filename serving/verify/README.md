@@ -22,6 +22,7 @@ totals against arithmetic done independently of the code under test.
 | E | Themes and languages | 5 themes × 7 languages × 2 text sizes × 2 widths, plus 3-column density |
 | F | Offline | Every non-local request aborted at the browser |
 | G | Backend seams | Payment stub marked; the one-line swap to a real backend, approved and refused |
+| H | Demo frames | Each of the four demo photos gets its own hand-labelled answer: one box per item, all catalogue products |
 
 ## How the geometry check works
 
