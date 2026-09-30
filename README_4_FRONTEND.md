@@ -179,8 +179,9 @@ door opening, and a demo must not.
 
 ## Themes and languages
 
-Four themes (`iacarry`, `eroski`, `ahorramas`, `condis`) × seven languages
-(es, en, eu, ca, pt, fr, de) × two text sizes × three densities.
+Five themes (`iacarry`, `eroski`, `ahorramas`, `condis`, `mercadona`) × seven languages
+(es, en, eu, ca, pt, fr, de) × two text sizes × three densities. To add a client,
+see [Adding a client](#adding-a-client) below.
 
 Each theme is a palette plus a logo path:
 
@@ -199,6 +200,45 @@ stops the loop: the next `applyTheme()` sees the entry and does not re-assign
 
 Thumbnails have the same discipline — `thumbFallback()` retries once, then leaves
 the slot empty.
+
+### Adding a client
+
+A client (retailer) is three things: an entry in the dropdown, a palette in
+`THEMES`, and a logo file. `tools/new_client_theme.py` makes all three:
+
+```bash
+python tools/new_client_theme.py mercadona "Mercadona" path/to/logo.png --color "#009660"
+python3 serving/verify/verify.py
+```
+
+| Argument | What to give it |
+|---|---|
+| key (`mercadona`) | Lowercase letters and digits. It becomes the option value, the `THEMES` key and the logo file name `<key>-logo.png`, which must all match |
+| name (`"Mercadona"`) | What the dropdown shows |
+| logo | The horizontal mark, ideally on a transparent or white background. The script crops it to its content and fits it into the 600×180 white canvas every client logo shares |
+| `--color` | The brand's primary colour. **Take it from the brand manual when there is one.** Without it, the script picks the most common saturated colour in the logo and prints it, which can be the wrong one (for Mercadona's round icon it picks the orange basket, not the green) |
+| `--dry-run` | Print the two lines and the file it would write, and change nothing |
+
+What it derives from the one colour: `pri` is the colour itself, used for the pay
+button, the active chips and the selected dropdown, always with white text on it.
+The other seven (`ps`, `pt`, `bg`, `mt`, `seg`, `sa`, `sb`) are that colour mixed
+toward white at 4–13 %, the same strength as the existing themes, for the soft
+backgrounds. The script warns when white text on `pri` falls below 3:1 contrast;
+use a darker shade of the brand colour when it does.
+
+Checking the result needs no test edits. Sections E and F of the verification
+suite read the client list from the dropdown, so the new client is checked for
+clipping in every language and text size, and its logo for loading offline. Then
+look at it once in the stub (`python serving/verify/stub_server.py .` from
+`serving/`) and pick it in the dropdown.
+
+Two things the script does not do:
+
+- **The trademark note.** Add the client's name to the list in
+  `serving/static/assets/README.md` and the root `README.md`: client logos are
+  for the demo only.
+- **Fine-tuning a tint by hand.** Edit its hex in `THEMES` directly; nothing else
+  reads it.
 
 ---
 
@@ -233,7 +273,7 @@ template in a real browser against `stub_server.py`.
 | B | **Quantities, total and weight** — counts, sub-threshold dropped, unknown class skipped not thrown, degenerate box counted but not drawn, totals against hand arithmetic |
 | C | **Busy state during a slow response** — veil visible, pay and demo selector locked in flight, veil clears on completion |
 | D | **Failure states** — unreachable, timeout, HTTP 500, plain-text error, nothing found, server killed mid-request |
-| E | **4 themes × 7 languages × 2 text sizes × 3 densities**, checked for clipping |
+| E | **every theme × 7 languages × 2 text sizes × 3 densities**, checked for clipping |
 | F | **Renders completely with outbound traffic blocked** — thumbnails and logos load locally, no outbound request attempted |
 | G | **Backend seams are stubs and say so** — payment approved / declined / gateway-500 |
 

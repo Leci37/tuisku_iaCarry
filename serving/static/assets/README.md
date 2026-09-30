@@ -14,7 +14,7 @@ grid of broken images.
 |---|---|---|
 | `products/` | `<tag>_300.png` × 13 | Product thumbnails in the cart grid |
 | `demo/` | `ziacarry_eval_img_1…4.png` | Demo frames posted to `/upload` |
-| `logos/` | `<client>-logo.png` × 3 | Client mark in the top bar and by the total |
+| `logos/` | `<client>-logo.png` × 4 | Client mark in the top bar and by the total |
 
 `products/` and `demo/` were copied from the `readme_img/` folder of
 `Leci37/stocks-prediction-Machine-learning-RealTime-TensorFlow`, which is where
@@ -25,13 +25,15 @@ The demo frames are the 640×640 evaluation images. They are posted to `/upload`
 unmodified — do not resize or re-encode them, or detection results will drift
 away from the recorded evaluation.
 
-## The three client logos
+## The client logos
 
-`logos/` holds the Eroski, AhorraMas and Condis marks, each 600×180 on a white
+`logos/` holds the Eroski, AhorraMas, Condis and Mercadona marks, each 600×180 on a white
 background (the 10:3 the design specifies). The filenames are what the page
 requests — `LOGO_IMG` in `iacarry_checkout.html` builds
 `/static/assets/logos/<client>-logo.png` from the theme key, so a logo added for
 a new client must be named for that key or it will not be found.
+`tools/new_client_theme.py` produces the file with the right name and size; see
+"Adding a client" in `README_4_FRONTEND.md`.
 
 The failure path still exists and is worth knowing: a logo that fails to load is
 recorded once and its slot is hidden, so a missing file costs the mark but not
@@ -40,7 +42,7 @@ path shows up as "no logo" rather than as an error.
 
 ## Trademark
 
-The Eroski, AhorraMas and Condis marks are **registered trademarks of their
+The Eroski, AhorraMas, Condis and Mercadona marks are **registered trademarks of their
 respective owners**. The design documentation is explicit that they are licensed
 for demo use with each retailer's permission only. They are committed here for
 the demo build; they are not covered by this repository's licence, and they must

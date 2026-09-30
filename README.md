@@ -1,6 +1,59 @@
+<p align="center">
+  <img src="presentation/images/logo_iacarry_full.png" alt="iaCarry: payment in just 6 seconds!" width="420">
+</p>
+
 # 🧠 iaCarry AI Object Detection Pipeline
 
 This project is an **end-to-end pipeline** for training and deploying object detection models. It combines **traditional computer vision**, **data augmentation**, **Azure Custom Vision**, **TensorFlow 2**, and **TFLite** to create robust models for detecting products in real-world environments — such as **retail shelves**, **store counters**, or **mobile UIs**.
+
+---
+
+## 🔁 How we work now — reviewed with GPT and Claude (2026)
+
+The project was reviewed end to end in 2026 with GPT and Claude. The rest of this
+file describes the original pipeline and is still accurate for the code that
+exists. This section is the order the work runs in now, and where each step is
+documented.
+
+<p align="center">
+  <img src="presentation/images/station_cart_2025.jpg" alt="The iaCarry weighing station for large purchases: a trolley on the scale under the overhead camera, a vertical screen, card terminal, entry signal and exit gate" height="300">
+  &nbsp;
+  <img src="presentation/images/station_cesta_2025.jpg" alt="The iaCarry weighing station for small purchases: a basket on the scale under the overhead camera, a vertical screen and a card terminal" height="300">
+</p>
+<p align="center"><sub>The weighing station, for large purchases (trolley) and small ones (basket).</sub></p>
+
+```mermaid
+flowchart LR
+  A["1 · Ingestion<br/>record carts"] --> B["2 · Labelling<br/>one box per product"]
+  B --> C["3 · Training<br/>dataset → model"]
+  C --> D["4 · Query<br/>server answers /upload"]
+  D --> E["5 · Presentation<br/>checkout screen"]
+```
+
+| Step | What happens | Read | Code |
+|---|---|---|---|
+| **1 · Ingestion** | Film real carts, split the footage, pick the frames worth keeping | [`README_1_INGESTION.md`](README_1_INGESTION.md) (track B, B1) · plan: [`TRANSITION.md`](TRANSITION.md) A0–A1 | `ingestion/video/` |
+| **2 · Labelling** | One click per product, masks propagated through the video, every box reviewed by hand | [`README_1_INGESTION.md`](README_1_INGESTION.md) (B2–B5) · plan: [`TRANSITION.md`](TRANSITION.md) A2–A8 | `ingestion/video/` |
+| **3 · Training** | Labelled dataset → model file. The plan adds fixed splits, metrics and a release gate | [`README_2_TRAINING.md`](README_2_TRAINING.md) · plan: [`TRANSITION.md`](TRANSITION.md) part B | `training/` |
+| **4 · Query** | The Flask server keeps the model loaded and answers each photo sent to `/upload` with the products and their boxes | [`README_3_SERVER.md`](README_3_SERVER.md) · [`serving/FLOW.md`](serving/FLOW.md) | `serving/app.py` |
+| **5 · Presentation** | The checkout screen shows the cart, the total and the pay button, themed per retailer | [`README_4_FRONTEND.md`](README_4_FRONTEND.md) · pitch deck: [`presentation/`](presentation/README.md) | `serving/templates/` |
+
+<p align="center">
+  <img src="presentation/images/checkout_screen_2026.jpg" alt="The checkout screen: overhead photo with a box on every product, the cart list and the total" width="760">
+</p>
+
+What changed in the way of working:
+
+- **One document per step**, each ending in a "what is missing" list, instead of
+  one long README. [`TRANSITION.md`](TRANSITION.md) is the plan for replacing
+  steps 1–3.
+- **Labels come from real carts** (track B), not from composed fake ones
+  (track A). Track A still produced the model the server runs today.
+- **The screen is tested without the model.** `serving/verify/` drives the page
+  in a real browser against a stub server, with egress blocked.
+- **The demo runs on any laptop.** The stub replays hand-labelled answers for the
+  four demo photos (`serving/demo_labels/`), and the retailer is picked from a
+  dropdown; `tools/new_client_theme.py` adds a new one.
 
 ---
 
@@ -44,10 +97,11 @@ training/yolo/         track B — YOLOv8
 training/tflite/       edge export (not used by the server)
 serving/               the Flask app; templates/ holds the checkout screen
 common/                helpers shared by more than one phase
-tools/                 check_imports.py
+tools/                 check_imports.py, new_client_theme.py (adds a retailer to the screen)
 models/                weights and checkpoints          [gitignored]
 outputs/               everything the pipelines write   [gitignored]
 legacy/                superseded, kept for reference — see legacy/README.md
+presentation/          the funding pitch deck, its text, and the images worth keeping
 
 pyproject.toml         declares `common` as a package, for `pip install -e .`
 .gitignore             outputs/, models/, and the folders the pipelines write
@@ -522,6 +576,6 @@ outbound internet blocked — a requirement on shop floors with restricted egres
 See `serving/static/assets/README.md` for contents, including the three client
 logos under `logos/`.
 
-**Trademarks:** the Eroski, AhorraMas and Condis marks are registered trademarks
+**Trademarks:** the Eroski, AhorraMas, Condis and Mercadona marks are registered trademarks
 of their respective owners, included for demo use with each retailer's permission
 only. They are not covered by this repository's licence.

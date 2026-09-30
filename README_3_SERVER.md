@@ -40,7 +40,8 @@ line in all three layers. A whole purchase is one `grep`.
 | `serving/server_utils.py` | Save/sanitise the upload, reshape detections for the client, render + register results |
 | `serving/log_utils.py` | Logging setup |
 | `serving/visualization_utils.py` | Box drawing, lifted out of the Object Detection API so the server does not depend on it at runtime |
-| `serving/sample_upload_response.json` | A recorded real `/upload` response — the fixture the verification suite replays |
+| `serving/sample_upload_response.json` | A hand-written `/upload`-shaped fixture for the verification suite. Its boxes match no real photo |
+| `serving/demo_labels/` | Hand-labelled answers for the four demo photos, replayed by the stub server (see its README) |
 | `serving/FLOW.md` | End-to-end narrative, user level and code level |
 | `serving/verify/` | The verification suite (see `README_4_FRONTEND.md`) |
 | `serving/check_instances.py` | Ops helper — counts live instances |

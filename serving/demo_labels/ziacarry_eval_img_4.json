@@ -1,0 +1,154 @@
+{
+ "_comment": "Hand-labelled ground truth for this demo frame, not model output. Same shape as a real /upload response; boundingBox width/height hold the RIGHT and BOTTOM edges, as the server sends them.",
+ "path_server": "demo_labels/ziacarry_eval_img_4.json",
+ "shape_img": [
+  640,
+  640,
+  3
+ ],
+ "predictions": [
+  {
+   "probability": 1.0,
+   "tagInt": 3,
+   "tagName": "chipsahoy_300g",
+   "boundingBox": {
+    "left": 0.26,
+    "top": 0.13,
+    "width": 0.5,
+    "height": 0.35
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 13,
+   "tagName": "tostarica_570g",
+   "boundingBox": {
+    "left": 0.27,
+    "top": 0.19,
+    "width": 0.58,
+    "height": 0.42
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 12,
+   "tagName": "smacks_330g",
+   "boundingBox": {
+    "left": 0.3,
+    "top": 0.25,
+    "width": 0.64,
+    "height": 0.52
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 6,
+   "tagName": "colgate_75ml",
+   "boundingBox": {
+    "left": 0.585,
+    "top": 0.37,
+    "width": 0.71,
+    "height": 0.55
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 9,
+   "tagName": "hysori_300ml",
+   "boundingBox": {
+    "left": 0.545,
+    "top": 0.4,
+    "width": 0.677,
+    "height": 0.597
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 7,
+   "tagName": "estrellag_33cl",
+   "boundingBox": {
+    "left": 0.42,
+    "top": 0.46,
+    "width": 0.555,
+    "height": 0.6
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 5,
+   "tagName": "colacao_383g",
+   "boundingBox": {
+    "left": 0.645,
+    "top": 0.53,
+    "width": 0.82,
+    "height": 0.7
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 4,
+   "tagName": "cocacola_33cl",
+   "boundingBox": {
+    "left": 0.34,
+    "top": 0.535,
+    "width": 0.45,
+    "height": 0.66
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 2,
+   "tagName": "axedrak_150ml",
+   "boundingBox": {
+    "left": 0.495,
+    "top": 0.55,
+    "width": 0.6,
+    "height": 0.68
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 10,
+   "tagName": "mahou00_33cl",
+   "boundingBox": {
+    "left": 0.45,
+    "top": 0.595,
+    "width": 0.567,
+    "height": 0.715
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 8,
+   "tagName": "fanta_33cl",
+   "boundingBox": {
+    "left": 0.405,
+    "top": 0.65,
+    "width": 0.525,
+    "height": 0.77
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 11,
+   "tagName": "mahou5_33cl",
+   "boundingBox": {
+    "left": 0.567,
+    "top": 0.655,
+    "width": 0.685,
+    "height": 0.77
+   }
+  },
+  {
+   "probability": 1.0,
+   "tagInt": 1,
+   "tagName": "aguila_33cl",
+   "boundingBox": {
+    "left": 0.51,
+    "top": 0.725,
+    "width": 0.635,
+    "height": 0.85
+   }
+  }
+ ]
+}

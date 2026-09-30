@@ -31,7 +31,6 @@ FIXTURE = os.path.join(SERVER_DIR, "sample_upload_response.json")
 PORT = int(os.environ.get("VERIFY_PORT", "8099"))
 BASE = "http://127.0.0.1:%d" % PORT
 LANGS = ["es", "en", "eu", "ca", "pt", "fr", "de"]
-THEMES = ["iacarry", "eroski", "ahorramas", "condis"]
 
 CHROME = os.environ.get("CHROME_PATH") or next(
     (p for p in ["/opt/pw-browsers/chromium-1194/chrome-linux/chrome",
@@ -54,8 +53,10 @@ class Stub:
         self.env = env
 
     def __enter__(self):
-        e = dict(os.environ, STATIC=self.static, PORT=str(PORT),
-                 **{k: str(v) for k, v in self.env.items()})
+        # LABELS=off: the checks below are written against the fixture's counts,
+        # not the hand-labelled demo frames (section H covers those).
+        e = dict(os.environ, STATIC=self.static, PORT=str(PORT), LABELS="off")
+        e.update({k: str(v) for k, v in self.env.items()})
         self.p = subprocess.Popen([sys.executable, os.path.join(HERE, "stub_server.py"), SERVER_DIR],
                                   env=e, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         for _ in range(60):                       # wait for the port to answer
@@ -243,18 +244,21 @@ def main():
         b.close()
 
         # -- E. themes x languages --------------------------------------------
-        print("\n[E] Four themes x seven languages, and large text")
+        print("\n[E] Every theme x seven languages, and large text")
         with Stub(REAL_STATIC, MODE="ok", DELAY=0):
             for width in (1500, 1280):
                 b, pg = new_page(pw, width=width)
                 pg.goto(BASE + "/", wait_until="networkidle")
                 detect(pg)
                 pg.click("#fraudBtn")                      # open the widest panel
+                # Read the client list from the page, so a client added with
+                # tools/new_client_theme.py is covered without editing this file.
+                themes = pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)")
                 broken = []
                 for big in (False, True):
                     if big:
                         pg.click("#big")
-                    for theme in THEMES:
+                    for theme in themes:
                         pg.select_option("#client", theme)
                         for lang in LANGS:
                             pg.select_option("#lang", lang)
@@ -263,11 +267,12 @@ def main():
                             if bad:
                                 broken.append("%s/%s/%s%s: %s"
                                               % (width, theme, lang, "+big" if big else "", bad[:2]))
-                    # palette really did swap
+                    # palette really did swap, to the last theme's primary
                     pri = pg.evaluate("getComputedStyle(document.body).getPropertyValue('--pri').trim()")
+                    want = pg.evaluate("t => THEMES[t].pri", themes[-1])
                     check("E", "%dpx%s: theme palette applied" % (width, " +big" if big else ""),
-                          pri == "#17398A", pri)
-                check("E", "%dpx: no clipping across 4 themes x 7 langs x 2 text sizes" % width,
+                          pri == want and want not in ("", "#6E5AE0"), pri)
+                check("E", "%dpx: no clipping across %d themes x 7 langs x 2 text sizes" % (width, len(themes)),
                       not broken, broken[:3])
                 b.close()
 
@@ -310,7 +315,10 @@ def main():
             check("F", "every thumbnail rendered", imgs and all(i["ok"] for i in imgs),
                   [i["src"] for i in imgs if not i["ok"]])
             check("F", "thumbnails served locally", all(i["src"].startswith("/static/") for i in imgs))
-            for theme in ["eroski", "ahorramas", "condis"]:
+            clients = pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)"
+                                  ".filter(k=>THEMES[k].logo)")
+            check("F", "client logos found in the dropdown", len(clients) >= 1, clients)
+            for theme in clients:
                 pg.select_option("#client", theme)
                 pg.wait_for_timeout(400)
                 logos = pg.evaluate("""() => ['#logoBig','#logoSmall'].map(s=>{
@@ -391,6 +399,25 @@ def main():
                 b.close()
             finally:
                 p.send_signal(signal.SIGKILL); p.wait(); time.sleep(0.5)
+
+        # -- H. demo frames answer with their own labels ---------------------
+        print("\n[H] Each demo frame gets its own hand-labelled answer")
+        with Stub(REAL_STATIC, MODE="ok", DELAY=0, LABELS="on"):
+            b, pg = new_page(pw)
+            pg.goto(BASE + "/", wait_until="networkidle")
+            catalog = set(pg.evaluate("CATALOG.map(c=>c.tag)"))
+            for n in range(1, 5):
+                want = json.load(open(os.path.join(SERVER_DIR, "demo_labels",
+                                                   "ziacarry_eval_img_%d.json" % n)))["predictions"]
+                detect(pg, "demo%d" % n)
+                boxes = pg.evaluate("window.iaCarry.state.live.boxes.length")
+                units = pg.evaluate("Object.values(window.iaCarry.state.live.qty).reduce((a,b)=>a+b,0)")
+                check("H", "demo%d: one box per labelled item" % n,
+                      boxes == len(want) and units == len(want), (boxes, units, len(want)))
+                check("H", "demo%d: every label is a catalogue product" % n,
+                      all(p["tagName"] in catalog for p in want),
+                      [p["tagName"] for p in want if p["tagName"] not in catalog])
+            b.close()
 
     shutil.rmtree(tmp, ignore_errors=True)
 
