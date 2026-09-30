@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="presentation/images/logo_iacarry_full.png" alt="iaCarry: payment in just 6 seconds!" width="420">
+</p>
+
 # 🧠 iaCarry AI Object Detection Pipeline
 
 This project is an **end-to-end pipeline** for training and deploying object detection models. It combines **traditional computer vision**, **data augmentation**, **Azure Custom Vision**, **TensorFlow 2**, and **TFLite** to create robust models for detecting products in real-world environments — such as **retail shelves**, **store counters**, or **mobile UIs**.
@@ -12,10 +16,11 @@ exists. This section is the order the work runs in now, and where each step is
 documented.
 
 <p align="center">
-  <img src="presentation/images/station_render.jpg" alt="The iaCarry station: overhead camera, screen, card terminal and exit gate, with a trolley on the scale" height="340">
+  <img src="presentation/images/station_trolley.jpg" alt="The iaCarry weighing station for large purchases: a trolley on the scale, overhead camera, screen, card terminal and exit gate" height="380">
   &nbsp;
-  <img src="presentation/images/how_it_works_steps_1-4.jpg" alt="A trolley before and after recognition" height="340">
+  <img src="presentation/images/station_basket.jpg" alt="The iaCarry weighing station for small purchases: a basket on the scale under the overhead camera, with a card terminal" height="380">
 </p>
+<p align="center"><sub>The weighing station, for large purchases (trolley) and small ones (basket).</sub></p>
 
 ```mermaid
 flowchart LR

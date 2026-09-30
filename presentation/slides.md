@@ -2,7 +2,7 @@
 
 Text of `iaCarry_pitch_jose_elias.pptx`, one section per slide. Wording is the
 deck's, with only layout and obvious typos tidied (OTC → OCT, DIC → DEC).
-Where a slide uses one of the images kept in `images/`, it is shown
+Where a slide uses one of the images kept in `images/` or `images/old/`, it is shown
 under that slide. Stock photos and third-party logos are left out and stay in
 the `.pptx` only.
 
@@ -16,7 +16,7 @@ JANUARY 2024
 
 Funding Pitch Deck
 
-![iaCarry station prototype](images/station_prototype_photo.jpg)
+![iaCarry station prototype](images/station_basket.jpg)
 
 ## 2 · iaCarry-Station components
 
@@ -33,7 +33,7 @@ Internal / not directly visible:
 
 Video: <https://youtu.be/Sj-IvGnjODE?si=jpAaLexO_-1qCau7>
 
-![iaCarry-Station render](images/station_render.jpg)
+![iaCarry-Station render](images/station_trolley.jpg)
 
 ## 3 · Revenue model
 
@@ -48,7 +48,7 @@ Video: <https://youtu.be/Sj-IvGnjODE?si=jpAaLexO_-1qCau7>
 3. **Maintenance and updates**: maintenance plan for 45€ per month for each
    iaCarry-Station.
 
-![Camera arm of the station](images/station_camera_arm.png)
+![Camera arm of the station](images/old/station_camera_arm.png)
 
 ## 4 · Competitors (1 of 2)
 
@@ -110,7 +110,7 @@ Video: <https://youtu.be/Sj-IvGnjODE?si=jpAaLexO_-1qCau7>
 Only in Europe the figure rises to 234,000 establishments, which need a cash
 register.
 
-![Supermarket size, Spain 2021](images/chart_supermarket_size_spain_2021.png)
+![Supermarket size, Spain 2021](images/old/chart_supermarket_size_spain_2021.png)
 
 ## 10 · The competitors
 
@@ -159,7 +159,7 @@ with a more efficient and personalized purchasing.
   clothing items, considering details such as colors, sizes and styles. QR
   label implementation.
 
-![Box detection for clothing and furniture shops](images/detection_boxes_clothing_furniture.jpg)
+![Box detection for clothing and furniture shops](images/old/detection_boxes_clothing_furniture.jpg)
 
 ## 14 · Kernel scalability
 
@@ -169,7 +169,7 @@ With it, tuisku.eu presents:
 **iaRecycle**: automatic recycling with AI, zero-waste technologies.
 <https://iarecycle.tuisku.eu/>
 
-![iaRecycle waste detection](images/detection_iarecycle_waste.jpg)
+![iaRecycle waste detection](images/old/detection_iarecycle_waste.jpg)
 
 ## 15 · The investment: the needs of iaCarry.tuisku.eu
 
@@ -207,11 +207,11 @@ which is not kept in the repository.
 With just an aerial image of the trolley, the purchase is done, in just
 6 seconds.
 
-![Full demo screen: detection, total and product list](images/demo_ui_full.jpg)
+![Full demo screen: detection, total and product list](images/old/demo_ui_full.jpg)
 
-![Detection on the trolley with the total](images/demo_ui_detection.jpg)
+![Detection on the trolley with the total](images/old/demo_ui_detection.jpg)
 
-![Product list with unit cost, units and price](images/demo_ui_product_list.png)
+![Product list with unit cost, units and price](images/old/demo_ui_product_list.png)
 
 ### How does it work?
 
@@ -226,7 +226,7 @@ With just an aerial image of the trolley, the purchase is done, in just
    barcode, price and weight, generating a detailed and accurate list of the
    items in the cart.
 
-![Steps 1 to 4: the cart before and after recognition](images/how_it_works_steps_1-4.jpg)
+![Steps 1 to 4: the cart before and after recognition](images/old/how_it_works_steps_1-4.jpg)
 
 5. **Continuous customer communication**: throughout the entire process, the
    customer receives visual and audible signals on the station screen, from
@@ -237,7 +237,7 @@ With just an aerial image of the trolley, the purchase is done, in just
    through signal is automatically activated, allowing the customer to push
    the cart to the exit without delay.
 
-![Steps 5 to 7](images/how_it_works_steps_5-7.jpg)
+![Steps 5 to 7](images/old/how_it_works_steps_5-7.jpg)
 
 Demo video (embedded in that deck, slide 10):
 <https://www.youtube.com/watch?v=yhuZqXP_Mpw>

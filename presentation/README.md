@@ -7,7 +7,7 @@ PowerPoint.
 |---|---|
 | `iaCarry_pitch_jose_elias.pptx` | The deck itself, unmodified (17 slides, January 2024). This is the one to present |
 | `slides.md` | All of its text, one section per slide, readable on GitHub |
-| `images/` | Only the images made for iaCarry: renders, the demo screen, detection examples, own chart and logos, and screenshots of the checkout screen per retailer |
+| `images/` | Ten images: the logo, the station for large and small purchases, and the current checkout screen per retailer. Older ones are in `images/old/` |
 | `make_screens.py` | Regenerates the checkout screenshots |
 
 `slides.md` ends with an appendix taken from an earlier deck
@@ -21,21 +21,16 @@ is current before quoting either.
 
 ## images/
 
+Ten images: the brand, the station, and the current checkout screen. Everything
+that shows the old interface or is no longer used is in `images/old/`.
+
 | File | Shows | From |
 |---|---|---|
-| `station_render.jpg` | The iaCarry-Station with a trolley: camera, screen, card terminal, turnstile | this deck, slide 2 |
-| `station_prototype_photo.jpg` | Photo of the prototype station with a basket | this deck, slide 1 |
-| `station_camera_arm.png` | The station's overhead camera arm | this deck, slide 3 |
-| `demo_ui_full.jpg` | The demo screen: detections on the trolley, total, product list | earlier deck, slide 5 |
-| `demo_ui_detection.jpg` | Detections on the trolley with the total to pay | earlier deck, slide 4 |
-| `demo_ui_product_list.png` | Product list: unit cost, units, price | earlier deck, slide 4 |
-| `how_it_works_steps_1-4.jpg` | A trolley before and after recognition | earlier deck, slide 8 |
-| `how_it_works_steps_5-7.jpg` | A second trolley, before and after | earlier deck, slide 9 |
-| `chart_supermarket_size_spain_2021.png` | Supermarkets in Spain by size, 2021 | this deck, slide 9 |
-| `detection_boxes_clothing_furniture.jpg` | Box detection for clothing and furniture shops | this deck, slide 13 |
-| `detection_iarecycle_waste.jpg` | iaRecycle detecting waste items | this deck, slide 14 |
-| `logo_tuisku.png`, `logo_iacarry.png`, `logo_iarecycle.png` | Own logos | both decks |
-| `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme | screenshot, not from a deck |
+| `logo_iacarry_full.png` | The iaCarry logo with its tagline, "payment in just 6 seconds!" | own logo |
+| `station_trolley.jpg` | The weighing station for **large purchases**: a trolley on the scale, overhead camera, screen, card terminal, exit gate | this deck, slide 2 |
+| `station_basket.jpg` | The weighing station for **small purchases**: a basket on the scale, overhead camera, card terminal | this deck, slide 1 |
+| `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme | screenshot |
+| `screen_1…6_*.jpg` | The current checkout screen per retailer, see below | screenshots |
 
 ### Checkout screen, one shot per retailer
 
@@ -55,8 +50,23 @@ The boxes come from the hand-labelled demo photos, not from the model.
 They show retailer logos, which are for the demo only (see the trademark note in
 `serving/static/assets/README.md`).
 
-Large PNGs were saved as JPEG (at most 1600 px on the long side) to keep the
-folder light. The originals are still inside the `.pptx`.
+### images/old/
+
+Kept for the deck and for reference, no longer the current picture. `slides.md`
+still shows them under the slides that use them.
+
+| File | Shows | From |
+|---|---|---|
+| `demo_ui_full.jpg`, `demo_ui_detection.jpg`, `demo_ui_product_list.png` | The previous demo screen | earlier deck, slides 4 and 5 |
+| `how_it_works_steps_1-4.jpg`, `how_it_works_steps_5-7.jpg` | Trolleys before and after recognition | earlier deck, slides 8 and 9 |
+| `detection_boxes_clothing_furniture.jpg` | Box detection for clothing and furniture shops | this deck, slide 13 |
+| `detection_iarecycle_waste.jpg` | iaRecycle detecting waste items | this deck, slide 14 |
+| `chart_supermarket_size_spain_2021.png` | Supermarkets in Spain by size, 2021 | this deck, slide 9 |
+| `station_camera_arm.png` | The station's overhead camera arm | this deck, slide 3 |
+| `logo_iacarry.png`, `logo_tuisku.png`, `logo_iarecycle.png` | Icon-only logos | both decks |
+
+Large PNGs from the decks were saved as JPEG (at most 1600 px on the long side)
+to keep the folder light. The originals are still inside the `.pptx`.
 
 **Left out on purpose:** stock photos, competitors' product shots, other
 companies' logos (Tesco, Amazon Go, Carrefour, Tracxpoint, GitHub) and the
