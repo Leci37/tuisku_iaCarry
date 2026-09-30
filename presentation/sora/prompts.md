@@ -7,7 +7,7 @@ station for small purchases and the **trolley** station for large ones.
 |---|---|
 | `draft_v1_basket.webp`, `draft_v1_trolley.webp` | First Sora results, reviewed below |
 | `screen_basket.png`, `screen_trolley.png` | The real checkout screen, large text, showing exactly the products in each draft. Upload it with the prompt, or paste it onto the screen afterwards |
-| `frame_basket.png`, `frame_trolley.png` | The schematic top-down "camera" photo shown inside each screen |
+| `frame_basket.png`, `frame_trolley.png` | The top-down "camera" photo shown inside each screen, composed from the catalogue images and piled with some overlap, as in a real cart |
 | `make_station_screens.py` | Regenerates the frames and screens (`python3 presentation/sora/make_station_screens.py`) |
 | `../images/logo_iacarry_full.png` | The logo to upload with each prompt |
 
