@@ -3,6 +3,10 @@
 From a raw video of a product to a dataset a trainer can read. This is the
 longest phase in the project and the one with the most hand work in it.
 
+This file describes the pipeline **as built**. Its defects, and what replaces
+it, are in [`TRANSITION.md`](TRANSITION.md). Track B's behaviour below was
+re-checked against the code at `0738725` (2026-09-28).
+
 There are **two ingestion tracks in this repository**, built years apart, and they
 share no files:
 
@@ -13,7 +17,7 @@ share no files:
 | Annotation format | COCO → TFRecord | YOLO `.txt` (+ COCO alongside) |
 | Feeds | `README_2_TRAINING.md` track A (TF2 Object Detection API) | `README_2_TRAINING.md` track B (YOLOv8) |
 | Cloud dependency | **Azure Custom Vision** (upload, tag, download) | None |
-| Status | Produced the model the server runs today | Newer, better labels, **output not used by anything yet** |
+| Status | Produced the model the server runs today | Newer, labels from real footage, **output not used by anything yet** |
 
 Read the track you are actually working in. Track A is what is in production;
 track B is where the recent effort went.
@@ -144,12 +148,22 @@ RAW/  ──►  RAW_split2/
 Flow per video:
 1. `load_first_frame()` pulls frame 0 of the clip.
 2. The operator picks a label from the legend (`build_legend_html()`, colours and
-   names read from `label_map.pbtxt`) and **clicks on the product in the image**.
-3. `segment_objects()` (`ingestion/video/sam_wrapper.py`, SAM) turns those clicks into a
-   mask. `apply_mask_postprocessing()` drops blobs under `min_area = 500` px.
+   names read from `label_map.pbtxt`) and **clicks on the product in the image**
+   — positive or negative points.
+3. `handle_click()` sends every click made so far **for that label** to SAM as one
+   point prompt (`model.first_frame_click`, `02_label_gui.py:57`) and stores the
+   returned mask as-is, replacing that label's previous mask (`:64`). There is no
+   post-processing on this path. A click on a second unit of the same product
+   joins the first unit's prompt, so the two come back as one mask — see
+   "Masks keyed by product label" in `TRANSITION.md`. (`segment_objects()` and
+   `apply_mask_postprocessing()` in `sam_wrapper.py` are not called here: the
+   first is reachable only from `legacy/`, the second only from the tracker's
+   retry.)
 4. `draw_bboxes_and_labels()` / `draw_points_on_image()` show the result live.
-5. `validate_masks_before_save()` refuses to save if a mask is empty or the
-   output folder is not writable — **this is the first validation gate**.
+5. `validate_masks_before_save()` refuses to save when there are no masks at all,
+   a mask is not 2-D, a label name has characters outside `[\w-]`, or the output
+   folder is not writable, and asks for a second click before overwriting — **the
+   first validation gate**. It does not check that each mask is non-empty.
 6. `save_masks_and_image()` writes, per clip, into `gui_output/<video>/`:
 
 ```
@@ -162,7 +176,9 @@ gui_output/<video>/
 ```
 
 `next_video()` / `prev_video()` walk the folder so an operator can sit and work
-through a batch.
+through a batch. Each move calls `init_model()` again (`label_gui_utils.py:108`),
+reloading SAM ViT-H, XMem and E2FGVI into a model the click handler never uses —
+the reason changing video is slow.
 
 ### B3 · Propagate the masks through the video
 
@@ -171,30 +187,46 @@ through a batch.
 Reads `tagging_metadata.json`, loads the clip, and calls
 `track_with_mask_refinement()` (`ingestion/video/sam_wrapper.py`) to carry each frame-0
 mask forward across every frame. One click becomes hundreds of labelled frames.
+If the **combined** mask area of all products falls below 500 px on a frame, it
+re-prompts SAM with a fixed centre box and an inverting post-processing step —
+see the retry rows in `TRANSITION.md`.
+
+As committed, `__main__` processes only clips whose name contains `n2 (`, in
+reverse order (`03_track_masks.py:233`) — edit that line before a real run.
 
 Per frame it then:
-- `clean_and_filter_mask()` — **the second validation gate.** Drops masks that
-  are too small, that drifted, or that broke apart; a frame failing the check is
-  discarded entirely rather than half-labelled.
+- `clean_and_filter_mask()` — **the second validation gate.** Rejects a mask
+  that is too small (< 300 px), not solid enough, too elongated (aspect > 4), not
+  round enough (circularity < 0.15) or in more than four pieces, and keeps only
+  its largest piece. One rejected product discards the **whole frame**. An
+  *empty* mask is treated differently: that product is skipped and the frame is
+  kept without it — so a product the tracker lost while still visible goes into
+  the dataset unboxed.
 - `mask_to_polygon()` — mask → polygon, for the segmentation labels.
 - Writes YOLO **bbox** and YOLO **segmentation** `.txt` per frame (`00000.txt`, …).
-- Appends to a COCO structure (`init_coco_structure()`).
-- `save_qc_overlay()` every 60th frame, plus a `_FRAME_DISC_<reason>.png` every
-  40th discarded frame — so rejects are auditable, not silent.
+- Appends to a COCO structure built inline from `classes.txt`
+  (`init_coco_structure()` is imported but unused).
+- `save_qc_overlay()` on frame 0 and every 60th frame. A discarded frame is saved
+  as `_FRAME_DISC_<reason>.png` only when its index is a multiple of 40; the rest
+  are logged, not saved.
 
 Outputs per clip:
 
 ```
 <output_dir>/
-  yolo_bbox/00000.txt …        YOLO boxes
-  yolo_seg/00000.txt …         YOLO polygons
-  coco_annotations.json
+  masks/00000.npy …            the tracked label mask of every frame
+  yolo_labels/00000.txt …      YOLO boxes
+  yolo_segments/00000.txt …    YOLO polygons
+  coco_annotations.json        file_name points at the .npy masks, not at images
   frames_metadata.json
   classes.txt                  copied from the global one
-  segmented_video.mp4          masks painted on, for review
-  segmented_video_with_bbox.mp4
-  qc/                          spot-check overlays + discard reasons
+  segmented_video.avi          masks painted on, for review (MJPG; .mp4 is renamed)
+  segmented_video_with_bbox.avi
+  qc_pngs/                     spot-check overlays + discard reasons
 ```
+
+The skip-if-done check looks for `segmented_video.mp4` (`03_track_masks.py:244`),
+which is never written — a re-run re-tracks every clip.
 
 `write_global_yolo_classes()` derives `classes.txt` from `label_map.pbtxt` once,
 at the top level, so every clip shares one class ordering. **Getting this wrong
@@ -209,18 +241,34 @@ silently relabels the whole dataset**, which is why it is written centrally.
 
 `ingestion/video/04_bbox_review.py` + `ingestion/video/bbox_review_utils.py` — a second Gradio app.
 
-- `collect_frames_with_yolo_and_stats()` gathers every frame that has labels.
+- `collect_frames_with_yolo_and_stats()` gathers every frame that has labels, and
+  prints how many tracked frames lost theirs, per clip and per quarter of clip.
 - `filter_yolo_center_frames(window_size=5)` keeps the **middle** frame of each
-  run of five — adjacent tracked frames are near-duplicates, so this thins the
-  set before a human ever looks at it.
-- The operator accepts, fixes (`correct_box()`) or rejects each frame.
-  `draw_key_legend()` shows the keyboard map; `PRODUCTS_CODES_NAMES` and
-  `HEX_COLOR_MAP` give each class a stable name and colour.
+  run of five consecutive labelled frames — adjacent tracked frames are
+  near-duplicates, so this thins the set before a human ever looks at it.
+- Each frame is re-read from the **source video** (`load_next_valid_frame()`), so
+  saved images are clean — no painted masks. The pixels are rotated by the clip's
+  orientation metadata, read through the Windows Shell (`label_tools.py:200`),
+  except for `_n2 (` clips; the boxes are rescaled, not rotated. See "Image and
+  label orientation can disagree" in `TRANSITION.md`.
+- The operator **accepts or discards** each frame — → and ← on the keyboard, plus
+  an Undo button. `correct_box()` exists but nothing calls it, and the key map
+  `draw_key_legend()` would draw (`s`/`c`/`d`/`q`) is never shown or bound.
+  `PRODUCTS_CODES_NAMES` and `HEX_COLOR_MAP` give each class a colour and the
+  short codes used in saved file names.
 - `.frame_cache.json` (`load_frame_cache` / `update_frame_cache` / `is_frame_cached`)
   records what has already been judged, so the review can be stopped and resumed
   — which matters when the set runs to thousands of frames.
-- `save_cleaned_data()` writes the accepted frame, its YOLO label, **and** appends
-  to `coco_annotations.json`.
+- `save_cleaned_data()` writes the frame, its YOLO label, **and** appends to
+  `coco_annotations.json` — whose category *names* come from the hardcoded
+  `PRODUCTS_CODES_NAMES` order, not from `classes.txt`.
+
+> 🔴 **Do not approve data with this app as committed.** `accept_frame()` saves a
+> frame *before* showing it, and page load runs it once. After any Accept the
+> frame on screen is already saved: Accept commits the next frame unseen, and
+> Discard skips one frame and marks the one after it. Only Undo removes the frame
+> on screen — and it then marks the next one discarded unseen. See "Review GUI
+> approves the wrong frame" in `TRANSITION.md`.
 
 ```
 gui_04_bbox_clean/
@@ -228,18 +276,25 @@ gui_04_bbox_clean/
   yolo_labels/     accepted labels
   coco_annotations.json
   .frame_cache.json
+                   no classes.txt — step 05 needs one; copy it by hand
 ```
 
 ### B5 · Orient, count, balance
 
 | File | Out | Does |
 |---|---|---|
-| `ingestion/video/05_rotate_and_stats.py` | `gui_041_bbox_clean/` | Rotate 90° CW to `720×1280` (`rotate_yolo_bbox_90cw()` rotates the boxes with the pixels), write per-class counts |
-| `ingestion/video/06_rotate_stats_balance.py` | `gui_042_bbox_clean/` | The same **plus `albumentations` augmentation aimed at class balance** |
+| `ingestion/video/05_rotate_and_stats.py` | `gui_041_bbox_clean/` | Rotate **portrait** frames 90° CW (`rotate_yolo_bbox_90cw()` rotates the boxes with the pixels), resize every frame to **1280 wide × 720 high**, write per-class counts |
+| `ingestion/video/06_rotate_stats_balance.py` | `gui_042_bbox_clean/` | The same **plus `albumentations` augmentation aimed at class balance**: one `__aug1` copy of an image while any class in it is short of its target, with the targets hardcoded per class id (`class_needs`, `:31`) |
 
-`720×1280` is portrait — it matches the overhead camera's mounting, not the
-model's input. Both write a `check/` folder of drawn-on samples; step 06 also
-writes `check_aug/` every `CHECK_EVERY_N = 60` images. `print_summary()`
+The output is **landscape**: `TARGET_SIZE = (720, 1280)` is (height, width), and
+portrait frames are turned to fit. Frames that are not 16:9 are stretched, not
+letterboxed. The `__aug1` copies sit beside their originals — the copies that
+later leak across the train/val split (see `TRANSITION.md`). Both steps read
+`gui_04_bbox_clean/classes.txt`, which no step writes: copy it there by hand
+from `gui_03_video_segm_pod/`.
+
+Both write a `check/` folder of drawn-on samples; step 06 also writes
+`check_aug/` every `CHECK_EVERY_N = 60` images. `print_summary()`
 (`ingestion/video/bbox_tools.py`) reports total labels, per-class counts, how often a class
 appears **alone** (`only_label_occurrence`), and a histogram of classes-per-image.
 That last one is the number to watch: a set where most images hold one product
@@ -274,8 +329,9 @@ TRACK A   video ─► frames ─► rembg cut-out ─► resize/rotate ─► C
 TRACK B   RAW ─► split/rename ─► CLICK ONCE per product (SAM)
           ─► track masks through video (auto-labels + QC)
           ─► [rename folder by hand]
-          ─► human box review (accept/fix/reject, resumable)
-          ─► rotate 720x1280 + class stats ─► balance aug ──────► training B
+          ─► human box review (accept/discard, resumable)
+          ─► [copy classes.txt by hand]
+          ─► landscape 1280x720 + class stats ─► balance aug ──► training B
 ```
 
 ---
@@ -303,7 +359,8 @@ TRACK B   RAW ─► split/rename ─► CLICK ONCE per product (SAM)
 6. **The `gui_video_segmen` → `gui_03_video_segm_pod` rename is undocumented**
    (B3 above), and `training/yolo/01_train_yolov8.py` reads `classes.txt` from
    `gui_03_video_segm_pod/` while steps 05 and 06 read it from
-   `gui_04_bbox_clean/` — two sources for the file that must not disagree.
+   `gui_04_bbox_clean/` — two sources for the file that must not disagree, and
+   no step writes the second one; it is copied by hand.
 7. **No test covers any of this.** Not frame extraction, not background removal,
    not box rotation, not the COCO/YOLO writers. A rotation bug that silently
    moved every box would be caught only by eye, in `check/`.
@@ -311,3 +368,20 @@ TRACK B   RAW ─► split/rename ─► CLICK ONCE per product (SAM)
    train/val 80/20 and stops. There is no third split kept aside, so there is no
    honest final number. `legacy/carve_test_split.py` is the only code that ever
    carved one, for track A, and its upload path is commented out.
+9. **Step 03 cannot start from a clean clone.** `track_masks_utils.py:12`
+   imports `parse_label_map` from `utils_`, which does not exist — the function
+   lives in `label_tools.py`. `tools/check_imports.py` mistakes the name for a
+   third-party package and reports it as resolved.
+10. **Track-Anything is an undeclared dependency.** `sam_wrapper.py:1` imports
+    `TrackingAnything` and `parse_augment` from `track_anything` — the external
+    Track-Anything project, not vendored (`legacy/track_anything/` is a fork of
+    *these* tools, not that library) — and loads `./checkpoints/sam_vit_h_4b8939.pth`,
+    `XMem-s012.pth` and `E2FGVI-HQ-CVPR22.pth`. Nothing documents or downloads
+    any of it.
+11. **Steps 02–04 run on Windows only.** `label_tools.py:196` imports `win32com`
+    at module level, and all three import `label_tools`, directly or through
+    their helper modules. SAM 3, the engine meant to replace them, documents a
+    Linux setup.
+12. **Gradio is unpinned.** `04_bbox_review.py:176` uses
+    `gr.Image(tool=None).style(...)`, Gradio 3 API that Gradio 4 removed, and
+    `requirements.txt` does not list Gradio at all.
