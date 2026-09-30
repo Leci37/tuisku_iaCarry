@@ -9,7 +9,9 @@ the browser, so the template and the demo assets are not touched.
 
     python3 presentation/sora/make_station_screens.py
 
-Writes frame_<station>.png and screen_<station>.png next to this file.
+Writes frame_<station>.png, screen_<station>.png (landscape) and
+screen_<station>_portrait.png (1080x1920, for a vertical signage screen) next
+to this file.
 Change BASKET / TROLLEY (rows of products) to change what is in the cart, and
 SPREAD to make the pile tidier or messier. Products overlap as they do in a
 real cart, but each stays at least MIN_VISIBLE in view, and a pile is only kept
@@ -185,9 +187,24 @@ PILL_CLASH_JS = """() => {
 }"""
 
 
-def shoot(browser, name, density, frame, labels):
-    """Render one station screen; return the number of colliding name pills."""
-    pg = browser.new_page(viewport={"width": 1500, "height": 900}, device_scale_factor=2)
+# Portrait variant for a vertical signage screen (9:16). Render-only CSS: one
+# column, a smaller camera view, and nothing a customer at the station does not
+# need (retailer and language pickers, search, filters, the fixed accuracy and
+# inference figures, the weight panels).
+PORTRAIT_CSS = """
+body{padding:0!important;background:#fff!important}
+.app{max-width:none!important;border:0!important;border-radius:0!important;box-shadow:none!important;min-height:100vh}
+.grid{grid-template-columns:1fr!important;gap:14px!important;padding:14px 16px!important}
+.top .right > *:not(.avatar){display:none!important}
+.det{gap:10px!important}
+.cam{width:68%!important;margin:0 auto!important}
+.metrics,.facts,.search,.cats{display:none!important}
+.cart{height:auto!important}
+.list{max-height:250px!important}
+"""
+
+
+def _load(pg, frame, labels, density):
     pg.route("**/static/assets/demo/ziacarry_eval_img_1.png", _serve_frame(frame))
     pg.route("**/upload", _serve_labels(labels))
     pg.goto(BASE, wait_until="networkidle")
@@ -198,16 +215,43 @@ def shoot(browser, name, density, frame, labels):
     pg.wait_for_function("window.iaCarry.state.detect.status==='ok'", timeout=30000)
     pg.click('#seg button[data-d="%s"]' % density)
     pg.wait_for_timeout(600)
+
+
+def _render_only_text(pg):
+    # Render only: call the source the live camera, and show the station label
+    # in English (it is hardcoded Spanish in the page).
+    pg.evaluate("""() => {
+        const o=document.querySelector('#demo option:checked'); if(o) o.textContent='Live camera';
+        document.querySelectorAll('.muted').forEach(e=>{
+            if(e.textContent.includes('Estación')) e.textContent='Station 04 · Barakaldo'; }); }""")
+
+
+def shoot_portrait(browser, name, frame, labels):
+    """The same screen laid out for a vertical 1080x1920 signage display."""
+    pg = browser.new_page(viewport={"width": 720, "height": 1280}, device_scale_factor=1.5)
+    _load(pg, frame, labels, "cols3")
+    pg.add_style_tag(content=PORTRAIT_CSS)
+    pg.wait_for_timeout(400)
+    clashes = pg.evaluate(PILL_CLASH_JS)["clashes"]
+    pay = pg.locator("#pay").bounding_box()
+    if pay is None or pay["y"] + pay["height"] > 1280:
+        raise SystemExit("%s portrait: the pay button falls below the screen" % name)
+    _render_only_text(pg)
+    pg.screenshot(path=os.path.join(HERE, "screen_%s_portrait.png" % name))
+    print("screen_%s_portrait.png" % name)
+    pg.close()
+    return len(clashes)
+
+
+def shoot(browser, name, density, frame, labels):
+    """Render one station screen; return the number of colliding name pills."""
+    pg = browser.new_page(viewport={"width": 1500, "height": 900}, device_scale_factor=2)
+    _load(pg, frame, labels, density)
     check = pg.evaluate(PILL_CLASH_JS)
     if check["pills"] != len(labels["predictions"]):
         raise SystemExit("%s: %d name pills drawn for %d products" % (name, check["pills"], len(labels["predictions"])))
     if not check["clashes"]:
-        # Render only: call the source the live camera, and show the station
-        # label in English (it is hardcoded Spanish in the page).
-        pg.evaluate("""() => {
-            const o=document.querySelector('#demo option:checked'); if(o) o.textContent='Live camera';
-            document.querySelectorAll('.muted').forEach(e=>{
-                if(e.textContent.includes('Estación')) e.textContent='Station 04 · Barakaldo'; }); }""")
+        _render_only_text(pg)
         pg.locator(".app").screenshot(path=os.path.join(HERE, "screen_%s.png" % name))
         print("screen_%s.png  total %s  %s" % (name, pg.inner_text("#total"), pg.inner_text("#badgeCount")))
     pg.close()
@@ -237,7 +281,8 @@ def main():
                     buf = io.BytesIO()
                     im.save(buf, "PNG", optimize=True)
                     labels = {"path_server": "presentation/sora", "shape_img": [S, S, 3], "predictions": preds}
-                    if shoot(b, name, density, buf.getvalue(), labels) == 0:
+                    if shoot(b, name, density, buf.getvalue(), labels) == 0 \
+                            and shoot_portrait(b, name, buf.getvalue(), labels) == 0:
                         im.save(os.path.join(HERE, "frame_%s.png" % name), optimize=True)
                         break
                 else:
