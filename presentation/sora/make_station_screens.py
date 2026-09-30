@@ -10,7 +10,7 @@ the browser, so the template and the demo assets are not touched.
     python3 presentation/sora/make_station_screens.py
 
 Writes frame_<station>.png and screen_<station>.png next to this file.
-Change BASKET / TROLLEY to change what is in the cart.
+Change BASKET / TROLLEY (rows of products) to change what is in the cart.
 """
 import glob
 import json
@@ -54,43 +54,56 @@ def trolley_bg():
     d.rectangle([0, 0, S - 1, S - 1], outline=(200, 204, 210), width=10)
     return im.filter(ImageFilter.GaussianBlur(0.5))
 
-def place(bg, items, seed):
+MARGIN = 34      # keep products off the frame edge
+LABEL = 28       # room above each box for the name pill the page draws
+FILL = .84       # share of its cell a product may take, so neighbours never touch
+
+
+def place(bg, rows, seed):
+    """Lay products out in rows, one cell each, and derive their exact boxes.
+
+    Each product is scaled to fit inside its own cell, below a strip kept free
+    for its label, so no two products or labels overlap; that is checked."""
     random.seed(seed)
-    preds = []
-    for tag, cx, cy, h, ang in items:
-        p = Image.open(PROD % tag).convert("RGBA")
-        p = p.resize((round(p.width * h / p.height), h), Image.LANCZOS)
-        p = p.rotate(ang, expand=True, resample=Image.BICUBIC)
-        # soft shadow
-        sh = Image.new("RGBA", p.size, (0, 0, 0, 0))
-        sh.putalpha(p.getchannel("A").point(lambda a: int(a * .45)))
-        sh = sh.filter(ImageFilter.GaussianBlur(6))
-        x, y = round(cx - p.width / 2), round(cy - p.height / 2)
-        bg.paste(sh, (x + 6, y + 8), sh)
-        bg.paste(p, (x, y), p)
-        l, t, r, b = p.getchannel("A").point(lambda a: 255 if a > 40 else 0).getbbox()
-        l, t, r, b = max(0, x + l), max(0, y + t), min(S, x + r), min(S, y + b)
-        preds.append({"probability": round(random.uniform(.93, .99), 2), "tagName": tag,
-                      "boundingBox": {"left": round(l / S, 4), "top": round(t / S, 4),
-                                      "width": round(r / S, 4), "height": round(b / S, 4)}})
+    preds, boxes = [], []
+    row_h = (S - 2 * MARGIN) / len(rows)
+    for ri, row in enumerate(rows):
+        cell_w = (S - 2 * MARGIN) / len(row)
+        for ci, (tag, ang) in enumerate(row):
+            p = Image.open(PROD % tag).convert("RGBA").rotate(ang, expand=True, resample=Image.BICUBIC)
+            p = p.crop(p.getchannel("A").point(lambda a: 255 if a > 40 else 0).getbbox())
+            k = min(cell_w * FILL / p.width, (row_h - LABEL) * FILL / p.height)
+            p = p.resize((round(p.width * k), round(p.height * k)), Image.LANCZOS)
+            cx = MARGIN + cell_w * (ci + .5)
+            cy = MARGIN + row_h * ri + LABEL + (row_h - LABEL) / 2
+            x, y = round(cx - p.width / 2), round(cy - p.height / 2)
+            sh = Image.new("RGBA", p.size, (0, 0, 0, 0))   # soft shadow
+            sh.putalpha(p.getchannel("A").point(lambda a: int(a * .45)))
+            sh = sh.filter(ImageFilter.GaussianBlur(6))
+            bg.paste(sh, (x + 5, y + 7), sh)
+            bg.paste(p, (x, y), p)
+            l, t, r, b = x, y, x + p.width, y + p.height
+            boxes.append((tag, l, t - LABEL, r, b))
+            preds.append({"probability": round(random.uniform(.93, .99), 2), "tagName": tag,
+                          "boundingBox": {"left": round(l / S, 4), "top": round(t / S, 4),
+                                          "width": round(r / S, 4), "height": round(b / S, 4)}})
+    for i, a in enumerate(boxes):              # boxes plus label strips must not intersect
+        for c in boxes[i + 1:]:
+            if a[1] < c[3] and c[1] < a[3] and a[2] < c[4] and c[2] < a[4]:
+                raise SystemExit("overlap between %s and %s" % (a[0], c[0]))
     tags = sorted({p["tagName"] for p in preds})
     for p in preds:
         p["tagInt"] = tags.index(p["tagName"]) + 1
     return bg, preds
 
-BASKET = [  # tag, centre x, centre y, height px, rotation
-    ("cocacola_33cl", 150, 160, 190, 8), ("cocacola_33cl", 300, 150, 190, -6),
-    ("fanta_33cl", 460, 165, 190, 5), ("mahou5_33cl", 520, 440, 190, -8),
-    ("colgate_75ml", 120, 440, 300, -12), ("hysori_300ml", 250, 450, 260, 6),
-    ("chipsahoy_300g", 385, 440, 250, -4),
+BASKET = [  # rows of (tag, rotation in degrees)
+    [("cocacola_33cl", 6), ("cocacola_33cl", -5), ("fanta_33cl", 4), ("mahou5_33cl", -6)],
+    [("colgate_75ml", -8), ("hysori_300ml", 5), ("chipsahoy_300g", -4)],
 ]
 TROLLEY = [
-    ("chipsahoy_300g", 95, 120, 200, 4), ("tostarica_570g", 245, 115, 190, -3), ("smacks_330g", 400, 115, 200, 5),
-    ("colacao_383g", 545, 125, 190, -5),
-    ("cocacola_33cl", 70, 330, 145, 6), ("cocacola_33cl", 175, 330, 145, -5), ("fanta_33cl", 280, 330, 145, 4),
-    ("estrellag_33cl", 375, 330, 150, -3), ("mahou5_33cl", 470, 330, 145, 5), ("mahou00_33cl", 570, 335, 145, -6),
-    ("aguila_33cl", 95, 520, 150, -4), ("hysori_300ml", 245, 515, 200, 5), ("colgate_75ml", 395, 515, 220, -8),
-    ("axedrak_150ml", 540, 515, 190, 6),
+    [("chipsahoy_300g", 3), ("tostarica_570g", -3), ("smacks_330g", 4), ("colacao_383g", -4)],
+    [("cocacola_33cl", 5), ("cocacola_33cl", -4), ("fanta_33cl", 3), ("estrellag_33cl", -3), ("mahou5_33cl", 4)],
+    [("mahou00_33cl", -5), ("aguila_33cl", 4), ("hysori_300ml", -3), ("colgate_75ml", 5), ("axedrak_150ml", -4)],
 ]
 
 
