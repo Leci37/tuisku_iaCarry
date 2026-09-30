@@ -7,7 +7,8 @@ PowerPoint.
 |---|---|
 | `iaCarry_pitch_jose_elias.pptx` | The deck itself, unmodified (17 slides, January 2024). This is the one to present |
 | `slides.md` | All of its text, one section per slide, readable on GitHub |
-| `images/` | Only the images made for iaCarry: renders, the demo screen, detection examples, own chart and logos |
+| `images/` | Only the images made for iaCarry: renders, the demo screen, detection examples, own chart and logos, and screenshots of the checkout screen per retailer |
+| `make_screens.py` | Regenerates the checkout screenshots |
 
 `slides.md` ends with an appendix taken from an earlier deck
 (`Pitch_deck_iaCarry_iaRecycle_05_1.pptx`, March 2024), which is not kept here.
@@ -35,6 +36,24 @@ is current before quoting either.
 | `detection_iarecycle_waste.jpg` | iaRecycle detecting waste items | this deck, slide 14 |
 | `logo_tuisku.png`, `logo_iacarry.png`, `logo_iarecycle.png` | Own logos | both decks |
 | `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme | screenshot, not from a deck |
+
+### Checkout screen, one shot per retailer
+
+Screenshots of the current screen, not from a deck. Regenerate them with
+`python3 presentation/make_screens.py` (edit `SCENES` in it to change a shot).
+The boxes come from the hand-labelled demo photos, not from the model.
+
+| File | Retailer | Shows |
+|---|---|---|
+| `screen_1_mercadona_full.jpg` | Mercadona | Full cart, boxes on photo 1, 3-column view, Spanish |
+| `screen_2_eroski_confidence.jpg` | Eroski | Full cart, "AI confidence" on, list view, English |
+| `screen_3_condis_largetext.jpg` | Condis | Full cart, large text, grid view, anti-fraud panel open, French |
+| `screen_4_ahorramas_paid.jpg` | AhorraMas | Full cart after paying: the "thank you" screen, simulated payment, Spanish |
+| `screen_5_mercadona_empty_large.jpg` | Mercadona | Empty cart, large text, pay button disabled, Spanish |
+| `screen_6_iacarry_empty.jpg` | iaCarry (own brand) | Empty cart, no retailer logo, English |
+
+They show retailer logos, which are for the demo only (see the trademark note in
+`serving/static/assets/README.md`).
 
 Large PNGs were saved as JPEG (at most 1600 px on the long side) to keep the
 folder light. The originals are still inside the `.pptx`.
