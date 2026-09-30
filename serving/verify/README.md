@@ -19,7 +19,7 @@ totals against arithmetic done independently of the code under test.
 | B | Quantities, total, weight | Counts, threshold, unknown class, degenerate box, total, header badge, weight, confidence |
 | C | Busy state | Veil, disabled pay, locked selector during a slow response, and clearing afterwards |
 | D | Failure states | HTTP 500, plain-text error, nothing recognised, server killed mid-request |
-| E | Themes and languages | 4 themes × 7 languages × 2 text sizes × 2 widths, plus 3-column density |
+| E | Themes and languages | 5 themes × 7 languages × 2 text sizes × 2 widths, plus 3-column density |
 | F | Offline | Every non-local request aborted at the browser |
 | G | Backend seams | Payment stub marked; the one-line swap to a real backend, approved and refused |
 

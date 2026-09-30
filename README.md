@@ -522,6 +522,6 @@ outbound internet blocked — a requirement on shop floors with restricted egres
 See `serving/static/assets/README.md` for contents, including the three client
 logos under `logos/`.
 
-**Trademarks:** the Eroski, AhorraMas and Condis marks are registered trademarks
+**Trademarks:** the Eroski, AhorraMas, Condis and Mercadona marks are registered trademarks
 of their respective owners, included for demo use with each retailer's permission
 only. They are not covered by this repository's licence.

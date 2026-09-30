@@ -179,7 +179,7 @@ door opening, and a demo must not.
 
 ## Themes and languages
 
-Four themes (`iacarry`, `eroski`, `ahorramas`, `condis`) × seven languages
+Five themes (`iacarry`, `eroski`, `ahorramas`, `condis`, `mercadona`) × seven languages
 (es, en, eu, ca, pt, fr, de) × two text sizes × three densities.
 
 Each theme is a palette plus a logo path:
@@ -233,7 +233,7 @@ template in a real browser against `stub_server.py`.
 | B | **Quantities, total and weight** — counts, sub-threshold dropped, unknown class skipped not thrown, degenerate box counted but not drawn, totals against hand arithmetic |
 | C | **Busy state during a slow response** — veil visible, pay and demo selector locked in flight, veil clears on completion |
 | D | **Failure states** — unreachable, timeout, HTTP 500, plain-text error, nothing found, server killed mid-request |
-| E | **4 themes × 7 languages × 2 text sizes × 3 densities**, checked for clipping |
+| E | **5 themes × 7 languages × 2 text sizes × 3 densities**, checked for clipping |
 | F | **Renders completely with outbound traffic blocked** — thumbnails and logos load locally, no outbound request attempted |
 | G | **Backend seams are stubs and say so** — payment approved / declined / gateway-500 |
 
