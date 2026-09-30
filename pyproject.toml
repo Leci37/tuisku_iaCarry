@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iacarry"
+version = "0.1.0"
+description = "iaCarry — AI checkout: dataset ingestion, model training, and the real-time station"
+requires-python = ">=3.9"
+
+# Dependencies stay in requirements.txt. They are not pinned here on purpose:
+# the two pipelines need conflicting stacks (TensorFlow for track A, PyTorch and
+# ultralytics for track B) and are never installed together in practice.
+
+# Only `common` is a package. The step scripts under ingestion/ and training/ are
+# entry points -- they are run, never imported, which is why they may start with
+# a digit. Anything that IS imported carries a plain identifier name, so it can
+# be imported both as a sibling (scripts run from their own folder) and, for the
+# shared helpers, as `common.image_utils` from anywhere.
+#
+# Install once, from the repository root:
+#     pip install -e .
+[tool.setuptools]
+packages = ["common"]

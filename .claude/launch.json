@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "autoPort": true,
+  "configurations": [
+    {
+      "name": "iacarry-checkout-stub",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["verify/stub_server.py", "."],
+      "cwd": "serving",
+      "port": 8011,
+      "autoPort": true,
+      "env": { "MODE": "ok" }
+    }
+  ]
+}
