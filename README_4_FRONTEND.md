@@ -9,6 +9,20 @@ No build step, no framework, no bundler, no external request. It must render
 completely with **outbound internet blocked**, because shop floors have
 restricted egress and a grid of broken images is not a demo.
 
+<p align="center">
+  <img src="presentation/images/checkout_screen_2026.jpg" alt="The checkout screen, iaCarry theme: the iaCarry mark top left, the overhead photo with a box on every product, the cart in three columns, the total and the contactless pay button" width="760">
+</p>
+
+The same screen for each retailer. The screenshots are made by
+`python3 presentation/make_screens.py` from the stub server, so they always show
+the current page (see `presentation/README.md`):
+
+| | |
+|---|---|
+| <img src="presentation/images/screen_1_mercadona_full.jpg" alt="Mercadona, full cart, Spanish" width="370"><br><sub>Mercadona · full cart · Spanish</sub> | <img src="presentation/images/screen_2_eroski_confidence.jpg" alt="Eroski, AI confidence on, list view, English" width="370"><br><sub>Eroski · AI confidence · list view · English</sub> |
+| <img src="presentation/images/screen_3_condis_largetext.jpg" alt="Condis, large text, anti-fraud panel open, French" width="370"><br><sub>Condis · large text · anti-fraud panel · French</sub> | <img src="presentation/images/screen_4_ahorramas_paid.jpg" alt="AhorraMas, the thank-you screen after a simulated payment, Spanish" width="370"><br><sub>AhorraMas · after paying (simulated) · Spanish</sub> |
+| <img src="presentation/images/screen_5_mercadona_empty_large.jpg" alt="Mercadona, empty cart, large text, pay button disabled" width="370"><br><sub>Mercadona · empty cart · large text</sub> | <img src="presentation/images/screen_6_iacarry_empty.jpg" alt="iaCarry own brand, empty cart, no retailer logo, English" width="370"><br><sub>iaCarry (own brand) · empty cart · English</sub> |
+
 ---
 
 ## Files
@@ -231,6 +245,10 @@ Condis's is a stacked mark. Fitted into one box, as before, the long ones came
 out a thin strip a size smaller than the rest, inside a frame that was mostly
 empty. `fitLogo()` gives each logo the same **area** instead, within a maximum
 box, so they read the same size:
+
+<p align="center">
+  <img src="presentation/images/screen_topbars_per_retailer.jpg" alt="The top bar under each theme: iaCarry alone, then iaCarry for Eroski, AhorraMas, Condis and Mercadona, each retailer logo the same visual size and the dropdown in the retailer's colour" width="760">
+</p>
 
 | Slot | Area | Maximum | Eroski | AhorraMas | Condis | Mercadona |
 |---|---|---|---|---|---|---|

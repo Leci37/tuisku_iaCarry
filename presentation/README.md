@@ -7,7 +7,7 @@ PowerPoint.
 |---|---|
 | `iaCarry_pitch_jose_elias.pptx` | The deck itself (17 slides, January 2024). This is the one to present. Only change: the station images on slides 1, 2 and 7 are the 2025 renders |
 | `slides.md` | All of its text, one section per slide, readable on GitHub |
-| `images/` | Ten images: the logo, the station for large and small purchases, and the current checkout screen per retailer. Older ones are in `images/old/` |
+| `images/` | Eleven images: the logo, the station for large and small purchases, and the current checkout screen per retailer and its top bar. Older ones are in `images/old/` |
 | `make_screens.py` | Regenerates the checkout screenshots |
 | `sora/` | Station renders for Sora: the drafts, the review, the prompts, and the checkout screens they must show |
 
@@ -22,7 +22,7 @@ is current before quoting either.
 
 ## images/
 
-Ten images: the brand, the station, and the current checkout screen. Everything
+Eleven images: the brand, the station, and the current checkout screen. Everything
 that shows the old interface or is no longer used is in `images/old/`.
 
 | File | Shows | From |
@@ -47,6 +47,7 @@ The boxes come from the hand-labelled demo photos, not from the model.
 | `screen_4_ahorramas_paid.jpg` | AhorraMas | Full cart after paying: the "thank you" screen, simulated payment, Spanish |
 | `screen_5_mercadona_empty_large.jpg` | Mercadona | Empty cart, large text, pay button disabled, Spanish |
 | `screen_6_iacarry_empty.jpg` | iaCarry (own brand) | Empty cart, no retailer logo, English |
+| `screen_topbars_per_retailer.jpg` | all five | The top bar under every theme in the dropdown, stacked: how each retailer logo sits next to the iaCarry mark |
 
 They show retailer logos, which are for the demo only (see the trademark note in
 `serving/static/assets/README.md`).

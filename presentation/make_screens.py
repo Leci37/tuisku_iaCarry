@@ -1,7 +1,8 @@
 """Regenerate the checkout screenshots in presentation/images/.
 
 Starts the stub server (hand-labelled demo photos, no model needed), drives the
-checkout page through seven scenes and saves each as a JPEG. Edit SCENES to change
+checkout page through seven scenes and saves each as a JPEG, plus the top bar
+under every retailer (screen_topbars_per_retailer.jpg). Edit SCENES to change
 the retailer, language, cart state or buttons of a shot.
 
     python3 presentation/make_screens.py
@@ -80,9 +81,35 @@ def main():
                 im.save(os.path.join(OUT, name + ".jpg"), quality=85, optimize=True, progressive=True)
                 pg.close()
                 print("saved", name + ".jpg")
+            topbars(b)
             b.close()
     finally:
         stub.kill()
+
+
+def topbars(browser):
+    """The top bar under every retailer in the dropdown, stacked: how each logo
+    sits next to the iaCarry mark. The list comes from the page, so a client
+    added with tools/new_client_theme.py appears without editing this file."""
+    pg = browser.new_page(viewport={"width": 1500, "height": 900}, device_scale_factor=2)
+    pg.goto(BASE, wait_until="networkidle")
+    pg.select_option("#lang", "es")
+    bars = []
+    for client in pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)"):
+        pg.select_option("#client", client)
+        pg.wait_for_timeout(500)
+        bars.append(Image.open(io.BytesIO(pg.locator(".top").screenshot())).convert("RGB"))
+    pg.close()
+    gap = 16
+    sheet = Image.new("RGB", (max(b.width for b in bars), sum(b.height for b in bars) + gap * (len(bars) - 1)),
+                      (236, 238, 242))
+    y = 0
+    for bar in bars:
+        sheet.paste(bar, (0, y))
+        y += bar.height + gap
+    sheet.thumbnail((1920, 1920), Image.LANCZOS)
+    sheet.save(os.path.join(OUT, "screen_topbars_per_retailer.jpg"), quality=88, optimize=True, progressive=True)
+    print("saved screen_topbars_per_retailer.jpg")
 
 
 if __name__ == "__main__":
