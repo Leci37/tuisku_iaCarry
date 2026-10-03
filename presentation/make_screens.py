@@ -1,7 +1,7 @@
-"""Regenerate the screen_*.jpg screenshots in presentation/images/.
+"""Regenerate the checkout screenshots in presentation/images/.
 
 Starts the stub server (hand-labelled demo photos, no model needed), drives the
-checkout page through six scenes and saves each as a JPEG. Edit SCENES to change
+checkout page through seven scenes and saves each as a JPEG. Edit SCENES to change
 the retailer, language, cart state or buttons of a shot.
 
     python3 presentation/make_screens.py
@@ -28,6 +28,7 @@ BASE = "http://127.0.0.1:%d/" % PORT
 # file name, retailer, language, demo photo, cart, density, large text,
 # AI confidence, anti-fraud panel open, pay
 SCENES = [
+    ("checkout_screen_2026",           "iacarry",   "en", "demo3", "full",  "cols3",   False, False, False, False),
     ("screen_1_mercadona_full",        "mercadona", "es", "demo1", "full",  "cols3",   False, False, False, False),
     ("screen_2_eroski_confidence",     "eroski",    "en", "demo2", "full",  "comfort", False, True,  False, False),
     ("screen_3_condis_largetext",      "condis",    "fr", "demo3", "full",  "compact", True,  False, True,  False),

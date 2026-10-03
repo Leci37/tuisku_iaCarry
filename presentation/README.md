@@ -30,7 +30,7 @@ that shows the old interface or is no longer used is in `images/old/`.
 | `logo_iacarry_full.png` | The iaCarry logo with its tagline, "payment in just 6 seconds!" | own logo |
 | `station_cart_2025.jpg` | The weighing station for **large purchases**: a trolley on the scale under the overhead camera, a vertical screen showing the real interface, card terminal, enter / do-not-enter signal, exit gate | Sora, 2025; this deck, slide 2 |
 | `station_cesta_2025.jpg` | The weighing station for **small purchases**: a basket on the scale under the overhead camera, a vertical screen showing the real interface, card terminal | Sora, 2025; this deck, slides 1 and 7 |
-| `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme | screenshot |
+| `checkout_screen_2026.jpg` | The current checkout screen on demo photo 3, iaCarry theme, English | screenshot, `make_screens.py` |
 | `screen_1…6_*.jpg` | The current checkout screen per retailer, see below | screenshots |
 
 ### Checkout screen, one shot per retailer
