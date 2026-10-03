@@ -12,50 +12,80 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>iaCarry — Auto-checkout</title>
+<link rel="icon" type="image/png" href="/static/assets/brand/iacarry-mark.png">
 <style>
+  /* Ubuntu is the face of the iaCarry wordmark. Served from the app, like every
+     other asset, so the screen looks the same on any kiosk with egress blocked
+     instead of falling back to whatever font each machine happens to have.
+     Latin covers all seven languages. Licence: assets/fonts/UFL.txt. */
+  @font-face{font-family:"Ubuntu";font-style:normal;font-weight:400;font-display:swap;src:url("/static/assets/fonts/Ubuntu-400-latin.woff2") format("woff2")}
+  @font-face{font-family:"Ubuntu";font-style:normal;font-weight:500;font-display:swap;src:url("/static/assets/fonts/Ubuntu-500-latin.woff2") format("woff2")}
+  @font-face{font-family:"Ubuntu";font-style:normal;font-weight:700;font-display:swap;src:url("/static/assets/fonts/Ubuntu-700-latin.woff2") format("woff2")}
   :root{
-    --pri:#6E5AE0; --ps:#EFEBFC; --pt:#F1EFFA; --bg:#F5F4FA;
-    --mt:#F5F2FD; --seg:#EEECF4; --sa:#efeaf9; --sb:#e7e0f4;
-    --ink:#17142E; --sub:#8a84a6; --ter:#a49ec2;
+    /* The retailer's palette; applyTheme() overwrites all of it per client.
+       --pri fills (buttons, active chips); --pri-ink is the same colour dark
+       enough for small text on the tints; --pri-fill is --pri, or iaCarry's
+       gradient on its own theme. */
+    --pri:#6C5DC7; --pri-ink:#6A5BC3; --pri-fill:var(--pri);
+    --ps:#F3F2FB; --pt:#F5F4FB; --bg:#F9F9FD;
+    --mt:#F4F3FB; --seg:#F2F0FA; --sa:#F4F3FB; --sb:#ECEAF8;
+    /* Neutrals, the same under every retailer. They used to carry iaCarry's
+       violet, which showed as a lilac cast on Mercadona's or Eroski's screen. */
+    --ink:#16171D; --ink2:#454959; --sub:#6B7080; --ter:#9A9EAD;
+    --line:#E7E9EE; --line2:#F0F1F4; --soft:#F5F6F8;
+    /* iaCarry's own colours, from its logo. Never themed: the iaCarry mark is
+       iaCarry's whichever retailer the station is for. */
+    --ia-blue:#304CB5; --ia-violet:#6C5DC7; --ia-orchid:#DB7DE8;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Manrope,Roboto,sans-serif;color:var(--ink)}
+  html,body{margin:0;font-family:"Ubuntu",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
   body{min-height:100vh;padding:40px 32px;background:radial-gradient(1200px 600px at 20% -10%,#fff 0%,var(--bg) 62%)}
-  .app{max-width:1280px;margin:0 auto;background:#fff;border:1px solid #ECEAF5;border-radius:32px;box-shadow:0 1px 2px rgba(20,16,46,.04),0 30px 60px -30px rgba(60,40,140,.22);overflow:hidden}
+  .app{max-width:1280px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:32px;box-shadow:0 1px 2px rgba(16,18,27,.04),0 30px 60px -30px rgba(20,24,44,.2);overflow:hidden}
   .tabnum{font-variant-numeric:tabular-nums}
   /* top bar */
-  .top{display:flex;align-items:center;gap:14px;padding:16px 22px;background:rgba(255,255,255,.72);backdrop-filter:blur(20px);border-bottom:1px solid #F0EEF7}
-  .brand{font-weight:800;font-size:20px;letter-spacing:-.02em}
-  .brand span{color:var(--pri)}
+  .top{display:flex;align-items:center;gap:14px;padding:14px 22px;background:rgba(255,255,255,.72);backdrop-filter:blur(20px);border-bottom:1px solid var(--line2)}
+  .brand{display:flex;align-items:center;gap:9px;flex-shrink:0;color:var(--ink)}
+  .brand img{width:34px;height:34px;display:block}
+  .brand b{font-weight:500;font-size:22px;letter-spacing:-.01em;line-height:1}
+  /* "iaCarry | for <retailer>". The retailer logo has no frame: the files are
+     cut to the mark on transparent, and fitLogo() gives every one the same
+     area, so a long wordmark and a stacked mark read the same size. */
+  .cobrand{display:none;align-items:center;gap:12px;flex-shrink:0}
+  .cobrand .for{font-size:12px;font-weight:500;color:var(--sub)}
+  .logo{display:block;flex-shrink:0;object-fit:contain}
   .pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap}
   .pill-live{background:#E9F7EF;color:#12864a}
   .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-  .logo-slot{background:#fff;border:1px solid #ECEAF5;border-radius:9px;object-fit:contain;padding:3px}
-  .sep{width:1px;height:24px;background:#E1DEEC}
-  .muted{font-size:11px;color:var(--ter);font-weight:600}
+  .sep{width:1px;height:28px;background:var(--line)}
+  .muted{font-size:11px;color:var(--ter);font-weight:500}
   .right{margin-left:auto;display:flex;align-items:center;gap:12px}
-  select.client{appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:700;font-size:13px;color:var(--pri);background:var(--ps);border:1.5px solid var(--pri);border-radius:999px;padding:7px 30px 7px 14px;cursor:pointer;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%236E5AE0' stroke-width='2.4' stroke-linecap='round'><path d='M4 6l5 5 5-5'/></svg>");background-repeat:no-repeat;background-position:right 11px center}
-  .avatar{width:34px;height:34px;border-radius:50%;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
-  .bigtoggle{display:flex;align-items:center;gap:10px;font-family:inherit;cursor:pointer;border:1.5px solid #E4E1F0;background:#fff;color:#5a5478;border-radius:999px;padding:5px 8px 5px 6px;font-weight:700;font-size:13px;box-shadow:0 1px 2px rgba(20,16,46,.05);transition:all .2s}
-  .bigtoggle.on{border-color:var(--pri);background:var(--pri);color:#fff;box-shadow:0 6px 16px -6px rgba(20,16,46,.4)}
-  .aa{display:flex;align-items:baseline;justify-content:center;gap:1px;width:30px;height:30px;border-radius:999px;background:var(--ps);color:var(--pri)}
+  /* The arrow is drawn in the theme's colour: applyTheme() sets --chev. It was
+     a fixed violet, so Mercadona's green dropdown had a lilac arrow. */
+  select.client{appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:700;font-size:13px;color:var(--pri-ink);background-color:var(--ps);border:1.5px solid var(--pri);border-radius:999px;padding:7px 30px 7px 14px;cursor:pointer;background-image:var(--chev);background-repeat:no-repeat;background-position:right 11px center}
+  .langwrap{position:relative;display:flex;align-items:center}
+  .langwrap select{appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:500;font-size:12px;color:var(--ink2);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:6px 26px 6px 11px;cursor:pointer;outline:none}
+  .langwrap svg{position:absolute;right:8px;pointer-events:none}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--pri-fill);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .bigtoggle{display:flex;align-items:center;gap:10px;font-family:inherit;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--ink2);border-radius:999px;padding:5px 8px 5px 6px;font-weight:700;font-size:13px;box-shadow:0 1px 2px rgba(16,18,27,.05);transition:all .2s}
+  .bigtoggle.on{border-color:var(--pri);background:var(--pri-fill);color:#fff;box-shadow:0 6px 16px -6px rgba(16,18,27,.4)}
+  .aa{display:flex;align-items:baseline;justify-content:center;gap:1px;width:30px;height:30px;border-radius:999px;background:var(--ps);color:var(--pri-ink)}
   .bigtoggle.on .aa{background:rgba(255,255,255,.22);color:#fff}
-  .track{width:36px;height:21px;border-radius:999px;background:#DEDAEE;position:relative;transition:background .2s;flex-shrink:0}
+  .track{width:36px;height:21px;border-radius:999px;background:#D8DBE2;position:relative;transition:background .2s;flex-shrink:0}
   .bigtoggle.on .track{background:rgba(255,255,255,.45)}
   .knob{position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
   .bigtoggle.on .knob{left:17px}
   /* steps */
-  .steps{display:flex;align-items:center;gap:10px;padding:13px 22px;background:#FBFAFE;border-bottom:1px solid #F0EEF7}
+  .steps{display:flex;align-items:center;gap:10px;padding:13px 22px;background:#FAFBFC;border-bottom:1px solid var(--line2)}
   .step{display:flex;align-items:center;gap:10px}
-  .sc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
-  .chev{color:#c9c2e6}
+  .sc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .chev{color:#C3C7D1}
   /* grid */
   .grid{display:grid;grid-template-columns:minmax(300px,452px) minmax(0,1fr);gap:22px;padding:22px}
-  .card{background:#fff;border:1px solid #F0EEF7;border-radius:26px;box-shadow:0 1px 2px rgba(20,16,46,.04),0 18px 40px -26px rgba(60,40,140,.28)}
+  .card{background:#fff;border:1px solid var(--line2);border-radius:26px;box-shadow:0 1px 2px rgba(16,18,27,.04),0 18px 40px -26px rgba(20,24,44,.24)}
   .det{padding:16px;display:flex;flex-direction:column;gap:16px}
   .cam{border-radius:18px;overflow:hidden;aspect-ratio:1/1;position:relative;background-image:repeating-linear-gradient(45deg,var(--sa),var(--sa) 16px,var(--sb) 16px,var(--sb) 32px)}
-  .cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:12px ui-monospace,monospace;color:#9a8fce;text-align:center;padding:16px}
-  .cam .ph span{background:rgba(255,255,255,.6);padding:6px 12px;border-radius:6px}
+  .cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px}
+  .cam .ph>span{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.82);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;color:var(--sub);box-shadow:0 1px 2px rgba(16,18,27,.05)}
   /* The analysed photo. object-fit:fill makes the image cover exactly the same
      box the detection percentages are measured against, so the overlay stays
      aligned whatever aspect ratio the frame has. The panel's aspect-ratio is set
@@ -66,86 +96,107 @@
   .cam.has-img .ph{display:none}
   /* Busy state. The design assumes detection is instant; it is not — the server
      runs inference under a thread lock, so requests queue and take seconds. */
-  .busy{position:absolute;inset:0;z-index:3;display:none;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:16px;text-align:center;background:rgba(255,255,255,.74);backdrop-filter:blur(3px);font-weight:700;font-size:13px;color:var(--pri)}
+  .busy{position:absolute;inset:0;z-index:3;display:none;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:16px;text-align:center;background:rgba(255,255,255,.74);backdrop-filter:blur(3px);font-weight:700;font-size:13px;color:var(--pri-ink)}
   .cam.busy-on .busy{display:flex}
-  .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--ps);border-top-color:var(--pri);animation:spin .8s linear infinite}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--sb);border-top-color:var(--pri);animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   .box{position:absolute;border:3px solid;border-radius:14px;z-index:2}
   .box b{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#fff;font-weight:700;font-size:11px;padding:3px 10px;border-radius:999px;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.15)}
   .metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
   .metric{background:var(--mt);border-radius:12px;padding:8px 10px;text-align:center}
-  .metric b{font-weight:800;font-size:15px}
-  .metric i{display:block;font-style:normal;font-size:10px;color:var(--sub);font-weight:600}
+  .metric b{font-weight:700;font-size:15px}
+  .metric i{display:block;font-style:normal;font-size:10px;color:var(--sub);font-weight:500}
   .facts{display:flex;gap:12px}
-  .fact{flex:1;background:#fff;border:1px solid #F0EEF7;border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(20,16,46,.04);font-family:inherit;text-align:left}
-  .fact .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0}
-  .fact small{font-size:11px;color:var(--sub);font-weight:600}
-  .fact strong{display:block;font-size:14px}
-  .fraud{background:#fff;border:1px solid #F0EEF7;border-radius:20px;padding:18px 20px;box-shadow:0 1px 2px rgba(20,16,46,.04)}
+  .fact{flex:1;background:#fff;border:1px solid var(--line2);border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(16,18,27,.04);font-family:inherit;text-align:left;color:var(--ink)}
+  .fact .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;background:var(--ps);color:var(--pri-ink)}
+  .fact small{font-size:11px;color:var(--sub);font-weight:500}
+  .fact strong{display:block;font-size:14px;font-weight:700}
+  .fraud{background:#fff;border:1px solid var(--line2);border-radius:20px;padding:18px 20px;box-shadow:0 1px 2px rgba(16,18,27,.04)}
   .fraud .li{display:flex;align-items:center;gap:10px;font-size:13px;margin-top:9px}
-  .fraud .ok{width:20px;height:20px;border-radius:50%;background:#E9F7EF;color:#12864a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0}
+  .fraud .ok{width:20px;height:20px;border-radius:50%;background:#E9F7EF;color:#12864a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
   /* cart */
   .cart{display:flex;flex-direction:column;height:604px;overflow:hidden}
-  .chead{padding:18px 20px 14px;border-bottom:1px solid #F3F1F9}
+  .chead{padding:18px 20px 14px;border-bottom:1px solid var(--line2)}
   .crow1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .crow1 h2{margin:0;font-weight:800;font-size:20px;letter-spacing:-.02em;white-space:nowrap}
-  .badge-count{background:var(--ps);color:var(--pri);font-weight:700;font-size:12px;border-radius:999px;padding:3px 11px;white-space:nowrap}
-  .conf{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;font-size:12px;color:var(--sub);user-select:none}
-  .conf .cb{width:18px;height:18px;border-radius:6px;border:2px solid #CFC8E6;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800}
-  .conf.on{color:var(--pri)}.conf.on .cb{background:var(--pri);border-color:var(--pri)}
+  .crow1 h2{margin:0;font-weight:700;font-size:20px;letter-spacing:-.01em;white-space:nowrap}
+  .badge-count{background:var(--ps);color:var(--pri-ink);font-weight:700;font-size:12px;border-radius:999px;padding:3px 11px;white-space:nowrap}
+  .conf{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;font-size:12px;color:var(--sub);user-select:none}
+  .conf .cb{width:18px;height:18px;border-radius:6px;border:2px solid #C9CDD6;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+  .conf.on{color:var(--pri-ink)}.conf.on .cb{background:var(--pri-ink);border-color:var(--pri-ink)}
   .seg{margin-left:auto;display:flex;background:var(--seg);border-radius:12px;padding:4px;gap:2px}
   .seg button{border:none;cursor:pointer;font-family:inherit;padding:7px 11px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--sub);background:transparent}
-  .seg button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(20,16,46,.16)}
-  .search{margin-top:12px;display:flex;align-items:center;gap:7px;background:#F5F3FB;border:1px solid #ECEAF5;border-radius:9px;padding:6px 10px}
-  .search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:10px;color:var(--ink);width:100%}
-  .cats{display:flex;gap:5px;margin-top:9px;overflow-x:auto}
-  .cats button{flex-shrink:0;border:1px solid #E2DEF0;cursor:pointer;font-family:inherit;font-weight:600;font-size:10px;padding:3px 10px;border-radius:999px;color:#5a5478;background:#fff}
-  .cats button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+  .seg button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(16,18,27,.16)}
+  .search{margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:7px 11px}
+  .search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;color:var(--ink);width:100%}
+  .search input::placeholder{color:var(--ter)}
+  .cats{display:flex;gap:6px;margin-top:10px;overflow-x:auto}
+  .cats button{flex-shrink:0;border:1px solid var(--line);cursor:pointer;font-family:inherit;font-weight:500;font-size:12px;padding:4px 12px;border-radius:999px;color:var(--ink2);background:#fff}
+  /* --pri-ink, not --pri: white 12px text on a light brand colour (Mercadona's
+     green) is under 4:1. The pay button is big enough to keep the real colour. */
+  .cats button.on{background:var(--pri-ink);color:#fff;border-color:var(--pri-ink);font-weight:700}
   .list{flex:1;overflow-y:auto;padding:12px 14px;scrollbar-width:thin;scrollbar-color:var(--pri) transparent;scroll-behavior:smooth}
   .list::-webkit-scrollbar{width:12px}
   .list::-webkit-scrollbar-thumb{background:var(--pri);opacity:.5;border-radius:999px;border:4px solid transparent;background-clip:content-box}
   .seg2{display:flex;background:var(--seg);border-radius:9px;padding:3px;gap:2px;margin-left:2px}
   .seg2 button{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:11px;padding:4px 10px;border-radius:7px;color:var(--sub);background:transparent}
-  .seg2 button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(20,16,46,.16)}
+  .seg2 button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(16,18,27,.16)}
   .success{position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:6px}
   @keyframes popCheck{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
   .pgrid{display:grid;align-content:start}
-  .prod{position:relative;overflow:hidden;background:#FBFAFE;border:1px solid #F1EEF9;border-radius:16px;display:flex;flex-direction:column}
+  .prod{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(16,18,27,.04)}
   .prod>.strip{position:absolute;left:0;top:0;right:0;height:4px}
   .prod .pmeta{display:flex;margin-top:3px}
-  .thumb{border-radius:13px;background:#F4F1FC;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+  .thumb{border-radius:13px;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
   .pname{font-weight:700;line-height:1.2;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-  .pcost{font-size:12px;color:var(--sub);font-weight:500;margin-top:2px}
+  .pcost{font-size:12px;color:var(--sub);font-weight:400;margin-top:2px}
   .cbadge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-weight:700;font-size:10px;border-radius:999px;padding:3px 8px}
   .prow{display:flex;justify-content:space-between}
-  .qty{display:inline-flex;align-items:center;gap:5px;background:var(--pt);color:var(--pri);font-weight:700;border-radius:999px;padding:4px 11px}
-  .price{font-weight:800;letter-spacing:-.01em}
-  .empty{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ter);gap:8px;padding:40px}
+  .qty{display:inline-flex;align-items:center;gap:5px;background:var(--pt);color:var(--pri-ink);font-weight:700;border-radius:999px;padding:4px 11px}
+  .price{font-weight:700;letter-spacing:-.01em}
+  /* Spans the whole grid: in the 3-column view it used to sit in the first
+     column only, off to the left of an empty cart. */
+  .empty{grid-column:1/-1;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ter);gap:10px;padding:40px}
+  .empty div{color:var(--sub)}
   /* pay */
-  .pay{border-top:1px solid #F3F1F9;padding:14px 20px 16px;background:rgba(255,255,255,.86);backdrop-filter:blur(20px)}
-  .verif{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .pay{border-top:1px solid var(--line2);padding:14px 20px 16px;background:rgba(255,255,255,.86);backdrop-filter:blur(20px)}
+  /* min-height keeps the pay bar still when the pill and the logo come and go. */
+  .verif{display:flex;align-items:center;gap:12px;margin-bottom:12px;min-height:32px}
+  /* margin-left:auto pins the retailer logo right even when the pill is hidden;
+     with space-between alone it jumped to the left on an empty cart. */
+  .verif .logo{margin-left:auto}
   .btn{border:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:9px;border-radius:999px;font-weight:700}
-  .btn-listen{background:var(--ps);color:var(--pri);font-size:15px;padding:13px 20px}
-  .btn-pay{margin-left:auto;background:var(--pri);color:#fff;font-size:17px;padding:16px 32px;box-shadow:0 8px 20px -6px rgba(20,16,46,.3)}
-  .paybar{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-  .total b{font-weight:800;font-size:34px;letter-spacing:-.03em;line-height:1}
+  .btn-listen{background:var(--ps);color:var(--pri-ink);font-size:15px;padding:13px 20px;min-width:0;text-align:left;line-height:1.15}
+  .btn-listen svg{flex-shrink:0}
+  .btn-pay{margin-left:auto;flex-shrink:0;white-space:nowrap;background:var(--pri-fill);color:#fff;font-size:17px;padding:16px 32px;box-shadow:0 12px 24px -12px var(--pri),0 2px 6px -2px rgba(16,18,27,.18);transition:transform .15s,box-shadow .15s}
+  .btn-pay:not(:disabled):active{transform:translateY(1px)}
+  /* Disabled is grey under every theme. It was a fixed lilac, so a Mercadona
+     screen waiting for its cart showed a purple button. */
+  .btn-pay:disabled{background:#E3E5EA;color:#9A9EAD;box-shadow:none;cursor:not-allowed}
+  /* One row always. When a language's labels do not fit (Basque, large text),
+     the listen button's label takes two lines; the total and the pay button
+     never shrink. Wrapping the row instead pushed the pay button under it. */
+  .paybar{display:flex;align-items:center;gap:14px}
+  .total{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+  .total small{font-size:13px;color:var(--sub);font-weight:500}
+  .total b{font-weight:700;font-size:36px;letter-spacing:-.02em;line-height:1}
   .sema{display:flex;align-items:center;gap:9px;margin-top:12px;background:#E9F7EF;border:1px solid #C6EBD5;border-radius:12px;padding:10px 14px;font-weight:700;font-size:15px;color:#12864a}
   /* big mode */
   body.big{--ink:#000}
   body.big .pname{font-size:17px}body.big .price{font-size:19px}
-  body.big .total b{font-size:44px}
-  body.big .btn-pay{font-size:22px;padding:22px 40px}
-  body.big .btn-listen{font-size:19px;padding:20px 26px}
+  body.big .total b{font-size:46px}
+  body.big .btn-pay{font-size:21px;padding:20px 30px}
+  body.big .btn-listen{font-size:18px;padding:16px 20px}
   body.big .sema{font-size:18px;padding:16px 18px}
-  body.big .prod{border-width:2px;border-color:#17142E}
+  body.big .prod{border-width:2px;border-color:var(--ink)}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <div class="brand">ia<span>Carry</span></div>
-    <span id="clientMark" style="display:none;align-items:center;gap:10px"><span class="sep"></span><span class="muted" data-i18n="forC">para</span><img id="logoBig" class="logo-slot" style="height:45px;width:150px" alt=""></span>
+    <!-- iaCarry's own mark, in its own colours under every retailer. -->
+    <div class="brand"><img src="/static/assets/brand/iacarry-mark.png" alt=""><b>iaCarry</b></div>
+    <span id="clientMark" class="cobrand"><span class="sep"></span><span class="for" data-i18n="forC">para</span><img id="logoBig" class="logo" alt=""></span>
     <span class="pill pill-live"><span class="dot" style="background:#23b364;box-shadow:0 0 0 3px rgba(35,179,100,.18)"></span><span data-i18n="detActive">Detección activa</span></span>
     <div class="right">
       <select class="client" id="client">
@@ -156,7 +207,7 @@
         <option value="mercadona">Mercadona</option>
       </select>
       <button class="bigtoggle" id="big" title="Texto y botones grandes"><span class="aa"><span style="font-size:13px;align-self:center">A</span><span style="font-size:19px;align-self:center">A</span></span><span data-i18n="bigText">Texto grande</span><span class="track"><span class="knob"></span></span></button>
-      <div style="position:relative;display:flex;align-items:center"><select id="lang" title="Idioma / Language" style="appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:600;font-size:12px;color:#5a5478;background:#F5F3FB;border:1px solid #ECEAF5;border-radius:9px;padding:6px 26px 6px 11px;cursor:pointer;outline:none"></select><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a84a6" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;right:8px;pointer-events:none"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="langwrap"><select id="lang" title="Idioma / Language"></select><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7080" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
       <span class="muted" style="color:var(--sub);font-weight:400">Estación 04 · Barakaldo</span>
       <div class="avatar">LC</div>
     </div>
@@ -179,15 +230,15 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
         <b style="font-size:15px;white-space:nowrap" data-i18n="cam">Cámara cenital</b>
         <div style="display:flex;align-items:center;gap:8px">
-          <select class="client" id="demo" style="color:var(--pri)"></select>
-          <span class="pill" style="background:var(--ps);color:var(--pri)"><span class="dot" style="background:var(--pri)"></span><span data-i18n="live">en directo</span></span>
+          <select class="client" id="demo"></select>
+          <span class="pill" style="background:var(--ps);color:var(--pri-ink)"><span class="dot" style="background:var(--pri)"></span><span data-i18n="live">en directo</span></span>
         </div>
       </div>
       <div class="cam" id="cam">
         <img id="camImg" alt="">
         <!-- Both strings depend on detection state, so render() sets them rather
              than applyI18n(); no data-i18n here or the two would fight. -->
-        <div class="ph"><span id="camPh">Sin imagen analizada todavía</span></div>
+        <div class="ph"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h2l2-2h6l2 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="camPh">Sin imagen analizada todavía</span></span></div>
         <div class="busy"><span class="spin"></span><span id="busyMsg">Analizando el carro…</span></div>
       </div>
       <div class="metrics">
@@ -198,12 +249,12 @@
       <div class="facts">
         <!-- An estimate, so a neutral "≈" in brand tint rather than a green tick:
              a green check here would read as a verification we cannot perform. -->
-        <div class="fact" as="div"><span class="ic" style="background:var(--ps);color:var(--pri)">≈</span><span><small data-i18n="wVer">Peso estimado</small><strong id="wVal">—</strong></span></div>
-        <button class="fact" id="fraudBtn"><span class="ic" style="background:var(--ps);color:var(--pri)">◇</span><span style="flex:1"><small data-i18n="antifraud">Anti-fraude</small><strong data-i18n="noAnom">Pendiente de báscula</strong></span><svg id="fraudChev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a49ec2" stroke-width="2.4" stroke-linecap="round" style="transition:transform .2s"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="fact" as="div"><span class="ic">≈</span><span><small data-i18n="wVer">Peso estimado</small><strong id="wVal">—</strong></span></div>
+        <button class="fact" id="fraudBtn"><span class="ic">◇</span><span style="flex:1"><small data-i18n="antifraud">Anti-fraude</small><strong data-i18n="noAnom">Pendiente de báscula</strong></span><svg id="fraudChev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A9EAD" stroke-width="2.4" stroke-linecap="round" style="transition:transform .2s"><path d="M6 9l6 6 6-6"/></svg></button>
       </div>
       <div class="fraud" id="fraudPanel" style="display:none">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span class="ok" style="width:30px;height:30px;border-radius:9px;background:var(--ps);color:var(--pri)">◇</span><b style="font-size:15px" data-i18n="fTitle">Resumen de la revisión</b></div>
-        <p style="margin:0;font-size:13px;line-height:1.55;color:#5a5478" data-i18n="fPara">El sistema ha reconocido los productos a partir de la imagen cenital y ha calculado el peso esperado del carro con los pesos del catálogo.</p>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><span class="ok" style="width:30px;height:30px;border-radius:9px;background:var(--ps);color:var(--pri-ink)">◇</span><b style="font-size:15px" data-i18n="fTitle">Resumen de la revisión</b></div>
+        <p style="margin:0;font-size:13px;line-height:1.55;color:var(--ink2)" data-i18n="fPara">El sistema ha reconocido los productos a partir de la imagen cenital y ha calculado el peso esperado del carro con los pesos del catálogo.</p>
         <div class="li"><span class="ok">✓</span><span><b id="fraudN">0</b> <span data-i18n="fLi1">productos reconocidos</span></span></div>
         <!-- Carries the computed figure, so render() sets it rather than applyI18n(). -->
         <div class="li"><span class="ok">✓</span><span id="fLi2">Peso esperado —</span></div>
@@ -219,8 +270,8 @@
         <!-- data-i18n was missing here since the design bundle, so this heading
              stayed Spanish in all seven languages while the lines under it
              translated. The `thanks` key already existed, unused. -->
-        <div id="sThanks" data-i18n="thanks" style="font-weight:800;font-size:26px;letter-spacing:-.02em;margin-top:14px;animation:fadeUp .4s .15s both">¡Gracias por tu compra! 🎉</div>
-        <div id="sConfirmed" style="font-size:15px;color:#5a5478;max-width:340px;animation:fadeUp .4s .25s both">Pago confirmado.</div>
+        <div id="sThanks" data-i18n="thanks" style="font-weight:700;font-size:26px;letter-spacing:-.01em;margin-top:14px;animation:fadeUp .4s .15s both">¡Gracias por tu compra! 🎉</div>
+        <div id="sConfirmed" style="font-size:15px;color:var(--ink2);max-width:340px;animation:fadeUp .4s .25s both">Pago confirmado.</div>
         <div class="pill pill-live" style="margin-top:4px;animation:fadeUp .4s .35s both"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="sTicket">Ticket enviado</span></div>
         <!-- Shown only while PAYMENT_BACKEND is false. It disappears on its own
              the moment a real payment route confirms the charge. -->
@@ -238,14 +289,14 @@
             <button data-d="cols3" title="3 columnas" data-i18n-title="dCols"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><rect x="1.5" y="2" width="3.4" height="12" rx="1"/><rect x="6.3" y="2" width="3.4" height="12" rx="1"/><rect x="11.1" y="2" width="3.4" height="12" rx="1"/></svg></button>
           </div>
         </div>
-        <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8a84a6" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="search" data-i18n-ph="search" placeholder="Buscar entre +10.000 productos…"></div>
+        <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A9EAD" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="search" data-i18n-ph="search" placeholder="Buscar entre +10.000 productos…"></div>
         <div class="cats" id="cats"></div>
       </div>
       <div class="list"><div class="pgrid" id="pgrid"></div></div>
       <div class="pay">
-        <div class="verif"><span class="pill pill-live" id="verifPill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="verWTxt">Reconocido por IA</span></span><img id="logoSmall" class="logo-slot" style="height:31px;width:104px;display:none" alt=""></div>
+        <div class="verif"><span class="pill pill-live" id="verifPill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="verWTxt">Reconocido por IA</span></span><img id="logoSmall" class="logo" style="display:none" alt=""></div>
         <div class="paybar">
-          <div class="total"><small style="font-size:13px;color:var(--sub);font-weight:600" data-i18n="totalPay">Total a pagar</small><b class="tabnum" id="total">0.00€</b></div>
+          <div class="total"><small data-i18n="totalPay">Total a pagar</small><b class="tabnum" id="total">0.00€</b></div>
           <button class="btn btn-listen" id="listen"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 8a5 5 0 010 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="listen">Escuchar total</span></button>
           <button class="btn btn-pay" id="pay"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 12c4.5-4.5 11.5-4.5 16 0"/><path d="M7.5 15.5c2.5-2.5 6.5-2.5 9 0"/><path d="M11 19h2"/></svg><span id="payBtnTxt">Pagar sin contacto</span></button>
         </div>
@@ -256,12 +307,16 @@
 </div>
 
 <script>
+/* One entry per retailer. `pri` is the brand colour, taken from the logo file
+   (or the brand manual); `ink` is that colour dark enough for small text on
+   its own tints; the rest are the tints. tools/new_client_theme.py derives all
+   of them from one colour. Only iaCarry has `grad`: its logo's blue → violet. */
 const THEMES={
-  iacarry:{name:"iaCarry",pri:"#6E5AE0",ps:"#EFEBFC",pt:"#F1EFFA",bg:"#F5F4FA",mt:"#F5F2FD",seg:"#EEECF4",sa:"#efeaf9",sb:"#e7e0f4",logo:""},
-  eroski:{name:"Eroski",pri:"#E30613",ps:"#FCEAEA",pt:"#FBEEEE",bg:"#FBF4F4",mt:"#FCEFEF",seg:"#F4E7E7",sa:"#FAEBEB",sb:"#F4DBDB",logo:"/static/assets/logos/eroski-logo.png"},
-  ahorramas:{name:"AhorraMas",pri:"#57A639",ps:"#EAF5E4",pt:"#EEF6E9",bg:"#F5FAF2",mt:"#EDF6E8",seg:"#E8F1E3",sa:"#EDF6E7",sb:"#DFEFD5",logo:"/static/assets/logos/ahorramas-logo.png"},
-  condis:{name:"Condis",pri:"#17398A",ps:"#E7ECF6",pt:"#EBEFF7",bg:"#F3F6FC",mt:"#E9EEF8",seg:"#E4EAF4",sa:"#E9EEF8",sb:"#DBE4F1",logo:"/static/assets/logos/condis-logo.png"},
-  mercadona:{name:"Mercadona",pri:"#009660",ps:"#EBF7F2",pt:"#EDF8F4",bg:"#F5FBF9",mt:"#ECF7F3",seg:"#E6F2ED",sa:"#ECF7F3",sb:"#DEF1EA",logo:"/static/assets/logos/mercadona-logo.png"}
+  iacarry:{name:"iaCarry",pri:"#6C5DC7",ink:"#6A5BC3",grad:"linear-gradient(115deg,#304CB5 0%,#6C5DC7 55%,#A466D6 100%)",ps:"#F3F2FB",pt:"#F5F4FB",bg:"#F9F9FD",mt:"#F4F3FB",seg:"#F2F0FA",sa:"#F4F3FB",sb:"#ECEAF8",logo:""},
+  eroski:{name:"Eroski",pri:"#E30613",ink:"#C40511",ps:"#FCEAEA",pt:"#FBEEEE",bg:"#FBF4F4",mt:"#FCEFEF",seg:"#F4E7E7",sa:"#FAEBEB",sb:"#F4DBDB",logo:"/static/assets/logos/eroski-logo.png"},
+  ahorramas:{name:"AhorraMas",pri:"#C53842",ink:"#BF3640",ps:"#FAEFF0",pt:"#FBF1F2",bg:"#FDF7F7",mt:"#FBF0F1",seg:"#FAEDEE",sa:"#FBF0F1",sb:"#F7E5E6",logo:"/static/assets/logos/ahorramas-logo.png"},
+  condis:{name:"Condis",pri:"#17398A",ink:"#17398A",ps:"#E7ECF6",pt:"#EBEFF7",bg:"#F3F6FC",mt:"#E9EEF8",seg:"#E4EAF4",sa:"#E9EEF8",sb:"#DBE4F1",logo:"/static/assets/logos/condis-logo.png"},
+  mercadona:{name:"Mercadona",pri:"#009660",ink:"#007B4F",ps:"#EBF7F2",pt:"#EDF8F4",bg:"#F5FBF9",mt:"#ECF7F3",seg:"#E6F2ED",sa:"#ECF7F3",sb:"#DEF1EA",logo:"/static/assets/logos/mercadona-logo.png"}
 };
 /* ===========================================================================
    ASSETS — everything the screen draws is served by this Flask app.
@@ -333,7 +388,7 @@ const DMAP={
   cols3:{cols:"repeat(3,minmax(0,1fr))",gap:"9px",pad:"10px 8px",cgap:"7px",thumb:44,img:36,td:"column",tg:"7px",ta:"center",na:"center",bd:"column",ba:"center"}
 };
 const shortOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?(c.short||c.name.split(" ")[0]):t};
-const colorOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?c.color:"#6E5AE0"};
+const colorOf=t=>{const c=CATALOG.find(x=>x.tag===t);return c?c.color:"var(--pri)"};
 const CATS=[["Todos","catAll"],["Bebidas","catDrinks"],["Snacks","catSnacks"],["Cuidado","catCare"]];
 
 /* ===========================================================================
@@ -759,8 +814,28 @@ function applyI18n(){
 fillDemo();
 CATS.forEach(([key])=>{const b=document.createElement("button");b.dataset.cat=key;b.onclick=()=>{state.cat=key;render()};$("#cats").appendChild(b)});
 
+/* Retailer logos come in every shape: Mercadona's and AhorraMas's are long
+   wordmarks, Condis's a stacked mark. Fitted into one box, the long ones came
+   out a thin strip and looked a size smaller than the rest. Giving each logo
+   the same AREA, within a maximum box, makes them all read the same size. The
+   files are cut to the mark (no margin of their own), so area is all logo. */
+const LOGO_FIT={logoBig:{area:4400,w:170,h:40},logoSmall:{area:1900,w:124,h:30}};
+function fitLogo(img){
+  const f=LOGO_FIT[img.id],r=img.naturalWidth/img.naturalHeight;
+  if(!f||!(r>0)) return;
+  let h=Math.sqrt(f.area/r),w=h*r;
+  if(w>f.w){w=f.w;h=w/r}
+  if(h>f.h){h=f.h;w=h*r}
+  img.style.width=w.toFixed(1)+"px";img.style.height=h.toFixed(1)+"px";
+}
+/* The select arrow is an SVG in a data URL, which cannot read a CSS variable,
+   so each theme writes its own. */
+const chevFor=c=>`url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='${c.replace("#","%23")}' stroke-width='2.4' stroke-linecap='round'><path d='M4 6l5 5 5-5'/></svg>")`;
 function applyTheme(){const t=THEMES[state.client];const r=document.body.style;
-  r.setProperty("--pri",t.pri);r.setProperty("--ps",t.ps);r.setProperty("--pt",t.pt);r.setProperty("--bg",t.bg);r.setProperty("--mt",t.mt);r.setProperty("--seg",t.seg);r.setProperty("--sa",t.sa);r.setProperty("--sb",t.sb);
+  ["pri","ps","pt","bg","mt","seg","sa","sb"].forEach(k=>r.setProperty("--"+k,t[k]));
+  r.setProperty("--pri-ink",t.ink||t.pri);
+  r.setProperty("--pri-fill",t.grad||t.pri);
+  r.setProperty("--chev",chevFor(t.ink||t.pri));
   /* A client theme without a usable logo file shows no slot at all, rather than
      a broken-image icon in the top bar next to the word "for". The palette
      still swaps, so the theme is intact — only the mark is absent. */
@@ -774,7 +849,13 @@ function applyTheme(){const t=THEMES[state.client];const r=document.body.style;
        applyTheme() sees LOGO_MISSING and never re-assigns src. */
     const miss=()=>{LOGO_MISSING.add(t.logo);render()};
     big.onerror=miss;small.onerror=miss;
-    if(big.getAttribute("src")!==t.logo){big.src=t.logo;small.src=t.logo}
+    big.onload=()=>fitLogo(big);small.onload=()=>fitLogo(small);
+    if(big.getAttribute("src")!==t.logo){
+      /* Until the new file has loaded, the old logo's size would be wrong for
+         it; hidden for those few milliseconds rather than shown stretched. */
+      big.style.width=small.style.width="0px";
+      big.src=t.logo;small.src=t.logo;big.alt=small.alt=t.name;
+    }
   }
 }
 function render(){
@@ -801,8 +882,8 @@ function render(){
   // steps
   const full=state.cartFull,paid=state.pay.status==="done";
   const done=b=>{b.style.background="#E9F7EF";b.style.color="#12864a";b.style.boxShadow="none";b.textContent="\u2713"};
-  const act=(b,t)=>{b.style.background="var(--pri)";b.style.color="#fff";b.style.boxShadow="0 0 0 4px var(--ps)";b.textContent=t};
-  const idle=(b,t)=>{b.style.background="#EDEAF6";b.style.color="var(--ter)";b.style.boxShadow="none";b.textContent=t};
+  const act=(b,t)=>{b.style.background="var(--pri-fill)";b.style.color="#fff";b.style.boxShadow="0 0 0 4px var(--ps)";b.textContent=t};
+  const idle=(b,t)=>{b.style.background="#ECEEF2";b.style.color="var(--ter)";b.style.boxShadow="none";b.textContent=t};
   full?done($("#s1")):act($("#s1"),"1");
   paid?done($("#s2")):(full?act($("#s2"),"2"):idle($("#s2"),"2"));
   paid?done($("#s3")):idle($("#s3"),"3");
@@ -827,20 +908,17 @@ function render(){
   /* Payment outranks detection here: a refused card is what the customer needs
      told, even though the cart behind it is perfectly valid. */
   if(state.pay.status==="error") light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.payFail);
-  else if(state.pay.status==="paying") light("var(--ps)","var(--ps)","var(--pri)","var(--pri)","rgba(110,90,224,.18)",T.paying);
-  else if(det==="busy")  light("var(--ps)","var(--ps)","var(--pri)","var(--pri)","rgba(110,90,224,.18)",T.semaBusy);
+  else if(state.pay.status==="paying") light("var(--ps)","var(--sb)","var(--pri-ink)","var(--pri)","var(--sb)",T.paying);
+  else if(det==="busy")  light("var(--ps)","var(--sb)","var(--pri-ink)","var(--pri)","var(--sb)",T.semaBusy);
   else if(det==="error") light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.semaFail);
   else if(det==="ok"&&detUnits===0) light("#FDECEC","#F6C9C9","#B3261E","#E5484D","rgba(229,72,77,.18)",T.semaNone);
   else if(det==="ok"&&full&&count>0) light("#E9F7EF","#C6EBD5","#12864a","#23b364","rgba(35,179,100,.18)",T.semaReady);
-  else                   light("#F3F1F9","#E7E3F1","#8a84a6","#c9c2e6","rgba(201,194,230,.18)",T.semaPlace);
+  else                   light("#F5F6F8","#E7E9EE","#6B7080","#B9BDC8","rgba(185,189,200,.25)",T.semaPlace);
   sema.title=state.pay.detail||state.detect.detail||"";
   /* Blocked, not merely discouraged — disabled so a click cannot land at all. */
   const canPay=payable();
   $("#payBtnTxt").textContent=(state.pay.status==="paying")?T.paying:T.payBtn;
-  $("#pay").disabled=!canPay;
-  $("#pay").style.background=canPay?"var(--pri)":"#c9c2e6";
-  $("#pay").style.opacity=canPay?"1":".6";
-  $("#pay").style.cursor=canPay?"pointer":"not-allowed";
+  $("#pay").disabled=!canPay;              /* .btn-pay:disabled greys it out */
   /* One detection at a time: the server serialises inference anyway. */
   $("#demo").disabled=(det==="busy");
   // success overlay

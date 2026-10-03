@@ -106,6 +106,73 @@ CLIP_JS = """() => {
   return bad;}""" % CLIP_SELECTOR
 
 
+def contrast(a, b):
+    """WCAG contrast ratio of two #RRGGBB colours."""
+    def lum(h):
+        def lin(c):
+            c /= 255
+            return c / 12.92 if c <= .03928 else ((c + .055) / 1.055) ** 2.4
+        r, g, b = (lin(int(h[i:i + 2], 16)) for i in (1, 3, 5))
+        return .2126 * r + .7152 * g + .0722 * b
+    la, lb = sorted((lum(a), lum(b)), reverse=True)
+    return (la + .05) / (lb + .05)
+
+
+def logo_files_check():
+    """Every client logo is cut to its mark: a margin baked into the file would
+    count as logo when the page sizes logos by area, and shrink that one."""
+    from PIL import Image
+    folder = os.path.join(SERVER_DIR, "static", "assets", "logos")
+    for name in sorted(os.listdir(folder)):
+        if not name.endswith("-logo.png"):
+            continue
+        im = Image.open(os.path.join(folder, name)).convert("RGBA")
+        # Opaque near-white is margin too: the old files were padded with it.
+        ink = Image.new("L", im.size, 0)
+        ink.putdata([255 if a > 8 and not (a > 250 and min(r, g, b) > 240) else 0
+                     for r, g, b, a in (im.get_flattened_data() if hasattr(im, "get_flattened_data") else im.getdata())])
+        box = ink.getbbox()
+        check("I", "%s: cut to the mark, no margin of its own" % name,
+              box == (0, 0) + im.size, "content %s in %s" % (box, im.size))
+
+
+# Where the two logo slots and the iaCarry mark actually landed.
+LOGO_GEOMETRY_JS = """() => {
+  const R=s=>document.querySelector(s).getBoundingClientRect();
+  const big=R('#logoBig'), small=R('#logoSmall'), top=R('.top'), verif=R('.verif');
+  const img=document.querySelector('#logoBig');
+  return {ratio: img.naturalWidth/img.naturalHeight,
+          big:{w:big.width, h:big.height, midOffset:(big.top+big.bottom)/2-(top.top+top.bottom)/2},
+          small:{w:small.width, h:small.height, rightGap:verif.right-small.right},
+          brandInk:(b=>b?getComputedStyle(b).color:'no .brand b')(document.querySelector('.brand b')),
+          brandMark:(i=>!!i&&i.complete&&i.naturalWidth>0)(document.querySelector('.brand img'))};
+}"""
+
+# Any visible colour on the page in iaCarry's violet range, under a retailer's
+# theme. The iaCarry mark is iaCarry's own; product colours (box outlines, name
+# pills, card strips) belong to the products, one of which is violet.
+VIOLET_LEAK_JS = """() => {
+  const props=['color','backgroundColor','borderTopColor','borderRightColor','borderBottomColor',
+               'borderLeftColor','boxShadow','backgroundImage','outlineColor','fill','stroke'];
+  const violet=(r,g,b)=>{const mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+    if(mx===0||(mx-mn)/mx<0.04) return false;
+    let h; if(mx===r) h=((g-b)/(mx-mn))%6; else if(mx===g) h=(b-r)/(mx-mn)+2; else h=(r-g)/(mx-mn)+4;
+    h=(h*60+360)%360; return h>=245&&h<=300;};
+  const out=new Set();
+  document.querySelectorAll('body *').forEach(e=>{
+    if(e.closest('.brand, #cam .box, .prod .strip, option')) return;
+    const rect=e.getBoundingClientRect(); if(!rect.width||!rect.height) return;
+    const cs=getComputedStyle(e); if(cs.visibility==='hidden') return;
+    props.forEach(p=>{
+      const v=cs[p]||''; const re=/rgba?\\(([\\d.]+),\\s*([\\d.]+),\\s*([\\d.]+)(?:,\\s*([\\d.]+))?\\)/g; let m;
+      while((m=re.exec(v))){ if(m[4]!==undefined && +m[4]===0) continue;
+        if(violet(+m[1],+m[2],+m[3])) out.add((e.id||e.className||e.tagName)+' '+p+' '+m[0]); }
+    });
+  });
+  return [...out];
+}"""
+
+
 def main():
     if not CHROME:
         print("No Chromium found; set CHROME_PATH."); return 2
@@ -271,7 +338,7 @@ def main():
                     pri = pg.evaluate("getComputedStyle(document.body).getPropertyValue('--pri').trim()")
                     want = pg.evaluate("t => THEMES[t].pri", themes[-1])
                     check("E", "%dpx%s: theme palette applied" % (width, " +big" if big else ""),
-                          pri == want and want not in ("", "#6E5AE0"), pri)
+                          pri == want and want not in ("", pg.evaluate("THEMES.iacarry.pri")), pri)
                 check("E", "%dpx: no clipping across %d themes x 7 langs x 2 text sizes" % (width, len(themes)),
                       not broken, broken[:3])
                 b.close()
@@ -301,11 +368,19 @@ def main():
         with Stub(REAL_STATIC, MODE="ok", DELAY=0):
             b = pw.chromium.launch(executable_path=CHROME)
             pg = b.new_page(viewport={"width": 1500, "height": 1400})
-            outbound = []
+            outbound, missing = [], []
             pg.route("**/*", lambda r, q: (r.continue_() if q.url.startswith(BASE)
                                            else (outbound.append(q.url), r.abort())))
+            pg.on("response", lambda r: missing.append(r.url) if r.status >= 400 else None)
             pg.goto(BASE + "/", wait_until="networkidle")
             detect(pg)
+            fonts = pg.evaluate("""async () => { await document.fonts.ready;
+                return [...document.fonts].filter(f=>f.family.replace(/"/g,'')==='Ubuntu')
+                    .map(f=>f.weight+':'+f.status); }""")
+            check("F", "brand font (Ubuntu) loaded from the app",
+                  fonts and all(f.endswith(":loaded") for f in fonts), fonts)
+            check("F", "iaCarry mark decoded",
+                  pg.evaluate("(i=>!!i&&i.complete&&i.naturalWidth>0)(document.querySelector('.brand img'))"))
             pg.evaluate("document.querySelector('.list').scrollTop=99999")
             pg.wait_for_timeout(1200)
             imgs = pg.evaluate("""() => [...document.querySelectorAll('#pgrid img')]
@@ -338,6 +413,7 @@ def main():
             check("F", "own brand has no client mark",
                   not pg.is_visible("#clientMark") and not pg.is_visible("#logoSmall"))
             check("F", "no outbound request even attempted", not outbound, sorted(set(outbound))[:3])
+            check("F", "nothing the page asked for was missing (favicon included)", not missing, missing[:3])
             b.close()
 
         # -- G. backend seams --------------------------------------------------
@@ -417,6 +493,71 @@ def main():
                 check("H", "demo%d: every label is a catalogue product" % n,
                       all(p["tagName"] in catalog for p in want),
                       [p["tagName"] for p in want if p["tagName"] not in catalog])
+            b.close()
+
+        # -- I. each retailer: logo placed, own colours, readable -------------
+        print("\n[I] Each retailer: logo placed and sized, its own colours, readable text")
+        logo_files_check()
+        with Stub(REAL_STATIC, MODE="ok", DELAY=0):
+            b, pg = new_page(pw, width=1280)
+            pg.goto(BASE + "/", wait_until="networkidle")
+            themes = pg.evaluate("THEMES")
+            clients = [k for k in pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)")
+                       if themes[k].get("logo")]
+            for k in pg.evaluate("[...document.querySelectorAll('#client option')].map(o=>o.value)"):
+                t = themes[k]
+                ink = t.get("ink") or t["pri"]
+                # Fills carry white text at 17px bold and up (pay button, avatar);
+                # chips and badges carry 12px text, so they use `ink`.
+                check("I", "%s: white on the brand colour >= 3:1 (pay button)" % k,
+                      contrast(t["pri"], "#FFFFFF") >= 3, "%.2f" % contrast(t["pri"], "#FFFFFF"))
+                check("I", "%s: small text in ink >= 4.5:1 on its tints and as a fill" % k,
+                      min(contrast(ink, t["ps"]), contrast(ink, t["sb"]), contrast(ink, "#FFFFFF")) >= 4.5,
+                      "%.2f / %.2f / %.2f" % (contrast(ink, t["ps"]), contrast(ink, t["sb"]),
+                                              contrast(ink, "#FFFFFF")))
+            detect(pg)
+            areas = {}
+            for k in clients:
+                pg.select_option("#client", k)
+                pg.wait_for_timeout(400)
+                g = pg.evaluate(LOGO_GEOMETRY_JS)
+                areas[k] = g["big"]["w"] * g["big"]["h"]
+                check("I", "%s: top logo within its box, not a sliver" % k,
+                      0 < g["big"]["w"] <= 170.5 and 0 < g["big"]["h"] <= 40.5 and g["big"]["h"] >= 20,
+                      g["big"])
+                check("I", "%s: logo by the total within its box" % k,
+                      0 < g["small"]["w"] <= 124.5 and 0 < g["small"]["h"] <= 30.5 and g["small"]["h"] >= 14,
+                      g["small"])
+                check("I", "%s: logos keep the file's proportions" % k,
+                      abs(g["big"]["w"] / g["big"]["h"] - g["ratio"]) < .03 * g["ratio"]
+                      and abs(g["small"]["w"] / g["small"]["h"] - g["ratio"]) < .03 * g["ratio"])
+                check("I", "%s: logo by the total pinned right" % k, abs(g["small"]["rightGap"]) <= 1.5, g["small"])
+                check("I", "%s: top logo vertically centred in the bar" % k, abs(g["big"]["midOffset"]) <= 2,
+                      g["big"])
+                check("I", "%s: iaCarry mark keeps its own colours" % k,
+                      g["brandInk"] == "rgb(22, 23, 29)" and g["brandMark"], g["brandInk"])
+                leaks = pg.evaluate(VIOLET_LEAK_JS)
+                check("I", "%s: no iaCarry violet left on the retailer's screen" % k, not leaks, leaks[:4])
+                arrow = pg.evaluate("getComputedStyle(document.querySelector('#client')).backgroundImage")
+                check("I", "%s: dropdown arrow in the retailer's colour" % k,
+                      ("%23" + (themes[k].get("ink") or themes[k]["pri"])[1:]).lower() in arrow.lower())
+            if areas:
+                check("I", "logos read the same size: largest/smallest area <= 1.6",
+                      max(areas.values()) / min(areas.values()) <= 1.6,
+                      {k: round(v) for k, v in areas.items()})
+            # An empty cart hides the pill beside the small logo; the logo stays put.
+            pg.select_option("#client", clients[-1])
+            pg.click("#btnEmpty")
+            pg.wait_for_timeout(300)
+            g = pg.evaluate(LOGO_GEOMETRY_JS)
+            check("I", "empty cart: logo by the total still pinned right", abs(g["small"]["rightGap"]) <= 1.5,
+                  g["small"])
+            check("I", "empty cart: message centred in the cart, not in its first column",
+                  pg.evaluate("""() => { const e=document.querySelector('#pgrid .empty').getBoundingClientRect(),
+                      l=document.querySelector('.list').getBoundingClientRect();
+                      return Math.abs((e.left+e.right)/2-(l.left+l.right)/2) < 3; }"""))
+            check("I", "empty cart: disabled pay button is grey, not a brand tint",
+                  pg.eval_on_selector("#pay", "e=>getComputedStyle(e).backgroundColor") == "rgb(227, 229, 234)")
             b.close()
 
     shutil.rmtree(tmp, ignore_errors=True)

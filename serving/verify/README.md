@@ -20,9 +20,10 @@ totals against arithmetic done independently of the code under test.
 | C | Busy state | Veil, disabled pay, locked selector during a slow response, and clearing afterwards |
 | D | Failure states | HTTP 500, plain-text error, nothing recognised, server killed mid-request |
 | E | Themes and languages | Every theme in the dropdown × 7 languages × 2 text sizes × 2 widths, plus 3-column density |
-| F | Offline | Every non-local request aborted at the browser |
+| F | Offline | Every non-local request aborted at the browser; the font, the iaCarry mark and the logos still load, and nothing answers 404 |
 | G | Backend seams | Payment stub marked; the one-line swap to a real backend, approved and refused |
 | H | Demo frames | Each of the four demo photos gets its own hand-labelled answer: one box per item, all catalogue products |
+| I | Retailers | Per retailer in the dropdown: logo file cut to the mark; both logos in their box, proportions kept, the same area within 1.6×, the small one pinned right (also on an empty cart); the iaCarry mark unthemed; no violet left on the screen; dropdown arrow in the retailer's colour; contrast of `pri` and `ink` for every theme |
 
 ## How the geometry check works
 
@@ -50,9 +51,11 @@ Specifically still unverified, and only testable on the deployment box:
   serialises concurrent requests.
 - The real `path_server` and the matplotlib render written beside it.
 - Whether `shape_img` from the live model matches the frames used here.
-- That the client logos are the *correct* marks. Section F confirms the three
-  files decode and are served locally, not that the artwork is right — no test
-  can tell a real Eroski logo from a convincing wrong one.
+- That the client logos are the *correct* marks. Sections F and I confirm the
+  files decode, are served locally and are placed and sized, not that the
+  artwork is right — no test can tell a real Eroski logo from a convincing
+  wrong one. The brand colours were checked by eye against the logo files
+  (`README_4_FRONTEND.md`, "Brand colours, checked against the logos").
 - `/payment` and the door release, which do not exist; section G verifies the
   seam against a stub route, not a payment terminal.
 

@@ -240,7 +240,7 @@ the model find less, or did a **threshold** drop it? is a disagreement in the
 
 ```bash
 python serving/app.py        # needs TensorFlow + the model folder
-python3 serving/verify/verify.py           # 78 checks, no TensorFlow needed
+python3 serving/verify/verify.py           # 143 checks, no TensorFlow needed
 ```
 
 The verification suite runs against `verify/stub_server.py`, which serves the

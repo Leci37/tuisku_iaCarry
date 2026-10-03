@@ -125,7 +125,7 @@ The phase numbers live in the README filenames instead.
 ```bash
 pip install -e .                      # REQUIRED before running any step script
 python3 tools/check_imports.py        # every local import resolves? (needs no deps)
-python3 serving/verify/verify.py      # 78 browser checks against a stub /upload
+python3 serving/verify/verify.py      # 143 browser checks against a stub /upload
 ```
 
 `pip install -e .` is not optional. Python puts only the *script's own* folder on
