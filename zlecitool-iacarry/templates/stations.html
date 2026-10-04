@@ -1,0 +1,40 @@
+{% extends "_layout.html" %}
+{# Las cajas: cada una es una pantalla emparejada de la empresa (un dispositivo
+   del núcleo). Se dan de alta, se emparejan y se revocan en «Empresa»; aquí se
+   ve cómo están y se dice dónde está cada una. #}
+{% block page %}
+<section class="account-card">
+  <h1 class="zt-title" data-i18n="iaStationsTitle">{{ zt_t('iaStationsTitle') }}</h1>
+  {% set p = {"url": url_for('zlecitool_devices.pair', _external=True)} %}
+  <p class="account-sub" data-i18n="iaStationsSub" data-i18n-vars='{{ p|tojson }}'>{{ zt_t('iaStationsSub', **p) }}</p>
+  {% if is_admin %}<p><a class="btn-grad" href="{{ url_for('zlecitool_orgs.company') }}#devices" data-i18n="iaAddStation">{{ zt_t('iaAddStation') }}</a></p>{% endif %}
+  {% if rows %}
+  <div class="zt-table-wrap"><table class="account-table">
+    <thead><tr><th data-i18n="iaColStation">{{ zt_t('iaColStation') }}</th><th data-i18n="iaColLocation">{{ zt_t('iaColLocation') }}</th>
+      <th data-i18n="iaColStatus">{{ zt_t('iaColStatus') }}</th><th data-i18n="iaColLastSeen">{{ zt_t('iaColLastSeen') }}</th>
+      <th data-i18n="iaColLastPhoto">{{ zt_t('iaColLastPhoto') }}</th></tr></thead>
+    <tbody>
+    {% for row in rows %}
+      {% set d, s = row.device, row.station %}
+      {% set status_key = {'online': 'iaOnline', 'offline': 'iaOffline', 'waiting': 'iaWaiting', 'revoked': 'iaRevoked'}[row.status] %}
+      <tr class="{% if row.status == 'revoked' %}is-void{% endif %}">
+        <td>{{ d.name }}</td>
+        <td>{% if s and is_admin and row.status != 'revoked' %}
+          <form class="ia-inline" method="post" action="{{ url_for('iacarry.station_save', station_id=s.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input class="inp" type="text" name="location" maxlength="120" value="{{ s.location or '' }}" placeholder="{{ zt_t('iaLocationHint') }}" data-i18n="iaLocationHint" data-i18n-attr="placeholder" aria-label="{{ zt_t('iaColLocation') }}">
+            <button class="btn-ghost btn-sm-ghost" type="submit" data-i18n="iaSave">{{ zt_t('iaSave') }}</button>
+          </form>
+          {% elif s %}{{ s.location or '' }}{% else %}<span class="zt-muted" data-i18n="iaNotOpenedYet">{{ zt_t('iaNotOpenedYet') }}</span>{% endif %}</td>
+        <td><span class="ia-status is-{{ row.status }}" data-i18n="{{ status_key }}">{{ zt_t(status_key) }}</span></td>
+        <td class="tabnum">{% if d.last_seen_at %}{{ (d.last_seen_at|zt_local_time).strftime('%d/%m/%Y %H:%M') }}{% else %}<span class="zt-muted" data-i18n="deviceNeverSeen">{{ zt_t('deviceNeverSeen') }}</span>{% endif %}</td>
+        <td class="tabnum">{% if s and s.last_detection_at %}{{ (s.last_detection_at|zt_local_time).strftime('%d/%m/%Y %H:%M') }}{% else %}—{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}
+  <p class="account-note" data-i18n="iaNoStations">{{ zt_t('iaNoStations') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

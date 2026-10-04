@@ -1,0 +1,211 @@
+/* La pantalla de la caja (templates/station.html): la de
+   tuisku_iaCarry/serving/templates/iacarry_checkout.html, tal cual, en un
+   fichero (la CSP del núcleo deja los atributos style= pero el estilo va aquí).
+   La letra Ubuntu la sirve el núcleo (shell.css). applyTheme() en station.js
+   reescribe la paleta del supermercado sobre <body>. */
+[hidden]{display:none !important}
+:root{
+    /* La paleta del supermercado; applyTheme() la reescribe entera para cada
+       cliente. --pri rellena (botones, chips activos); --pri-ink es el mismo
+       color, lo bastante oscuro para letra pequeña sobre los tintes; --pri-fill
+       es --pri, o el degradado de iaCarry con su propio tema. */
+    --pri:#6C5DC7; --pri-ink:#6A5BC3; --pri-fill:var(--pri);
+    --ps:#F3F2FB; --pt:#F5F4FB; --bg:#F9F9FD;
+    --mt:#F4F3FB; --seg:#F2F0FA; --sa:#F4F3FB; --sb:#ECEAF8;
+    /* Los neutros, los mismos con cualquier supermercado. Antes llevaban el
+       violeta de iaCarry, que se veía como un velo lila en la pantalla de otro. */
+    --ink:#16171D; --ink2:#454959; --sub:#6B7080; --ter:#9A9EAD;
+    --line:#E7E9EE; --line2:#F0F1F4; --soft:#F5F6F8;
+    /* Los colores de iaCarry, de su logo. Nunca cambian con el tema: la marca
+       de iaCarry es la suya sea cual sea el supermercado de la caja. */
+    --ia-blue:#304CB5; --ia-violet:#6C5DC7; --ia-orchid:#DB7DE8;
+  }
+  *{box-sizing:border-box}
+  body.zt-bare{margin:0;font-family:var(--shell-font);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:normal}
+  body.zt-bare{min-height:100vh;padding:40px 32px;background:radial-gradient(1200px 600px at 20% -10%,#fff 0%,var(--bg) 62%)}
+  .app{max-width:1280px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:32px;box-shadow:0 1px 2px rgba(16,18,27,.04),0 30px 60px -30px rgba(20,24,44,.2);overflow:hidden}
+  .tabnum{font-variant-numeric:tabular-nums}
+  /* barra de arriba */
+  .top{display:flex;align-items:center;gap:14px;padding:14px 22px;background:rgba(255,255,255,.72);backdrop-filter:blur(20px);border-bottom:1px solid var(--line2)}
+  .brand{display:flex;align-items:center;gap:9px;flex-shrink:0;color:var(--ink)}
+  .brand img{width:34px;height:34px;display:block}
+  .brand b{font-weight:500;font-size:22px;letter-spacing:-.01em;line-height:1}
+  /* «iaCarry | para <supermercado>». El logo del supermercado va sin marco: los
+     ficheros están recortados a la marca sobre transparente, y fitLogo() les da
+     a todos la misma área, para que un logotipo largo y uno apilado se lean
+     del mismo tamaño. */
+  .cobrand{display:none;align-items:center;gap:12px;flex-shrink:0}
+  .cobrand .for{font-size:12px;font-weight:500;color:var(--sub)}
+  .logo{display:block;flex-shrink:0;object-fit:contain}
+  .pill{display:inline-flex;align-items:center;gap:7px;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;white-space:nowrap}
+  .pill-live{background:#E9F7EF;color:#12864a}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+  .sep{width:1px;height:28px;background:var(--line)}
+  .muted{font-size:11px;color:var(--ter);font-weight:500}
+  .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  /* La flecha va en el color del tema: applyTheme() pone --chev. Era un violeta
+     fijo, y un desplegable verde llevaba la flecha lila. */
+  select.client{appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:700;font-size:13px;color:var(--pri-ink);background-color:var(--ps);border:1.5px solid var(--pri);border-radius:999px;padding:7px 30px 7px 14px;cursor:pointer;background-image:var(--chev);background-repeat:no-repeat;background-position:right 11px center}
+  .langwrap{position:relative;display:flex;align-items:center}
+  .langwrap select{appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:500;font-size:12px;color:var(--ink2);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:6px 26px 6px 11px;cursor:pointer;outline:none}
+  .langwrap svg{position:absolute;right:8px;pointer-events:none}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--pri-fill);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+  .bigtoggle{display:flex;align-items:center;gap:10px;font-family:inherit;cursor:pointer;border:1.5px solid var(--line);background:#fff;color:var(--ink2);border-radius:999px;padding:5px 8px 5px 6px;font-weight:700;font-size:13px;box-shadow:0 1px 2px rgba(16,18,27,.05);transition:all .2s}
+  .bigtoggle.on{border-color:var(--pri);background:var(--pri-fill);color:#fff;box-shadow:0 6px 16px -6px rgba(16,18,27,.4)}
+  .aa{display:flex;align-items:baseline;justify-content:center;gap:1px;width:30px;height:30px;border-radius:999px;background:var(--ps);color:var(--pri-ink)}
+  .bigtoggle.on .aa{background:rgba(255,255,255,.22);color:#fff}
+  .track{width:36px;height:21px;border-radius:999px;background:#D8DBE2;position:relative;transition:background .2s;flex-shrink:0}
+  .bigtoggle.on .track{background:rgba(255,255,255,.45)}
+  .knob{position:absolute;top:2px;left:2px;width:17px;height:17px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .2s}
+  .bigtoggle.on .knob{left:17px}
+  /* pasos */
+  .steps{display:flex;align-items:center;gap:10px;padding:13px 22px;background:#FAFBFC;border-bottom:1px solid var(--line2)}
+  .step{display:flex;align-items:center;gap:10px}
+  .sc{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+  .chev{color:#C3C7D1}
+  /* rejilla */
+  .grid{display:grid;grid-template-columns:minmax(300px,452px) minmax(0,1fr);gap:22px;padding:22px}
+  .card{background:#fff;border:1px solid var(--line2);border-radius:26px;box-shadow:0 1px 2px rgba(16,18,27,.04),0 18px 40px -26px rgba(20,24,44,.24)}
+  .det{padding:16px;display:flex;flex-direction:column;gap:16px}
+  .cam{border-radius:18px;overflow:hidden;aspect-ratio:1/1;position:relative;background-image:repeating-linear-gradient(45deg,var(--sa),var(--sa) 16px,var(--sb) 16px,var(--sb) 32px)}
+  .cam .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px}
+  .cam .ph>span{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.82);padding:8px 14px;border-radius:999px;font-size:13px;font-weight:500;color:var(--sub);box-shadow:0 1px 2px rgba(16,18,27,.05)}
+  /* La foto analizada. object-fit:fill hace que la imagen cubra justo la misma
+     caja sobre la que se miden los porcentajes de la detección, y las cajas
+     dibujadas siguen encima de cada producto con cualquier proporción de foto.
+     El aspect-ratio del panel sale de las medidas de la propia imagen, así que
+     «fill» no la deforma. */
+  .cam img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:none}
+  .cam.has-img img{display:block}
+  .cam.has-img{background-image:none}
+  .cam.has-img .ph{display:none}
+  /* Ocupado. El diseño suponía que reconocer era instantáneo y no lo es: el
+     detector atiende de una en una y una foto puede tardar segundos. */
+  .busy{position:absolute;inset:0;z-index:3;display:none;flex-direction:column;align-items:center;justify-content:center;gap:11px;padding:16px;text-align:center;background:rgba(255,255,255,.74);backdrop-filter:blur(3px);font-weight:700;font-size:13px;color:var(--pri-ink)}
+  .cam.busy-on .busy{display:flex}
+  .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--sb);border-top-color:var(--pri);animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .box{position:absolute;border:3px solid;border-radius:14px;z-index:2}
+  .box b{position:absolute;left:50%;top:-14px;transform:translateX(-50%);color:#fff;font-weight:700;font-size:11px;padding:3px 10px;border-radius:999px;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.15)}
+  .metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .metric{background:var(--mt);border-radius:12px;padding:8px 10px;text-align:center}
+  .metric b{font-weight:700;font-size:15px}
+  .metric i{display:block;font-style:normal;font-size:10px;color:var(--sub);font-weight:500}
+  .facts{display:flex;gap:12px}
+  .fact{flex:1;background:#fff;border:1px solid var(--line2);border-radius:20px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(16,18,27,.04);font-family:inherit;text-align:left;color:var(--ink)}
+  .fact .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;background:var(--ps);color:var(--pri-ink)}
+  .fact small{font-size:11px;color:var(--sub);font-weight:500}
+  .fact strong{display:block;font-size:14px;font-weight:700}
+  .fraud{background:#fff;border:1px solid var(--line2);border-radius:20px;padding:18px 20px;box-shadow:0 1px 2px rgba(16,18,27,.04)}
+  .fraud .li{display:flex;align-items:center;gap:10px;font-size:13px;margin-top:9px}
+  .fraud .ok{width:20px;height:20px;border-radius:50%;background:#E9F7EF;color:#12864a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  /* carro */
+  .cart{display:flex;flex-direction:column;height:604px;overflow:hidden}
+  .chead{padding:18px 20px 14px;border-bottom:1px solid var(--line2)}
+  .crow1{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .crow1 h2{margin:0;font-weight:700;font-size:20px;letter-spacing:-.01em;white-space:nowrap}
+  .badge-count{background:var(--ps);color:var(--pri-ink);font-weight:700;font-size:12px;border-radius:999px;padding:3px 11px;white-space:nowrap}
+  .conf{display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:500;font-size:12px;color:var(--sub);user-select:none}
+  .conf .cb{width:18px;height:18px;border-radius:6px;border:2px solid #C9CDD6;background:#fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+  .conf.on{color:var(--pri-ink)}.conf.on .cb{background:var(--pri-ink);border-color:var(--pri-ink)}
+  .seg{margin-left:auto;display:flex;background:var(--seg);border-radius:12px;padding:4px;gap:2px}
+  .seg button{border:none;cursor:pointer;font-family:inherit;padding:7px 11px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--sub);background:transparent}
+  .seg button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(16,18,27,.16)}
+  .search{margin-top:12px;display:flex;align-items:center;gap:8px;background:var(--soft);border:1px solid var(--line);border-radius:10px;padding:7px 11px}
+  .search input{border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;color:var(--ink);width:100%}
+  .search input::placeholder{color:var(--ter)}
+  .cats{display:flex;gap:6px;margin-top:10px;overflow-x:auto}
+  .cats button{flex-shrink:0;border:1px solid var(--line);cursor:pointer;font-family:inherit;font-weight:500;font-size:12px;padding:4px 12px;border-radius:999px;color:var(--ink2);background:#fff}
+  /* --pri-ink y no --pri: letra blanca de 12px sobre un color de marca claro
+     (un verde) queda por debajo de 4:1. El botón de pagar es lo bastante grande
+     para llevar el color de verdad. */
+  .cats button.on{background:var(--pri-ink);color:#fff;border-color:var(--pri-ink);font-weight:700}
+  .list{flex:1;overflow-y:auto;padding:12px 14px;scrollbar-width:thin;scrollbar-color:var(--pri) transparent;scroll-behavior:smooth}
+  .list::-webkit-scrollbar{width:12px}
+  .list::-webkit-scrollbar-thumb{background:var(--pri);opacity:.5;border-radius:999px;border:4px solid transparent;background-clip:content-box}
+  .seg2{display:flex;background:var(--seg);border-radius:9px;padding:3px;gap:2px;margin-left:2px}
+  .seg2 button{border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:11px;padding:4px 10px;border-radius:7px;color:var(--sub);background:transparent}
+  .seg2 button.on{color:var(--ink);background:#fff;box-shadow:0 1px 3px rgba(16,18,27,.16)}
+  .success{position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;gap:6px}
+  @keyframes popCheck{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .pgrid{display:grid;align-content:start}
+  .prod{position:relative;overflow:hidden;background:#fff;border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;box-shadow:0 1px 2px rgba(16,18,27,.04)}
+  .prod>.strip{position:absolute;left:0;top:0;right:0;height:4px}
+  .prod .pmeta{display:flex;margin-top:3px}
+  .thumb{border-radius:13px;background:var(--soft);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+  .pname{font-weight:700;line-height:1.2;overflow:hidden;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .pcost{font-size:12px;color:var(--sub);font-weight:400;margin-top:2px}
+  .cbadge{display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-weight:700;font-size:10px;border-radius:999px;padding:3px 8px}
+  .prow{display:flex;justify-content:space-between}
+  .qty{display:inline-flex;align-items:center;gap:5px;background:var(--pt);color:var(--pri-ink);font-weight:700;border-radius:999px;padding:4px 11px}
+  .price{font-weight:700;letter-spacing:-.01em}
+  /* Ocupa toda la rejilla: en la vista de 3 columnas se quedaba en la primera,
+     a la izquierda de un carro vacío. */
+  .empty{grid-column:1/-1;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ter);gap:10px;padding:40px}
+  .empty div{color:var(--sub)}
+  /* pagar */
+  .pay{border-top:1px solid var(--line2);padding:14px 20px 16px;background:rgba(255,255,255,.86);backdrop-filter:blur(20px)}
+  /* min-height deja quieta la barra de pagar cuando la píldora y el logo van y vienen. */
+  .verif{display:flex;align-items:center;gap:12px;margin-bottom:12px;min-height:32px}
+  /* margin-left:auto deja el logo del supermercado a la derecha aunque no haya
+     píldora; sólo con space-between saltaba a la izquierda con el carro vacío. */
+  .verif .logo{margin-left:auto}
+  .btn{border:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:9px;border-radius:999px;font-weight:700}
+  .btn-listen{background:var(--ps);color:var(--pri-ink);font-size:15px;padding:13px 20px;min-width:0;text-align:left;line-height:1.15}
+  .btn-listen svg{flex-shrink:0}
+  .btn-pay{margin-left:auto;flex-shrink:0;white-space:nowrap;background:var(--pri-fill);color:#fff;font-size:17px;padding:16px 32px;box-shadow:0 12px 24px -12px var(--pri),0 2px 6px -2px rgba(16,18,27,.18);transition:transform .15s,box-shadow .15s}
+  .btn-pay:not(:disabled):active{transform:translateY(1px)}
+  /* Desactivado es gris con cualquier tema. Era un lila fijo, y una caja verde
+     esperando su carro enseñaba un botón morado. */
+  .btn-pay:disabled{background:#E3E5EA;color:#9A9EAD;box-shadow:none;cursor:not-allowed}
+  /* Siempre una fila. Cuando los textos de un idioma no caben (euskera, letra
+     grande), el de «Escuchar» pasa a dos líneas; el total y el botón de pagar no
+     se encogen nunca. Partir la fila mandaba el botón de pagar debajo. */
+  .paybar{display:flex;align-items:center;gap:14px}
+  .total{display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+  .total small{font-size:13px;color:var(--sub);font-weight:500}
+  .total b{font-weight:700;font-size:36px;letter-spacing:-.02em;line-height:1}
+  .sema{display:flex;align-items:center;gap:9px;margin-top:12px;background:#E9F7EF;border:1px solid #C6EBD5;border-radius:12px;padding:10px 14px;font-weight:700;font-size:15px;color:#12864a}
+  /* letra grande */
+  body.zt-bare.big{--ink:#000}
+  body.zt-bare.big .pname{font-size:17px}body.zt-bare.big .price{font-size:19px}
+  body.zt-bare.big .total b{font-size:46px}
+  body.zt-bare.big .btn-pay{font-size:21px;padding:20px 30px}
+  body.zt-bare.big .btn-listen{font-size:18px;padding:16px 20px}
+  body.zt-bare.big .sema{font-size:18px;padding:16px 18px}
+  body.zt-bare.big .prod{border-width:2px;border-color:var(--ink)}
+
+/* Lo que antes eran atributos style= del marcado. */
+.dot-live{background:#23b364;box-shadow:0 0 0 3px rgba(35,179,100,.18)}
+.dot-pri{background:var(--pri)}
+.pill-tint{background:var(--ps);color:var(--pri-ink)}
+.aa-s{font-size:13px;align-self:center}.aa-l{font-size:19px;align-self:center}
+.station-label{color:var(--sub);font-weight:400}
+.back{font-size:12px;font-weight:700;color:var(--pri-ink);text-decoration:none;white-space:nowrap}
+.back:hover{text-decoration:underline}
+.step-name{font-size:14px}
+.det-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.det-title{font-size:15px;white-space:nowrap}
+.det-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+/* «Subir una foto» en «Probar»: un selector de fichero con la forma del de las fotos. */
+label.upload{position:relative;display:inline-flex;align-items:center;background-image:none;padding:7px 14px}
+label.upload input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.grow{flex:1}
+.fraud-chev{transition:transform .2s}
+.fraud-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.fraud-head b{font-size:15px}
+.ok-tint{width:30px;height:30px;border-radius:9px;background:var(--ps);color:var(--pri-ink)}
+.ok-warn{background:#FCF3E0;color:#9a6a00}
+.fraud-para{margin:0;font-size:13px;line-height:1.55;color:var(--ink2)}
+.cart{position:relative}
+.conf{border:none;background:transparent;font-family:inherit;padding:0}
+.success-check{width:96px;height:96px;border-radius:50%;background:#E9F7EF;display:flex;align-items:center;justify-content:center;animation:popCheck .5s cubic-bezier(.2,.9,.3,1.2) both}
+.success-thanks{font-weight:700;font-size:26px;letter-spacing:-.01em;margin-top:14px;animation:fadeUp .4s .15s both}
+.success-line{font-size:15px;color:var(--ink2);max-width:340px;animation:fadeUp .4s .25s both}
+.success-pill{margin-top:4px;animation:fadeUp .4s .35s both}
+.success-sim{margin-top:10px;max-width:430px;background:#FCF3E0;border:1px solid #F3E2BC;color:#9a6a00;border-radius:12px;padding:10px 14px;font-weight:700;font-size:13px;line-height:1.45;animation:fadeUp .4s .4s both}
+.success-new{margin:22px 0 0;animation:fadeUp .4s .45s both}
+.sema .dot{width:12px;height:12px}
+.thumb img{display:block}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}

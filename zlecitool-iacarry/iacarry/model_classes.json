@@ -1,0 +1,123 @@
+{
+  "_comment": "Las clases que conoce el modelo desplegado (las de su índice de categorías), con lo que toma cada empresa al empezar: su nombre, su precio en céntimos, su peso en gramos, su categoría y su color. Cada empresa las cambia en «Catálogo». Al cambiar de modelo, este fichero cambia con él (model_version).",
+  "model_version": "tf2-ssd-2023.1",
+  "classes": [
+    {
+      "tag": "aguila_33cl",
+      "name": "Águila 33cl",
+      "short_name": null,
+      "price_cents": 98,
+      "weight_g": 340,
+      "category": "drinks",
+      "color": "#8dd3c7"
+    },
+    {
+      "tag": "cocacola_33cl",
+      "name": "CocaCola 33cl",
+      "short_name": "CocaCola",
+      "price_cents": 80,
+      "weight_g": 340,
+      "category": "drinks",
+      "color": "#fb8072"
+    },
+    {
+      "tag": "fanta_33cl",
+      "name": "Fanta Limón 33cl",
+      "short_name": "Fanta",
+      "price_cents": 73,
+      "weight_g": 340,
+      "category": "drinks",
+      "color": "#bc80bd"
+    },
+    {
+      "tag": "estrellag_33cl",
+      "name": "Estrella Galicia 33cl",
+      "short_name": null,
+      "price_cents": 78,
+      "weight_g": 340,
+      "category": "drinks",
+      "color": "#b3de69"
+    },
+    {
+      "tag": "mahou5_33cl",
+      "name": "Mahou 5 Estrellas 33cl",
+      "short_name": null,
+      "price_cents": 69,
+      "weight_g": 340,
+      "category": "drinks",
+      "color": "#96c8a0"
+    },
+    {
+      "tag": "mahou00_33cl",
+      "name": "Mahou 0,0 33cl",
+      "short_name": null,
+      "price_cents": 102,
+      "weight_g": 340,
+      "category": "drinks",
+      "color": "#b4b4b4"
+    },
+    {
+      "tag": "chipsahoy_300g",
+      "name": "Chips Ahoy! 300g",
+      "short_name": "Chips Ahoy!",
+      "price_cents": 312,
+      "weight_g": 300,
+      "category": "snacks",
+      "color": "#a096d2"
+    },
+    {
+      "tag": "colacao_383g",
+      "name": "ColaCao 383g",
+      "short_name": "ColaCao",
+      "price_cents": 560,
+      "weight_g": 383,
+      "category": "snacks",
+      "color": "#80b1d3"
+    },
+    {
+      "tag": "smacks_330g",
+      "name": "Smacks Kellogg's 330g",
+      "short_name": null,
+      "price_cents": 301,
+      "weight_g": 330,
+      "category": "snacks",
+      "color": "#f0cd3c"
+    },
+    {
+      "tag": "tostarica_570g",
+      "name": "Tostarica 570g",
+      "short_name": null,
+      "price_cents": 299,
+      "weight_g": 570,
+      "category": "snacks",
+      "color": "#6a55e0"
+    },
+    {
+      "tag": "axedrak_150ml",
+      "name": "Axe Drak 150ml",
+      "short_name": null,
+      "price_cents": 273,
+      "weight_g": 160,
+      "category": "care",
+      "color": "#e6c85a"
+    },
+    {
+      "tag": "colgate_75ml",
+      "name": "Colgate 75ml",
+      "short_name": null,
+      "price_cents": 230,
+      "weight_g": 100,
+      "category": "care",
+      "color": "#fdb462"
+    },
+    {
+      "tag": "hysori_300ml",
+      "name": "H&S Champú 300ml",
+      "short_name": null,
+      "price_cents": 254,
+      "weight_g": 650,
+      "category": "care",
+      "color": "#f0aacd"
+    }
+  ]
+}

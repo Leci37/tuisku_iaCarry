@@ -1,0 +1,122 @@
+{% extends "zt/bare.html" %}
+{# La pantalla de la caja: la del comprador, sin la barra, la cuenta ni el pie
+   del núcleo (zt/bare.html). Es la de tuisku_iaCarry/serving/templates/
+   iacarry_checkout.html, con lo mismo dentro, sobre el núcleo:
+
+   * lo que antes eran constantes de la página (los temas, el catálogo, las
+     fotos de ejemplo, la caja) llega de la base de datos de la empresa en
+     data-config (nada de JavaScript en línea: la CSP lo bloquea);
+   * los textos, del diccionario (i18n/ui.json, claves st*), en los idiomas de
+     la ficha; el selector cambia de idioma con zt.setLanguage();
+   * el JavaScript, en static/js/station.js, y el estilo, en static/css/station.css.
+
+   En «Probar» (mode "demo") es la misma pantalla, con las fotos de ejemplo,
+   «Subir una foto» y, para la empresa de demostración, el selector de
+   supermercados. #}
+{% block title %}iaCarry · {{ config.label }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/station.css') }}">{% endblock %}
+{% block content %}
+<div class="app" id="station" data-config='{{ config|tojson }}'>
+  <div class="top">
+    {# La marca de iaCarry, con sus colores, sea cual sea el supermercado. #}
+    <div class="brand"><img src="{{ zt_brand.mark_url }}" alt=""><b translate="no">iaCarry</b></div>
+    <span id="clientMark" class="cobrand"><span class="sep"></span><span class="for" data-i18n="stFor">{{ zt_t('stFor') }}</span><img id="logoBig" class="logo" alt=""></span>
+    <span class="pill pill-live"><span class="dot dot-live"></span><span data-i18n="stDetActive">{{ zt_t('stDetActive') }}</span></span>
+    <div class="right">
+      {% if config.backUrl %}<a class="back" href="{{ config.backUrl }}" data-i18n="iaBack">{{ zt_t('iaBack') }}</a>{% endif %}
+      <select class="client" id="client" aria-label="{{ zt_t('stClient') }}"{% if config.themes|length < 2 %} hidden{% endif %}>
+        {% for theme in config.themes %}<option value="{{ theme.key }}">{{ theme.name }}</option>{% endfor %}
+      </select>
+      <button class="bigtoggle" id="big" type="button" title="{{ zt_t('stBigText') }}"><span class="aa"><span class="aa-s">A</span><span class="aa-l">A</span></span><span data-i18n="stBigText">{{ zt_t('stBigText') }}</span><span class="track"><span class="knob"></span></span></button>
+      <div class="langwrap"><select id="lang" aria-label="{{ zt_t('language') }}">
+        {% for code, label in zt_languages %}<option value="{{ code }}" lang="{{ code }}"{% if code == zt_lang %} selected{% endif %}>{{ label.endonym or code }}</option>{% endfor %}
+      </select><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7080" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></div>
+      <span class="muted station-label">{{ config.label }}</span>
+      <div class="avatar" aria-hidden="true">{{ config.initials }}</div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><span class="sc" id="s1">1</span><b id="s1b" class="step-name" data-i18n="stStep1">{{ zt_t('stStep1') }}</b>
+      {# El sensor del carro de verdad no está conectado: este interruptor lo
+         sustituye, y su título lo dice (setCartPresent() en station.js). #}
+      <div class="seg2" id="sensorToggle" data-stub="cart-sensor"><button id="btnEmpty" type="button" data-full="0" data-i18n="stEmpty">{{ zt_t('stEmpty') }}</button><button id="btnFull" type="button" data-full="1" data-i18n="stFull">{{ zt_t('stFull') }}</button></div></div>
+    <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    <div class="step"><span class="sc" id="s2">2</span><b id="s2b" class="step-name" data-i18n="stStep2">{{ zt_t('stStep2') }}</b></div>
+    <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+    <div class="step"><span class="sc" id="s3">3</span><b id="s3b" class="step-name" data-i18n="stStep3">{{ zt_t('stStep3') }}</b></div>
+  </div>
+
+  <div class="grid">
+    <div class="card det">
+      <div class="det-head">
+        <b class="det-title" data-i18n="stCam">{{ zt_t('stCam') }}</b>
+        <div class="det-tools">
+          <select class="client" id="demo" aria-label="{{ zt_t('stCam') }}"{% if not config.photos %} hidden{% endif %}></select>
+          {% if config.upload %}<label class="client upload"><span data-i18n="stUpload">{{ zt_t('stUpload') }}</span><input type="file" id="uploadFrame" accept="image/png,image/jpeg,image/webp"></label>{% endif %}
+          <span class="pill pill-tint"><span class="dot dot-pri"></span><span data-i18n="stLive">{{ zt_t('stLive') }}</span></span>
+        </div>
+      </div>
+      <div class="cam" id="cam">
+        <img id="camImg" alt="">
+        <div class="ph"><span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 012-2h2l2-2h6l2 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg><span id="camPh">{{ zt_t('stCamIdle') }}</span></span></div>
+        <div class="busy"><span class="spin"></span><span id="busyMsg">{{ zt_t('stCamAnalysing') }}</span></div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><b id="mCount">0</b><i data-i18n="stProducts">{{ zt_t('stProducts') }}</i></div>
+        {# Medido, no escrito a mano: la confianza media de lo que se ve y lo que
+           tardó el detector en esta foto («—» hasta la primera). #}
+        <div class="metric"><b id="mConf">—</b><i data-i18n="stMeanConf">{{ zt_t('stMeanConf') }}</i></div>
+        <div class="metric"><b id="mInf">—</b><i data-i18n="stInference">{{ zt_t('stInference') }}</i></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><span class="ic">≈</span><span><small data-i18n="stWeightEst">{{ zt_t('stWeightEst') }}</small><strong id="wVal">—</strong></span></div>
+        <button class="fact" id="fraudBtn" type="button"><span class="ic">◇</span><span class="grow"><small data-i18n="stAntifraud">{{ zt_t('stAntifraud') }}</small><strong data-i18n="stAwaitScale">{{ zt_t('stAwaitScale') }}</strong></span><svg id="fraudChev" class="fraud-chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A9EAD" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      </div>
+      <div class="fraud" id="fraudPanel" hidden>
+        <div class="fraud-head"><span class="ok ok-tint">◇</span><b data-i18n="stFraudTitle">{{ zt_t('stFraudTitle') }}</b></div>
+        <p class="fraud-para" data-i18n="stFraudPara">{{ zt_t('stFraudPara') }}</p>
+        <div class="li"><span class="ok">✓</span><span><b id="fraudN">0</b> <span data-i18n="stFraudLi1">{{ zt_t('stFraudLi1') }}</span></span></div>
+        <div class="li"><span class="ok">✓</span><span id="fLi2"></span></div>
+        <div class="li"><span class="ok ok-warn">!</span><span data-i18n="stFraudLi3">{{ zt_t('stFraudLi3') }}</span></div>
+      </div>
+    </div>
+
+    <div class="card cart">
+      <div class="success" id="success" hidden>
+        <div class="success-check"><svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#12864a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg></div>
+        <div id="sThanks" class="success-thanks" data-i18n="stThanks">{{ zt_t('stThanks') }}</div>
+        <div id="sConfirmed" class="success-line"></div>
+        <div class="pill pill-live success-pill"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="sTicket"></span></div>
+        <div id="sSim" class="success-sim" hidden></div>
+        <button class="btn btn-pay success-new" id="reset" type="button" data-i18n="stNewBuy">{{ zt_t('stNewBuy') }}</button>
+      </div>
+      <div class="chead">
+        <div class="crow1">
+          <h2 data-i18n="stCart">{{ zt_t('stCart') }}</h2>
+          <span class="badge-count" id="badgeCount"></span>
+          <button class="conf" id="conf" type="button"><span class="cb" id="confCb"></span><span data-i18n="stConfIA">{{ zt_t('stConfIA') }}</span></button>
+          <div class="seg" id="seg">
+            <button type="button" data-d="comfort" id="dCom"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="3" width="12" height="4" rx="1.5"/><rect x="2" y="9" width="12" height="4" rx="1.5"/></svg></button>
+            <button type="button" data-d="compact" id="dCompact"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></button>
+            <button type="button" data-d="cols3" id="dCols"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><rect x="1.5" y="2" width="3.4" height="12" rx="1"/><rect x="6.3" y="2" width="3.4" height="12" rx="1"/><rect x="11.1" y="2" width="3.4" height="12" rx="1"/></svg></button>
+          </div>
+        </div>
+        <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9A9EAD" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input id="search" placeholder="{{ zt_t('stSearch') }}" data-i18n="stSearch" data-i18n-attr="placeholder" aria-label="{{ zt_t('stSearch') }}"></div>
+        <div class="cats" id="cats"></div>
+      </div>
+      <div class="list"><div class="pgrid" id="pgrid"></div></div>
+      <div class="pay">
+        <div class="verif"><span class="pill pill-live" id="verifPill"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg><span id="verWTxt"></span></span><img id="logoSmall" class="logo" hidden alt=""></div>
+        <div class="paybar">
+          <div class="total"><small data-i18n="stTotalPay">{{ zt_t('stTotalPay') }}</small><b class="tabnum" id="total">0,00 €</b></div>
+          <button class="btn btn-listen" id="listen" type="button"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 9v6h4l5 5V4L8 9H4z"/><path d="M16 8a5 5 0 010 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-i18n="stListen">{{ zt_t('stListen') }}</span></button>
+          <button class="btn btn-pay" id="pay" type="button" disabled><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 12c4.5-4.5 11.5-4.5 16 0"/><path d="M7.5 15.5c2.5-2.5 6.5-2.5 9 0"/><path d="M11 19h2"/></svg><span id="payBtnTxt">{{ zt_t('stPayBtn') }}</span></button>
+        </div>
+        <div class="sema" id="sema"><span class="dot"></span><span id="semaTxt">{{ zt_t('stSemaPlace') }}</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/station.js') }}" defer></script>{% endblock %}

@@ -1,0 +1,25 @@
+{# Las compras: en el panel (las últimas) y en «Compras» (todas). La foto, sólo
+   mientras la guarda el borrado por antigüedad; después, «borrada». #}
+<div class="zt-table-wrap"><table class="account-table ia-checkouts">
+  <thead><tr>
+    <th data-i18n="iaColWhen">{{ zt_t('iaColWhen') }}</th><th data-i18n="iaColStation">{{ zt_t('iaColStation') }}</th>
+    <th class="account-num" data-i18n="iaColItems">{{ zt_t('iaColItems') }}</th><th class="account-num" data-i18n="iaColTotal">{{ zt_t('iaColTotal') }}</th>
+    <th class="account-num" data-i18n="iaColWeight">{{ zt_t('iaColWeight') }}</th><th data-i18n="iaColStatus">{{ zt_t('iaColStatus') }}</th>
+    <th data-i18n="iaColPhoto">{{ zt_t('iaColPhoto') }}</th>
+  </tr></thead>
+  <tbody>
+  {% for row in rows %}
+    {% set frame = frames.get(row.id) %}
+    {% set status_key = {'paid': 'iaStatusPaidSim' if row.payment_simulated else 'iaStatusPaid', 'detected': 'iaStatusDetected', 'abandoned': 'iaStatusAbandoned'}.get(row.status, 'iaStatusDetected') %}
+    <tr>
+      <td class="tabnum">{{ (row.started_at|zt_local_time).strftime('%d/%m/%Y %H:%M') }}</td>
+      <td>{% if row.demo %}<span class="zt-role" data-i18n="iaDemoLabel">{{ zt_t('iaDemoLabel') }}</span>{% else %}{{ station_names.get(row.station_id, '') }}{% if locations.get(row.station_id) %} <span class="zt-muted">· {{ locations[row.station_id] }}</span>{% endif %}{% endif %}</td>
+      <td class="account-num tabnum">{{ row.units }} <span class="zt-muted">· {{ row.lines }}</span></td>
+      <td class="account-num tabnum">{{ row.total_cents|euros }}</td>
+      <td class="account-num tabnum">{{ row.expected_weight_g|kilos }}</td>
+      <td><span class="zt-role{% if row.status == 'paid' %} is-admin{% endif %}" data-i18n="{{ status_key }}">{{ zt_t(status_key) }}</span></td>
+      <td>{% if frame and frame.storage_key %}<a class="ia-photo" href="{{ url_for('iacarry.frame_image', frame_id=frame.id) }}" target="_blank" rel="noopener"><img class="ia-thumb" src="{{ url_for('iacarry.frame_image', frame_id=frame.id) }}" alt="" loading="lazy" width="56" height="42"><span class="zt-muted" data-i18n="iaPhotoGone" hidden>{{ zt_t('iaPhotoGone') }}</span></a>{% elif frame %}<span class="zt-muted" data-i18n="iaPhotoGone">{{ zt_t('iaPhotoGone') }}</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>

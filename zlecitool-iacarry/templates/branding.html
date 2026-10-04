@@ -1,0 +1,41 @@
+{% extends "_layout.html" %}
+{# La marca del supermercado en sus cajas: «iaCarry │ para <logo>», su color en
+   el botón de pagar y en las fichas. El logo se limpia solo (el blanco de
+   alrededor pasa a transparente y se recorta) y la paleta sale de un color. #}
+{% block page %}
+<section class="account-card">
+  <h1 class="zt-title" data-i18n="iaBrandingTitle">{{ zt_t('iaBrandingTitle') }}</h1>
+  <p class="account-sub" data-i18n="iaBrandingSub">{{ zt_t('iaBrandingSub') }}</p>
+  <div class="ia-brand-preview" style="--p-pri:{{ palette.pri }};--p-ink:{{ palette.ink }};--p-ps:{{ palette.ps }};--p-sb:{{ palette.sb }}">
+    <div class="ia-brand-bar">
+      <img src="{{ zt_brand.mark_url }}" alt="" width="30" height="30"><b>iaCarry</b>
+      {% if logo_url %}<span class="ia-sep"></span><span class="ia-for" data-i18n="stFor">{{ zt_t('stFor') }}</span><img class="ia-logo" src="{{ logo_url }}" alt="{{ brand.display_name }}">{% endif %}
+    </div>
+    <div class="ia-brand-sample">
+      <span class="ia-chip" data-i18n="stCatDrinks">{{ zt_t('stCatDrinks') }}</span>
+      <span class="ia-qty">✓ × 2</span>
+      <span class="ia-pay" data-i18n="stPayBtn">{{ zt_t('stPayBtn') }}</span>
+    </div>
+    <ul class="ia-palette">{% for key in ('pri', 'ink', 'ps', 'pt', 'bg', 'mt', 'seg', 'sa', 'sb') %}<li><span style="background:{{ palette[key] }}"></span><code>{{ key }} {{ palette[key] }}</code></li>{% endfor %}</ul>
+    {% set c = {"n": "%.1f"|format(contrast)} %}
+    <p class="account-note" data-i18n="iaBrandContrast" data-i18n-vars='{{ c|tojson }}'>{{ zt_t('iaBrandContrast', **c) }}</p>
+  </div>
+  <p><a class="btn-ghost" href="{{ url_for('iacarry.demo') }}" data-i18n="iaBrandPreview">{{ zt_t('iaBrandPreview') }}</a></p>
+</section>
+{% if is_admin %}
+<section class="account-card">
+  <form class="account-form" method="post" action="{{ url_for('iacarry.branding_save') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="account-field"><span data-i18n="iaBrandName">{{ zt_t('iaBrandName') }}</span>
+      <input class="inp" type="text" name="name" maxlength="80" required value="{{ brand.display_name if brand else org.name }}"></label>
+    <label class="account-field"><span data-i18n="iaBrandColor">{{ zt_t('iaBrandColor') }}</span>
+      <input class="ia-color ia-color-big" type="color" name="color" value="{{ color }}"></label>
+    <p class="account-note" data-i18n="iaBrandColorNote">{{ zt_t('iaBrandColorNote') }}</p>
+    <label class="account-field"><span data-i18n="iaBrandLogo">{{ zt_t('iaBrandLogo') }}</span>
+      <input type="file" name="logo" accept="image/png,image/jpeg,image/webp"></label>
+    <p class="account-note" data-i18n="iaBrandLogoNote">{{ zt_t('iaBrandLogoNote') }}</p>
+    <button class="btn-grad" type="submit" data-i18n="iaSave">{{ zt_t('iaSave') }}</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "_layout.html" %}
+{% block page %}
+<section class="account-card">
+  <h1 class="zt-title" data-i18n="iaCheckoutsTitle">{{ zt_t('iaCheckoutsTitle') }}</h1>
+  <p class="account-sub" data-i18n="iaCheckoutsSub">{{ zt_t('iaCheckoutsSub') }}</p>
+  {% if rows %}{% include "_checkout_rows.html" %}{% else %}<p class="account-note" data-i18n="iaNoCheckouts">{{ zt_t('iaNoCheckouts') }}</p>{% endif %}
+  <p class="ia-pager">
+    {% if page > 1 %}<a class="btn-ghost" href="{{ url_for('iacarry.checkouts', page=page - 1) }}" data-i18n="iaNewer">{{ zt_t('iaNewer') }}</a>{% endif %}
+    {% if more %}<a class="btn-ghost" href="{{ url_for('iacarry.checkouts', page=page + 1) }}" data-i18n="iaOlder">{{ zt_t('iaOlder') }}</a>{% endif %}
+  </p>
+</section>
+{% endblock %}

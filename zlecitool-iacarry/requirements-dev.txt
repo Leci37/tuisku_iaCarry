@@ -1,0 +1,11 @@
+# DESARROLLO. El núcleo en modo editable, desde el repo de al lado
+# (~/tools/zlecitool-core): un cambio en el núcleo se ve al momento aquí.
+-e ../zlecitool-core[dev,ai]
+
+# Lo propio de la herramienta: las mismas líneas que en requirements.txt.
+gunicorn>=21
+# La marca del supermercado: limpiar el logo que sube y sacar su color.
+pillow>=10.0
+
+# Las pruebas.
+pytest>=7

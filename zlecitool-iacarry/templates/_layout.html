@@ -1,0 +1,18 @@
+{% extends "zt/base.html" %}
+{% from "zt/macros.html" import notice %}
+{# La trastienda de iaCarry: las pestañas de lo propio debajo de la barra del
+   núcleo (que pone la marca, el saldo de la empresa, el idioma y la cuenta). #}
+{% block head %}<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">{% endblock %}
+{% block content %}
+{% set tabs = [("iacarry.index", "iaNavDashboard", "dashboard"), ("iacarry.stations", "iaNavStations", "stations"),
+               ("iacarry.catalogue", "iaNavCatalogue", "catalogue"), ("iacarry.branding", "iaNavBranding", "branding"),
+               ("iacarry.checkouts", "iaNavCheckouts", "checkouts"), ("iacarry.demo", "iaNavDemo", "demo")] %}
+<nav class="ia-tabs" aria-label="iaCarry">
+  {% for endpoint, key, name in tabs %}
+  <a class="ia-tab{% if active == name %} is-active{% endif %}" href="{{ url_for(endpoint) }}"{% if active == name %} aria-current="page"{% endif %} data-i18n="{{ key }}">{{ zt_t(key) }}</a>
+  {% endfor %}
+</nav>
+{% for category, item in notices %}{{ notice(item.key, item.vars, ok=(category == 'ok')) }}{% endfor %}
+{% block page %}{% endblock %}
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/app.js') }}" defer></script>{% endblock %}

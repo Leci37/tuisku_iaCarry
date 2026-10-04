@@ -1,0 +1,48 @@
+{
+  "_comment": "La ficha de iaCarry: lo que el núcleo necesita saber de él. Las claves que entiende cada versión del núcleo están en su CONTRATO.md.",
+  "slug": "iacarry",
+  "name": "iaCarry",
+  "description": "Autocobro con inteligencia artificial para supermercados: se deja el carro, se ve cada producto reconocido y se paga en segundos.",
+  "_audience": "De empresa: lo usan las personas (la trastienda) y las cajas (pantallas emparejadas) de cada supermercado cliente, y lo paga su saldo. Su marca sale de presentation/images/old/logo_iacarry.png con python -m zlecitool_core.brand.kit.",
+  "audience": "business",
+  "brand": {
+    "name": "iaCarry",
+    "mark": "brand/mark-128.png",
+    "favicon": "brand/favicon-32.png",
+    "favicon_ico": "brand/favicon.ico",
+    "touch_icon": "brand/apple-touch-icon.png",
+    "og_image": "brand/og.png",
+    "colors": {
+      "pri": "#6c5dc7",
+      "acc": "#304cb5",
+      "brand_a": "#304cb5",
+      "brand_b": "#db7de8"
+    },
+    "url": "https://iacarry.eu"
+  },
+  "_languages": "Los de los compradores en la caja: también euskera, catalán y gallego (núcleo 0.18). Cada texto de i18n/ui.json, en estos ocho.",
+  "languages": [
+    "es",
+    "en",
+    "eu",
+    "ca",
+    "gl",
+    "pt",
+    "fr",
+    "de"
+  ],
+  "_prices": "Lo que cuesta cada foto analizada, en créditos, y lo paga la empresa: recognition en una caja (/station/detect), demo_recognition en «Probar» (/demo/detect). Precios provisionales: los decide el dueño (docs/COSTES.md).",
+  "prices": {
+    "recognition": 1,
+    "demo_recognition": 1
+  },
+  "_daily_limit": "Operaciones por cuenta y día: una caja analiza cientos de fotos. Por empresa, en «Clientes».",
+  "daily_limit": 5000,
+  "_retention": "Las fotos de los carros se borran a los 7 días (las de cada empresa, en frames/o<id>/, con los días de su contrato si los tiene en «Clientes»). Los datos de la detección se quedan.",
+  "retention": [
+    {
+      "prefix": "frames/",
+      "days": 7
+    }
+  ]
+}

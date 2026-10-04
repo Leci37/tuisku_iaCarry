@@ -1,0 +1,25 @@
+# --- Python ---------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# --- Datos: lo escribe la app, con datos de personas; nunca en git ---------
+data/
+*.db
+
+# --- Secretos ---------------------------------------------------------------
+.env
+.env.local
+
+# --- Editores y sistema -----------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# --- Prueba de carga: lo que escribe cada vuelta (logs y CSV); el resumen,
+#     en loadtest/RESULTADOS.md --------------------------------------------
+loadtest/results/

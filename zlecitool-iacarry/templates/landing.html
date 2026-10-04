@@ -1,0 +1,46 @@
+{% extends "zt/landing.html" %}
+{% from "zt/macros.html" import carousel with context %}
+{# La portada pública de iaCarry: lo que ve un supermercado que llega sin cuenta
+   (y lo que lee Google). zt/landing.html pone el titular, «Solicitar una demo»
+   (al contacto) y la llamada final; aquí, las cajas y la pantalla del
+   comprador en el carrusel del núcleo, y cómo funciona. La pantalla es la de la
+   propia herramienta con la marca de iaCarry: las marcas de los supermercados
+   no salen en público. Las tres, de 1200×771 (scripts/landing_images.py): el
+   carrusel toma la altura de la más alta. #}
+
+{% block landing_visual %}
+{% call carousel(3) %}
+<div class="zt-slide"><img src="{{ url_for('static', filename='img/landing-screen.jpg') }}" alt="{{ zt_t('landingShotScreen') }}" data-i18n="landingShotScreen" data-i18n-attr="alt" width="1200" height="771" loading="eager">
+  <p class="zt-slide-caption" data-i18n="landingShotScreen">{{ zt_t('landingShotScreen') }}</p></div>
+<div class="zt-slide"><img src="{{ url_for('static', filename='img/station-cart.jpg') }}" alt="{{ zt_t('landingShotCart') }}" data-i18n="landingShotCart" data-i18n-attr="alt" width="1200" height="771" loading="lazy">
+  <p class="zt-slide-caption" data-i18n="landingShotCart">{{ zt_t('landingShotCart') }}</p></div>
+<div class="zt-slide"><img src="{{ url_for('static', filename='img/station-basket.jpg') }}" alt="{{ zt_t('landingShotBasket') }}" data-i18n="landingShotBasket" data-i18n-attr="alt" width="1200" height="771" loading="lazy">
+  <p class="zt-slide-caption" data-i18n="landingShotBasket">{{ zt_t('landingShotBasket') }}</p></div>
+{% endcall %}
+{% endblock %}
+
+{% block landing_body %}
+<section class="zt-l-section">
+  <h2 class="zt-l-h2" data-i18n="landingHowTitle">{{ zt_t('landingHowTitle') }}</h2>
+  <div class="zt-l-features">
+    {% for n in (1, 2, 3) %}
+    <div class="zt-l-feature">
+      <span class="zt-l-step">{{ n }}</span>
+      <h3 data-i18n="landingStep{{ n }}Title">{{ zt_t('landingStep' ~ n ~ 'Title') }}</h3>
+      <p data-i18n="landingStep{{ n }}Text">{{ zt_t('landingStep' ~ n ~ 'Text') }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+<section class="zt-l-section">
+  <h2 class="zt-l-h2" data-i18n="landingForTitle">{{ zt_t('landingForTitle') }}</h2>
+  <div class="zt-l-features">
+    {% for n in (1, 2, 3) %}
+    <div class="zt-l-feature">
+      <h3 data-i18n="landingFor{{ n }}Title">{{ zt_t('landingFor' ~ n ~ 'Title') }}</h3>
+      <p data-i18n="landingFor{{ n }}Text">{{ zt_t('landingFor' ~ n ~ 'Text') }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "_layout.html" %}
+{# El catálogo de la empresa: cada clase que reconoce el modelo, con el nombre,
+   el precio y el peso de su tienda. Lo cambian sus dueños y administradores;
+   los demás lo ven. El peso sale en el «peso estimado» de la caja. #}
+{% block page %}
+<section class="account-card">
+  <h1 class="zt-title" data-i18n="iaCatalogueTitle">{{ zt_t('iaCatalogueTitle') }}</h1>
+  <p class="account-sub" data-i18n="iaCatalogueSub">{{ zt_t('iaCatalogueSub') }}</p>
+  <p class="ia-actions">
+    <a class="btn-ghost" href="{{ url_for('iacarry.catalogue_csv') }}" data-i18n="iaExportCsv">{{ zt_t('iaExportCsv') }}</a>
+    {% if is_admin %}
+    <form class="ia-inline" method="post" action="{{ url_for('iacarry.catalogue_import') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="ia-file"><span data-i18n="iaImportCsv">{{ zt_t('iaImportCsv') }}</span><input type="file" name="file" accept=".csv,text/csv" required></label>
+      <button class="btn-ghost btn-sm-ghost" type="submit" data-i18n="iaUpload">{{ zt_t('iaUpload') }}</button>
+    </form>
+    {% endif %}
+  </p>
+  <div class="zt-table-wrap"><table class="account-table ia-catalogue">
+    <thead><tr><th></th><th data-i18n="iaColName">{{ zt_t('iaColName') }}</th><th data-i18n="iaColShort">{{ zt_t('iaColShort') }}</th>
+      <th class="account-num" data-i18n="iaColPrice">{{ zt_t('iaColPrice') }}</th><th class="account-num" data-i18n="iaColWeightG">{{ zt_t('iaColWeightG') }}</th>
+      <th data-i18n="iaColCategory">{{ zt_t('iaColCategory') }}</th><th data-i18n="iaColColor">{{ zt_t('iaColColor') }}</th>
+      <th data-i18n="iaColActive">{{ zt_t('iaColActive') }}</th><th></th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      {% set form_id = 'p' ~ p.id %}
+      <tr class="{% if not p.active %}is-void{% endif %}">
+        <td><img class="ia-product" src="{{ url_for('static', filename='products/' ~ p.tag ~ '_300.png') }}" alt="" width="36" height="36" loading="lazy"><span class="ia-tag" dir="ltr">{{ p.tag }}</span></td>
+        {% if is_admin %}
+        <td><input class="inp" form="{{ form_id }}" name="name" value="{{ p.name }}" maxlength="120" required aria-label="{{ zt_t('iaColName') }}"></td>
+        <td><input class="inp ia-short" form="{{ form_id }}" name="short_name" value="{{ p.short_name or '' }}" maxlength="40" aria-label="{{ zt_t('iaColShort') }}"></td>
+        <td><input class="inp ia-num" form="{{ form_id }}" name="price" value="{{ '%d,%02d'|format(p.price_cents // 100, p.price_cents % 100) }}" inputmode="decimal" required aria-label="{{ zt_t('iaColPrice') }}"></td>
+        <td><input class="inp ia-num" form="{{ form_id }}" name="weight_g" value="{{ p.weight_g }}" inputmode="numeric" required aria-label="{{ zt_t('iaColWeightG') }}"></td>
+        <td><select class="inp" form="{{ form_id }}" name="category" aria-label="{{ zt_t('iaColCategory') }}">
+          {% for c in categories %}{% set ck = 'stCat' ~ c|capitalize %}<option value="{{ c }}"{% if c == p.category %} selected{% endif %} data-i18n="{{ ck }}">{{ zt_t(ck) }}</option>{% endfor %}
+        </select></td>
+        <td><input class="ia-color" type="color" form="{{ form_id }}" name="color" value="{{ p.color }}" aria-label="{{ zt_t('iaColColor') }}"></td>
+        <td><input type="checkbox" form="{{ form_id }}" name="active" value="1"{% if p.active %} checked{% endif %} aria-label="{{ zt_t('iaColActive') }}"></td>
+        <td><form id="{{ form_id }}" method="post" action="{{ url_for('iacarry.product_save', product_id=p.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn-ghost btn-sm-ghost" type="submit" data-i18n="iaSave">{{ zt_t('iaSave') }}</button></form></td>
+        {% else %}
+        {% set ck = 'stCat' ~ p.category|capitalize %}
+        <td>{{ p.name }}</td><td>{{ p.short_name or '' }}</td><td class="account-num tabnum">{{ p.price_cents|euros }}</td>
+        <td class="account-num tabnum">{{ p.weight_g }}</td><td data-i18n="{{ ck }}">{{ zt_t(ck) }}</td>
+        <td><span class="ia-swatch" style="background:{{ p.color }}"></span></td>
+        <td>{% if p.active %}✓{% endif %}</td><td></td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% if is_admin and missing %}
+  <form class="ia-inline ia-add" method="post" action="{{ url_for('iacarry.product_add') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="account-field"><span data-i18n="iaAddProductFrom">{{ zt_t('iaAddProductFrom') }}</span>
+      <select class="inp" name="tag">{% for item in missing %}<option value="{{ item.tag }}">{{ item.name }} ({{ item.tag }})</option>{% endfor %}</select></label>
+    <button class="btn-grad" type="submit" data-i18n="iaAdd">{{ zt_t('iaAdd') }}</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

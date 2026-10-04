@@ -1,0 +1,1811 @@
+{
+  "_comment": "Los textos PROPIOS de iaCarry, en los ocho idiomas de su ficha (es, en, eu, ca, gl, pt, fr, de). Clave primero, idioma después. Las st* son las de la caja (las de iacarry_checkout.html, más el gallego); las ia*, las de la trastienda. Lo común (entrar, la cuenta, los errores del núcleo) ya está en el núcleo.",
+  "stDetActive": {
+    "es": "Detección activa",
+    "en": "Detection active",
+    "eu": "Detekzioa aktibo",
+    "ca": "Detecció activa",
+    "gl": "Detección activa",
+    "pt": "Deteção ativa",
+    "fr": "Détection active",
+    "de": "Erkennung aktiv"
+  },
+  "stFor": {
+    "es": "para",
+    "en": "for",
+    "eu": "honentzat",
+    "ca": "per a",
+    "gl": "para",
+    "pt": "para",
+    "fr": "pour",
+    "de": "für"
+  },
+  "stBigText": {
+    "es": "Texto grande",
+    "en": "Large text",
+    "eu": "Testu handia",
+    "ca": "Text gran",
+    "gl": "Texto grande",
+    "pt": "Texto grande",
+    "fr": "Texte grand",
+    "de": "Großer Text"
+  },
+  "stStep1": {
+    "es": "Pon el carro",
+    "en": "Place the cart",
+    "eu": "Jarri orga",
+    "ca": "Posa el carro",
+    "gl": "Pon o carro",
+    "pt": "Coloque o carrinho",
+    "fr": "Placez le chariot",
+    "de": "Wagen abstellen"
+  },
+  "stEmpty": {
+    "es": "Vacío",
+    "en": "Empty",
+    "eu": "Hutsik",
+    "ca": "Buit",
+    "gl": "Baleiro",
+    "pt": "Vazio",
+    "fr": "Vide",
+    "de": "Leer"
+  },
+  "stFull": {
+    "es": "Lleno",
+    "en": "Full",
+    "eu": "Beteta",
+    "ca": "Ple",
+    "gl": "Cheo",
+    "pt": "Cheio",
+    "fr": "Plein",
+    "de": "Voll"
+  },
+  "stStep2": {
+    "es": "Revisa",
+    "en": "Review",
+    "eu": "Berrikusi",
+    "ca": "Revisa",
+    "gl": "Revisa",
+    "pt": "Reveja",
+    "fr": "Vérifiez",
+    "de": "Prüfen"
+  },
+  "stStep3": {
+    "es": "Paga",
+    "en": "Pay",
+    "eu": "Ordaindu",
+    "ca": "Paga",
+    "gl": "Paga",
+    "pt": "Pague",
+    "fr": "Payez",
+    "de": "Bezahlen"
+  },
+  "stCam": {
+    "es": "Cámara cenital",
+    "en": "Overhead camera",
+    "eu": "Goiko kamera",
+    "ca": "Càmera zenital",
+    "gl": "Cámara cenital",
+    "pt": "Câmara superior",
+    "fr": "Caméra en plongée",
+    "de": "Deckenkamera"
+  },
+  "stLive": {
+    "es": "en directo",
+    "en": "live",
+    "eu": "zuzenean",
+    "ca": "en directe",
+    "gl": "en directo",
+    "pt": "em direto",
+    "fr": "en direct",
+    "de": "live"
+  },
+  "stProducts": {
+    "es": "productos",
+    "en": "products",
+    "eu": "produktu",
+    "ca": "productes",
+    "gl": "produtos",
+    "pt": "produtos",
+    "fr": "produits",
+    "de": "Produkte"
+  },
+  "stInference": {
+    "es": "inferencia",
+    "en": "inference",
+    "eu": "inferentzia",
+    "ca": "inferència",
+    "gl": "inferencia",
+    "pt": "inferência",
+    "fr": "inférence",
+    "de": "Inferenz"
+  },
+  "stWeightEst": {
+    "es": "Peso estimado",
+    "en": "Estimated weight",
+    "eu": "Kalkulatutako pisua",
+    "ca": "Pes estimat",
+    "gl": "Peso estimado",
+    "pt": "Peso estimado",
+    "fr": "Poids estimé",
+    "de": "Geschätztes Gewicht"
+  },
+  "stAntifraud": {
+    "es": "Anti-fraude",
+    "en": "Anti-fraud",
+    "eu": "Iruzurraren aurka",
+    "ca": "Antiffrau",
+    "gl": "Antifraude",
+    "pt": "Antifraude",
+    "fr": "Anti-fraude",
+    "de": "Betrugsschutz"
+  },
+  "stAwaitScale": {
+    "es": "Pendiente de báscula",
+    "en": "Awaiting scale",
+    "eu": "Balantzaren zain",
+    "ca": "Pendent de bàscula",
+    "gl": "Pendente de báscula",
+    "pt": "A aguardar balança",
+    "fr": "En attente de balance",
+    "de": "Waage ausstehend"
+  },
+  "stFraudTitle": {
+    "es": "Resumen de la revisión",
+    "en": "Review summary",
+    "eu": "Berrikuspenaren laburpena",
+    "ca": "Resum de la revisió",
+    "gl": "Resumo da revisión",
+    "pt": "Resumo da revisão",
+    "fr": "Résumé de la vérification",
+    "de": "Zusammenfassung der Prüfung"
+  },
+  "stFraudPara": {
+    "es": "El sistema ha reconocido los productos a partir de la imagen cenital y ha calculado el peso esperado del carro con los pesos del catálogo.",
+    "en": "The system recognised the products from the overhead image and calculated the cart's expected weight from the catalogue weights.",
+    "eu": "Sistemak goiko irudiaren bidez produktuak ezagutu ditu eta katalogoko pisuekin orgaren espero den pisua kalkulatu du.",
+    "ca": "El sistema ha reconegut els productes a partir de la imatge zenital i ha calculat el pes esperat del carro amb els pesos del catàleg.",
+    "gl": "O sistema recoñeceu os produtos a partir da imaxe cenital e calculou o peso esperado do carro cos pesos do catálogo.",
+    "pt": "O sistema reconheceu os produtos a partir da imagem superior e calculou o peso esperado do carrinho com os pesos do catálogo.",
+    "fr": "Le système a reconnu les produits à partir de l'image en plongée et a calculé le poids attendu du chariot d'après les poids du catalogue.",
+    "de": "Das System hat die Produkte anhand des Deckenbilds erkannt und das erwartete Gewicht des Wagens aus den Katalogangaben berechnet."
+  },
+  "stFraudLi1": {
+    "es": "productos reconocidos",
+    "en": "products recognised",
+    "eu": "produktu ezagutu",
+    "ca": "productes reconeguts",
+    "gl": "produtos recoñecidos",
+    "pt": "produtos reconhecidos",
+    "fr": "produits reconnus",
+    "de": "Produkte erkannt"
+  },
+  "stFraudLi2": {
+    "es": "Peso esperado del carro: {w}",
+    "en": "Expected cart weight: {w}",
+    "eu": "Orgaren espero den pisua: {w}",
+    "ca": "Pes esperat del carro: {w}",
+    "gl": "Peso esperado do carro: {w}",
+    "pt": "Peso esperado do carrinho: {w}",
+    "fr": "Poids attendu du chariot : {w}",
+    "de": "Erwartetes Gewicht des Wagens: {w}"
+  },
+  "stFraudLi3": {
+    "es": "Comprobación con báscula no disponible: no hay ningún sensor de peso conectado.",
+    "en": "Scale check unavailable: no weight sensor is connected.",
+    "eu": "Balantzaren egiaztapena ez dago erabilgarri: ez dago pisu-sentsorerik konektatuta.",
+    "ca": "Comprovació amb bàscula no disponible: no hi ha cap sensor de pes connectat.",
+    "gl": "Comprobación con báscula non dispoñible: non hai ningún sensor de peso conectado.",
+    "pt": "Verificação com balança indisponível: não há nenhum sensor de peso ligado.",
+    "fr": "Contrôle par balance indisponible : aucun capteur de poids n'est connecté.",
+    "de": "Waagenprüfung nicht verfügbar: Es ist kein Gewichtssensor angeschlossen."
+  },
+  "stCart": {
+    "es": "Tu carrito",
+    "en": "Your cart",
+    "eu": "Zure orga",
+    "ca": "El teu carro",
+    "gl": "O teu carro",
+    "pt": "O seu carrinho",
+    "fr": "Votre chariot",
+    "de": "Ihr Wagen"
+  },
+  "stConfIA": {
+    "es": "Confianza IA",
+    "en": "AI confidence",
+    "eu": "IA konfiantza",
+    "ca": "Confiança IA",
+    "gl": "Confianza IA",
+    "pt": "Confiança IA",
+    "fr": "Confiance IA",
+    "de": "KI-Konfidenz"
+  },
+  "stDensityComfort": {
+    "es": "Cómodo",
+    "en": "Comfortable",
+    "eu": "Erosoa",
+    "ca": "Còmode",
+    "gl": "Cómodo",
+    "pt": "Confortável",
+    "fr": "Confortable",
+    "de": "Komfortabel"
+  },
+  "stDensityCompact": {
+    "es": "Compacto",
+    "en": "Compact",
+    "eu": "Trinkoa",
+    "ca": "Compacte",
+    "gl": "Compacto",
+    "pt": "Compacto",
+    "fr": "Compact",
+    "de": "Kompakt"
+  },
+  "stDensityCols": {
+    "es": "3 columnas",
+    "en": "3 columns",
+    "eu": "3 zutabe",
+    "ca": "3 columnes",
+    "gl": "3 columnas",
+    "pt": "3 colunas",
+    "fr": "3 colonnes",
+    "de": "3 Spalten"
+  },
+  "stSearch": {
+    "es": "Buscar un producto…",
+    "en": "Search for a product…",
+    "eu": "Bilatu produktu bat…",
+    "ca": "Cerca un producte…",
+    "gl": "Buscar un produto…",
+    "pt": "Procurar um produto…",
+    "fr": "Rechercher un produit…",
+    "de": "Produkt suchen…"
+  },
+  "stCatAll": {
+    "es": "Todos",
+    "en": "All",
+    "eu": "Guztiak",
+    "ca": "Tots",
+    "gl": "Todos",
+    "pt": "Todos",
+    "fr": "Tous",
+    "de": "Alle"
+  },
+  "stCatDrinks": {
+    "es": "Bebidas",
+    "en": "Drinks",
+    "eu": "Edariak",
+    "ca": "Begudes",
+    "gl": "Bebidas",
+    "pt": "Bebidas",
+    "fr": "Boissons",
+    "de": "Getränke"
+  },
+  "stCatSnacks": {
+    "es": "Snacks",
+    "en": "Snacks",
+    "eu": "Mokaduak",
+    "ca": "Snacks",
+    "gl": "Snacks",
+    "pt": "Snacks",
+    "fr": "Snacks",
+    "de": "Snacks"
+  },
+  "stCatCare": {
+    "es": "Cuidado",
+    "en": "Care",
+    "eu": "Zainketa",
+    "ca": "Cura",
+    "gl": "Coidado",
+    "pt": "Higiene",
+    "fr": "Hygiène",
+    "de": "Pflege"
+  },
+  "stEmptyMatch": {
+    "es": "Sin productos que coincidan",
+    "en": "No matching products",
+    "eu": "Ez dago bat datorren produkturik",
+    "ca": "Cap producte coincident",
+    "gl": "Sen produtos que coincidan",
+    "pt": "Sem produtos correspondentes",
+    "fr": "Aucun produit correspondant",
+    "de": "Keine passenden Produkte"
+  },
+  "stEmptyCart": {
+    "es": "El carro está vacío",
+    "en": "The cart is empty",
+    "eu": "Orga hutsik dago",
+    "ca": "El carro és buit",
+    "gl": "O carro está baleiro",
+    "pt": "O carrinho está vazio",
+    "fr": "Le chariot est vide",
+    "de": "Der Wagen ist leer"
+  },
+  "stRecognised": {
+    "es": "✓ Reconocido",
+    "en": "✓ Recognized",
+    "eu": "✓ Ezaguna",
+    "ca": "✓ Reconegut",
+    "gl": "✓ Recoñecido",
+    "pt": "✓ Reconhecido",
+    "fr": "✓ Reconnu",
+    "de": "✓ Erkannt"
+  },
+  "stDoubt": {
+    "es": "¿Es esto?",
+    "en": "Is this it?",
+    "eu": "Hau al da?",
+    "ca": "És això?",
+    "gl": "É isto?",
+    "pt": "É isto?",
+    "fr": "C'est ça ?",
+    "de": "Ist es das?"
+  },
+  "stPerUnit": {
+    "es": "/ ud",
+    "en": "/ ea",
+    "eu": "/ unit.",
+    "ca": "/ u.",
+    "gl": "/ ud",
+    "pt": "/ un.",
+    "fr": "/ u.",
+    "de": "/ St."
+  },
+  "stVerW": {
+    "es": "Reconocido por IA · peso estimado {w}",
+    "en": "AI-recognised · est. weight {w}",
+    "eu": "IAk ezagutua · gutxi gorabeherako pisua {w}",
+    "ca": "Reconegut per IA · pes estimat {w}",
+    "gl": "Recoñecido por IA · peso estimado {w}",
+    "pt": "Reconhecido por IA · peso estimado {w}",
+    "fr": "Reconnu par IA · poids estimé {w}",
+    "de": "KI-erkannt · geschätztes Gewicht {w}"
+  },
+  "stTotalPay": {
+    "es": "Total a pagar",
+    "en": "Total to pay",
+    "eu": "Ordaintzeko guztira",
+    "ca": "Total a pagar",
+    "gl": "Total a pagar",
+    "pt": "Total a pagar",
+    "fr": "Total à payer",
+    "de": "Zu zahlen"
+  },
+  "stListen": {
+    "es": "Escuchar total",
+    "en": "Read total aloud",
+    "eu": "Entzun guztira",
+    "ca": "Escolta el total",
+    "gl": "Escoitar o total",
+    "pt": "Ouvir o total",
+    "fr": "Écouter le total",
+    "de": "Summe vorlesen"
+  },
+  "stPayBtn": {
+    "es": "Pagar sin contacto",
+    "en": "Contactless pay",
+    "eu": "Ordaindu kontakturik gabe",
+    "ca": "Paga sense contacte",
+    "gl": "Pagar sen contacto",
+    "pt": "Pagar sem contacto",
+    "fr": "Payer sans contact",
+    "de": "Kontaktlos zahlen"
+  },
+  "stSemaReady": {
+    "es": "Todo correcto, ya puedes pagar 👍",
+    "en": "All correct, you can pay now 👍",
+    "eu": "Dena ondo, ordain dezakezu 👍",
+    "ca": "Tot correcte, ja pots pagar 👍",
+    "gl": "Todo correcto, xa podes pagar 👍",
+    "pt": "Tudo certo, já pode pagar 👍",
+    "fr": "Tout est correct, vous pouvez payer 👍",
+    "de": "Alles korrekt, Sie können zahlen 👍"
+  },
+  "stSemaPlace": {
+    "es": "Coloca el carro para empezar",
+    "en": "Place the cart to start",
+    "eu": "Jarri orga hasteko",
+    "ca": "Posa el carro per començar",
+    "gl": "Coloca o carro para comezar",
+    "pt": "Coloque o carrinho para começar",
+    "fr": "Placez le chariot pour commencer",
+    "de": "Wagen abstellen zum Starten"
+  },
+  "stThanks": {
+    "es": "¡Gracias por tu compra! 🎉",
+    "en": "Thanks for your purchase! 🎉",
+    "eu": "Eskerrik asko erosketagatik! 🎉",
+    "ca": "Gràcies per la teva compra! 🎉",
+    "gl": "Grazas pola túa compra! 🎉",
+    "pt": "Obrigado pela sua compra! 🎉",
+    "fr": "Merci pour votre achat ! 🎉",
+    "de": "Danke für Ihren Einkauf! 🎉"
+  },
+  "stConfirmed": {
+    "es": "Pago de {t} confirmado. La puerta se abrirá automáticamente, que tengas un buen día.",
+    "en": "Payment of {t} confirmed. The door will open automatically, have a nice day.",
+    "eu": "{t}-ko ordainketa berretsita. Atea automatikoki irekiko da, ondo izan.",
+    "ca": "Pagament de {t} confirmat. La porta s'obrirà automàticament, que tinguis un bon dia.",
+    "gl": "Pagamento de {t} confirmado. A porta abrirase automaticamente, que teñas un bo día.",
+    "pt": "Pagamento de {t} confirmado. A porta abrir-se-á automaticamente, tenha um bom dia.",
+    "fr": "Paiement de {t} confirmé. La porte s'ouvrira automatiquement, bonne journée.",
+    "de": "Zahlung von {t} bestätigt. Die Tür öffnet sich automatisch, schönen Tag."
+  },
+  "stNewBuy": {
+    "es": "Nueva compra",
+    "en": "New purchase",
+    "eu": "Erosketa berria",
+    "ca": "Nova compra",
+    "gl": "Nova compra",
+    "pt": "Nova compra",
+    "fr": "Nouvel achat",
+    "de": "Neuer Einkauf"
+  },
+  "stSpeak": {
+    "es": "El total a pagar es {a} euros con {b} céntimos",
+    "en": "The total to pay is {a} euros and {b} cents",
+    "eu": "Ordaintzeko guztira {a} euro eta {b} zentimo da",
+    "ca": "El total a pagar és {a} euros amb {b} cèntims",
+    "gl": "O total a pagar é {a} euros con {b} céntimos",
+    "pt": "O total a pagar é {a} euros e {b} cêntimos",
+    "fr": "Le total à payer est de {a} euros et {b} centimes",
+    "de": "Der zu zahlende Betrag beträgt {a} Euro und {b} Cent"
+  },
+  "stCamLive": {
+    "es": "Cámara en directo",
+    "en": "Live camera",
+    "eu": "Zuzeneko kamera",
+    "ca": "Càmera en directe",
+    "gl": "Cámara en directo",
+    "pt": "Câmara em direto",
+    "fr": "Caméra en direct",
+    "de": "Live-Kamera"
+  },
+  "stCamIdle": {
+    "es": "Aún no se ha analizado ninguna imagen",
+    "en": "No image analysed yet",
+    "eu": "Oraindik ez da irudirik aztertu",
+    "ca": "Encara no s'ha analitzat cap imatge",
+    "gl": "Aínda non se analizou ningunha imaxe",
+    "pt": "Ainda não foi analisada nenhuma imagem",
+    "fr": "Aucune image analysée pour l'instant",
+    "de": "Noch kein Bild analysiert"
+  },
+  "stCamLoading": {
+    "es": "Cargando imagen…",
+    "en": "Loading image…",
+    "eu": "Irudia kargatzen…",
+    "ca": "Carregant la imatge…",
+    "gl": "Cargando a imaxe…",
+    "pt": "A carregar a imagem…",
+    "fr": "Chargement de l'image…",
+    "de": "Bild wird geladen…"
+  },
+  "stCamAnalysing": {
+    "es": "Analizando el carro…",
+    "en": "Analysing the cart…",
+    "eu": "Orga aztertzen…",
+    "ca": "Analitzant el carro…",
+    "gl": "Analizando o carro…",
+    "pt": "A analisar o carrinho…",
+    "fr": "Analyse du chariot…",
+    "de": "Wagen wird analysiert…"
+  },
+  "stSemaBusy": {
+    "es": "Analizando el carro…",
+    "en": "Analysing your cart…",
+    "eu": "Orga aztertzen…",
+    "ca": "Analitzant el carro…",
+    "gl": "Analizando o carro…",
+    "pt": "A analisar o carrinho…",
+    "fr": "Analyse du chariot…",
+    "de": "Wagen wird analysiert…"
+  },
+  "stSemaFail": {
+    "es": "Fallo de detección — avisa a un asistente",
+    "en": "Detection failed — please call an assistant",
+    "eu": "Detekzio-errorea — deitu langile bati",
+    "ca": "Error de detecció — avisa un assistent",
+    "gl": "Fallo de detección — avisa a un asistente",
+    "pt": "Falha na deteção — chame um assistente",
+    "fr": "Échec de la détection — appelez un assistant",
+    "de": "Erkennung fehlgeschlagen — bitte Personal rufen"
+  },
+  "stSemaNone": {
+    "es": "No se ha reconocido ningún producto — avisa a un asistente",
+    "en": "No products recognised — please call an assistant",
+    "eu": "Ez da produkturik ezagutu — deitu langile bati",
+    "ca": "No s'ha reconegut cap producte — avisa un assistent",
+    "gl": "Non se recoñeceu ningún produto — avisa a un asistente",
+    "pt": "Nenhum produto reconhecido — chame um assistente",
+    "fr": "Aucun produit reconnu — appelez un assistant",
+    "de": "Keine Produkte erkannt — bitte Personal rufen"
+  },
+  "stVerWNone": {
+    "es": "Reconocido por IA",
+    "en": "AI-recognised",
+    "eu": "IAk ezagutua",
+    "ca": "Reconegut per IA",
+    "gl": "Recoñecido por IA",
+    "pt": "Reconhecido por IA",
+    "fr": "Reconnu par IA",
+    "de": "KI-erkannt"
+  },
+  "stPaying": {
+    "es": "Procesando pago…",
+    "en": "Processing payment…",
+    "eu": "Ordainketa prozesatzen…",
+    "ca": "Processant el pagament…",
+    "gl": "Procesando o pagamento…",
+    "pt": "A processar o pagamento…",
+    "fr": "Paiement en cours…",
+    "de": "Zahlung wird verarbeitet…"
+  },
+  "stPayFail": {
+    "es": "El pago no se ha podido completar — avisa a un asistente",
+    "en": "Payment could not be completed — please call an assistant",
+    "eu": "Ezin izan da ordainketa osatu — deitu langile bati",
+    "ca": "El pagament no s'ha pogut completar — avisa un assistent",
+    "gl": "Non se puido completar o pagamento — avisa a un asistente",
+    "pt": "Não foi possível concluir o pagamento — chame um assistente",
+    "fr": "Le paiement n'a pas pu aboutir — appelez un assistant",
+    "de": "Die Zahlung konnte nicht abgeschlossen werden — bitte Personal rufen"
+  },
+  "stSimConfirmed": {
+    "es": "Pago simulado. No se ha cobrado nada.",
+    "en": "Simulated payment. Nothing was charged.",
+    "eu": "Ordainketa simulatua. Ez da ezer kobratu.",
+    "ca": "Pagament simulat. No s'ha cobrat res.",
+    "gl": "Pagamento simulado. Non se cobrou nada.",
+    "pt": "Pagamento simulado. Não foi cobrado nada.",
+    "fr": "Paiement simulé. Rien n'a été débité.",
+    "de": "Simulierte Zahlung. Es wurde nichts abgebucht."
+  },
+  "stSimNote": {
+    "es": "Modo demo: no hay pasarela de pago ni apertura de puerta conectadas.",
+    "en": "Demo mode: no payment gateway or door release is connected.",
+    "eu": "Demo modua: ez dago ordainketa-pasabiderik ez ate-irekitzerik konektatuta.",
+    "ca": "Mode demo: no hi ha cap passarel·la de pagament ni obertura de porta connectades.",
+    "gl": "Modo demo: non hai pasarela de pagamento nin apertura de porta conectadas.",
+    "pt": "Modo de demonstração: não há gateway de pagamento nem abertura de porta ligados.",
+    "fr": "Mode démo : aucune passerelle de paiement ni ouverture de porte n'est connectée.",
+    "de": "Demo-Modus: Es sind weder Zahlungsterminal noch Türöffnung angebunden."
+  },
+  "stSensorHint": {
+    "es": "Simula el sensor físico del carro: no hay ningún sensor conectado",
+    "en": "Stands in for the physical cart sensor: none is connected",
+    "eu": "Orgaren sentsore fisikoa simulatzen du: ez dago sentsorerik konektatuta",
+    "ca": "Simula el sensor físic del carro: no n'hi ha cap de connectat",
+    "gl": "Simula o sensor físico do carro: non hai ningún sensor conectado",
+    "pt": "Simula o sensor físico do carrinho: não há nenhum ligado",
+    "fr": "Simule le capteur physique du chariot : aucun n'est connecté",
+    "de": "Ersetzt den physischen Wagensensor: es ist keiner angeschlossen"
+  },
+  "stClient": {
+    "es": "Supermercado",
+    "en": "Supermarket",
+    "eu": "Supermerkatua",
+    "ca": "Supermercat",
+    "gl": "Supermercado",
+    "pt": "Supermercado",
+    "fr": "Supermarché",
+    "de": "Supermarkt"
+  },
+  "stUpload": {
+    "es": "Subir una foto",
+    "en": "Upload a photo",
+    "eu": "Igo argazki bat",
+    "ca": "Puja una foto",
+    "gl": "Subir unha foto",
+    "pt": "Carregar uma foto",
+    "fr": "Importer une photo",
+    "de": "Foto hochladen"
+  },
+  "stDemoPhoto": {
+    "es": "Foto de ejemplo {n}",
+    "en": "Sample photo {n}",
+    "eu": "{n}. adibide-argazkia",
+    "ca": "Foto d'exemple {n}",
+    "gl": "Foto de exemplo {n}",
+    "pt": "Foto de exemplo {n}",
+    "fr": "Photo d'exemple {n}",
+    "de": "Beispielfoto {n}"
+  },
+  "stMeanConf": {
+    "es": "confianza",
+    "en": "confidence",
+    "eu": "konfiantza",
+    "ca": "confiança",
+    "gl": "confianza",
+    "pt": "confiança",
+    "fr": "confiance",
+    "de": "Konfidenz"
+  },
+  "stBadge": {
+    "es": "{n} uds · {t} ref.",
+    "en": "{n} items · {t} ref.",
+    "eu": "{n} unitate · {t} erref.",
+    "ca": "{n} u. · {t} ref.",
+    "gl": "{n} uds · {t} ref.",
+    "pt": "{n} un. · {t} ref.",
+    "fr": "{n} u. · {t} réf.",
+    "de": "{n} St. · {t} Ref."
+  },
+  "stCatFood": {
+    "es": "Alimentación",
+    "en": "Food",
+    "eu": "Elikadura",
+    "ca": "Alimentació",
+    "gl": "Alimentación",
+    "pt": "Alimentação",
+    "fr": "Alimentation",
+    "de": "Lebensmittel"
+  },
+  "stCatOther": {
+    "es": "Otros",
+    "en": "Other",
+    "eu": "Besteak",
+    "ca": "Altres",
+    "gl": "Outros",
+    "pt": "Outros",
+    "fr": "Autres",
+    "de": "Sonstiges"
+  },
+  "stTicket": {
+    "es": {
+      "one": "Ticket enviado · {n} artículo",
+      "other": "Ticket enviado · {n} artículos"
+    },
+    "en": {
+      "one": "Receipt sent · {n} item",
+      "other": "Receipt sent · {n} items"
+    },
+    "eu": {
+      "one": "Tiketa bidalita · artikulu {n}",
+      "other": "Tiketa bidalita · {n} artikulu"
+    },
+    "ca": {
+      "one": "Tiquet enviat · {n} article",
+      "other": "Tiquet enviat · {n} articles"
+    },
+    "gl": {
+      "one": "Tíquet enviado · {n} artigo",
+      "other": "Tíquet enviado · {n} artigos"
+    },
+    "pt": {
+      "one": "Recibo enviado · {n} artigo",
+      "other": "Recibo enviado · {n} artigos"
+    },
+    "fr": {
+      "one": "Ticket envoyé · {n} article",
+      "other": "Ticket envoyé · {n} articles"
+    },
+    "de": {
+      "one": "Beleg gesendet · {n} Artikel",
+      "other": "Beleg gesendet · {n} Artikel"
+    }
+  },
+  "iaNavDashboard": {
+    "es": "Panel",
+    "en": "Dashboard",
+    "eu": "Panela",
+    "ca": "Tauler",
+    "gl": "Panel",
+    "pt": "Painel",
+    "fr": "Tableau de bord",
+    "de": "Übersicht"
+  },
+  "iaNavStations": {
+    "es": "Cajas",
+    "en": "Stations",
+    "eu": "Kutxak",
+    "ca": "Caixes",
+    "gl": "Caixas",
+    "pt": "Caixas",
+    "fr": "Caisses",
+    "de": "Kassen"
+  },
+  "iaNavCatalogue": {
+    "es": "Catálogo",
+    "en": "Catalogue",
+    "eu": "Katalogoa",
+    "ca": "Catàleg",
+    "gl": "Catálogo",
+    "pt": "Catálogo",
+    "fr": "Catalogue",
+    "de": "Katalog"
+  },
+  "iaNavBranding": {
+    "es": "Marca",
+    "en": "Branding",
+    "eu": "Marka",
+    "ca": "Marca",
+    "gl": "Marca",
+    "pt": "Marca",
+    "fr": "Marque",
+    "de": "Marke"
+  },
+  "iaNavCheckouts": {
+    "es": "Compras",
+    "en": "Checkouts",
+    "eu": "Erosketak",
+    "ca": "Compres",
+    "gl": "Compras",
+    "pt": "Compras",
+    "fr": "Achats",
+    "de": "Einkäufe"
+  },
+  "iaNavDemo": {
+    "es": "Probar",
+    "en": "Try it",
+    "eu": "Probatu",
+    "ca": "Prova-ho",
+    "gl": "Probar",
+    "pt": "Experimentar",
+    "fr": "Essayer",
+    "de": "Ausprobieren"
+  },
+  "iaDashTitle": {
+    "es": "Hoy en {t}",
+    "en": "Today at {t}",
+    "eu": "Gaur, {t}",
+    "ca": "Avui a {t}",
+    "gl": "Hoxe en {t}",
+    "pt": "Hoje em {t}",
+    "fr": "Aujourd'hui chez {t}",
+    "de": "Heute bei {t}"
+  },
+  "iaKpiCheckouts": {
+    "es": "Compras de hoy",
+    "en": "Checkouts today",
+    "eu": "Gaurko erosketak",
+    "ca": "Compres d'avui",
+    "gl": "Compras de hoxe",
+    "pt": "Compras de hoje",
+    "fr": "Achats du jour",
+    "de": "Einkäufe heute"
+  },
+  "iaKpiRevenue": {
+    "es": "Pagado hoy",
+    "en": "Paid today",
+    "eu": "Gaur ordaindua",
+    "ca": "Pagat avui",
+    "gl": "Pagado hoxe",
+    "pt": "Pago hoje",
+    "fr": "Payé aujourd'hui",
+    "de": "Heute bezahlt"
+  },
+  "iaKpiStations": {
+    "es": "Cajas en línea",
+    "en": "Stations online",
+    "eu": "Kutxak linean",
+    "ca": "Caixes en línia",
+    "gl": "Caixas en liña",
+    "pt": "Caixas online",
+    "fr": "Caisses en ligne",
+    "de": "Kassen online"
+  },
+  "iaKpiStationsValue": {
+    "es": "{n} de {t}",
+    "en": "{n} of {t}",
+    "eu": "{n} / {t}",
+    "ca": "{n} de {t}",
+    "gl": "{n} de {t}",
+    "pt": "{n} de {t}",
+    "fr": "{n} sur {t}",
+    "de": "{n} von {t}"
+  },
+  "iaTryIt": {
+    "es": "Probar con una foto",
+    "en": "Try it with a photo",
+    "eu": "Probatu argazki batekin",
+    "ca": "Prova-ho amb una foto",
+    "gl": "Probar cunha foto",
+    "pt": "Experimentar com uma foto",
+    "fr": "Essayer avec une photo",
+    "de": "Mit einem Foto ausprobieren"
+  },
+  "iaAddStation": {
+    "es": "Dar de alta una caja",
+    "en": "Add a station",
+    "eu": "Eman kutxa bat altan",
+    "ca": "Dona d'alta una caixa",
+    "gl": "Dar de alta unha caixa",
+    "pt": "Adicionar uma caixa",
+    "fr": "Ajouter une caisse",
+    "de": "Kasse hinzufügen"
+  },
+  "iaRecent": {
+    "es": "Últimas compras",
+    "en": "Latest checkouts",
+    "eu": "Azken erosketak",
+    "ca": "Últimes compres",
+    "gl": "Últimas compras",
+    "pt": "Últimas compras",
+    "fr": "Derniers achats",
+    "de": "Letzte Einkäufe"
+  },
+  "iaNoCheckouts": {
+    "es": "Todavía no hay compras.",
+    "en": "No checkouts yet.",
+    "eu": "Oraindik ez dago erosketarik.",
+    "ca": "Encara no hi ha compres.",
+    "gl": "Aínda non hai compras.",
+    "pt": "Ainda não há compras.",
+    "fr": "Aucun achat pour l'instant.",
+    "de": "Noch keine Einkäufe."
+  },
+  "iaCheckoutsTitle": {
+    "es": "Compras",
+    "en": "Checkouts",
+    "eu": "Erosketak",
+    "ca": "Compres",
+    "gl": "Compras",
+    "pt": "Compras",
+    "fr": "Achats",
+    "de": "Einkäufe"
+  },
+  "iaCheckoutsSub": {
+    "es": "Cada carro de cada caja, con lo que se reconoció en su última foto; las de «Probar» salen como «Prueba». La foto se ve mientras se guarda: los días de borrado de tu contrato.",
+    "en": "Every trolley at every station, with what its last photo recognised; the ones from \"Try it\" show as \"Test\". The photo can be seen while it is kept: the deletion days in your contract.",
+    "eu": "Kutxa bakoitzeko orga bakoitza, bere azken argazkian ezagututakoarekin; «Probatu»-koak «Proba» gisa ageri dira. Argazkia gordetzen den bitartean ikusten da: zure kontratuko ezabatze-egunak.",
+    "ca": "Cada carro de cada caixa, amb el que es va reconèixer a la seva última foto; les de «Prova-ho» surten com a «Prova». La foto es veu mentre es desa: els dies d'esborrat del teu contracte.",
+    "gl": "Cada carro de cada caixa, co que se recoñeceu na súa última foto; as de «Probar» saen como «Proba». A foto vese mentres se garda: os días de borrado do teu contrato.",
+    "pt": "Cada carrinho de cada caixa, com o que foi reconhecido na sua última foto; as de «Experimentar» aparecem como «Teste». A foto vê-se enquanto é guardada: os dias de eliminação do seu contrato.",
+    "fr": "Chaque chariot de chaque caisse, avec ce que sa dernière photo a reconnu ; ceux d'« Essayer » apparaissent comme « Essai ». La photo est visible tant qu'elle est conservée : les jours de suppression de votre contrat.",
+    "de": "Jeder Wagen an jeder Kasse, mit dem, was sein letztes Foto erkannt hat; die aus „Ausprobieren“ erscheinen als „Test“. Das Foto ist sichtbar, solange es aufbewahrt wird: die Löschtage Ihres Vertrags."
+  },
+  "iaColWhen": {
+    "es": "Cuándo",
+    "en": "When",
+    "eu": "Noiz",
+    "ca": "Quan",
+    "gl": "Cando",
+    "pt": "Quando",
+    "fr": "Quand",
+    "de": "Wann"
+  },
+  "iaColStation": {
+    "es": "Caja",
+    "en": "Station",
+    "eu": "Kutxa",
+    "ca": "Caixa",
+    "gl": "Caixa",
+    "pt": "Caixa",
+    "fr": "Caisse",
+    "de": "Kasse"
+  },
+  "iaColItems": {
+    "es": "Artículos",
+    "en": "Items",
+    "eu": "Artikuluak",
+    "ca": "Articles",
+    "gl": "Artigos",
+    "pt": "Artigos",
+    "fr": "Articles",
+    "de": "Artikel"
+  },
+  "iaColTotal": {
+    "es": "Total",
+    "en": "Total",
+    "eu": "Guztira",
+    "ca": "Total",
+    "gl": "Total",
+    "pt": "Total",
+    "fr": "Total",
+    "de": "Summe"
+  },
+  "iaColWeight": {
+    "es": "Peso esperado",
+    "en": "Expected weight",
+    "eu": "Espero den pisua",
+    "ca": "Pes esperat",
+    "gl": "Peso esperado",
+    "pt": "Peso esperado",
+    "fr": "Poids attendu",
+    "de": "Erwartetes Gewicht"
+  },
+  "iaColStatus": {
+    "es": "Estado",
+    "en": "Status",
+    "eu": "Egoera",
+    "ca": "Estat",
+    "gl": "Estado",
+    "pt": "Estado",
+    "fr": "État",
+    "de": "Status"
+  },
+  "iaColPhoto": {
+    "es": "Foto",
+    "en": "Photo",
+    "eu": "Argazkia",
+    "ca": "Foto",
+    "gl": "Foto",
+    "pt": "Foto",
+    "fr": "Photo",
+    "de": "Foto"
+  },
+  "iaStatusDetected": {
+    "es": "Reconocida",
+    "en": "Recognised",
+    "eu": "Ezagututa",
+    "ca": "Reconeguda",
+    "gl": "Recoñecida",
+    "pt": "Reconhecida",
+    "fr": "Reconnu",
+    "de": "Erkannt"
+  },
+  "iaStatusPaid": {
+    "es": "Pagada",
+    "en": "Paid",
+    "eu": "Ordainduta",
+    "ca": "Pagada",
+    "gl": "Pagada",
+    "pt": "Paga",
+    "fr": "Payé",
+    "de": "Bezahlt"
+  },
+  "iaStatusPaidSim": {
+    "es": "Pagada (simulada)",
+    "en": "Paid (simulated)",
+    "eu": "Ordainduta (simulatua)",
+    "ca": "Pagada (simulada)",
+    "gl": "Pagada (simulada)",
+    "pt": "Paga (simulada)",
+    "fr": "Payé (simulé)",
+    "de": "Bezahlt (simuliert)"
+  },
+  "iaStatusAbandoned": {
+    "es": "Abandonada",
+    "en": "Abandoned",
+    "eu": "Utzita",
+    "ca": "Abandonada",
+    "gl": "Abandonada",
+    "pt": "Abandonada",
+    "fr": "Abandonné",
+    "de": "Abgebrochen"
+  },
+  "iaDemoLabel": {
+    "es": "Prueba",
+    "en": "Test",
+    "eu": "Proba",
+    "ca": "Prova",
+    "gl": "Proba",
+    "pt": "Teste",
+    "fr": "Essai",
+    "de": "Test"
+  },
+  "iaPhotoGone": {
+    "es": "borrada",
+    "en": "deleted",
+    "eu": "ezabatuta",
+    "ca": "esborrada",
+    "gl": "borrada",
+    "pt": "apagada",
+    "fr": "supprimée",
+    "de": "gelöscht"
+  },
+  "iaNewer": {
+    "es": "Más recientes",
+    "en": "Newer",
+    "eu": "Berriagoak",
+    "ca": "Més recents",
+    "gl": "Máis recentes",
+    "pt": "Mais recentes",
+    "fr": "Plus récents",
+    "de": "Neuere"
+  },
+  "iaOlder": {
+    "es": "Más antiguas",
+    "en": "Older",
+    "eu": "Zaharragoak",
+    "ca": "Més antigues",
+    "gl": "Máis antigas",
+    "pt": "Mais antigas",
+    "fr": "Plus anciens",
+    "de": "Ältere"
+  },
+  "iaStationsTitle": {
+    "es": "Cajas",
+    "en": "Stations",
+    "eu": "Kutxak",
+    "ca": "Caixes",
+    "gl": "Caixas",
+    "pt": "Caixas",
+    "fr": "Caisses",
+    "de": "Kassen"
+  },
+  "iaStationsSub": {
+    "es": "Cada caja es una pantalla emparejada de tu empresa. Se da de alta en «Empresa» (Dispositivos): le sale un código que se teclea una vez en la caja, en {url}. Aquí ves cómo está cada una y dices dónde está.",
+    "en": "Each station is a paired screen of your company. It is added in \"Company\" (Devices): it gets a code that is typed once on the station, at {url}. Here you see how each one is doing and say where it is.",
+    "eu": "Kutxa bakoitza zure enpresaren pantaila parekatu bat da. «Enpresa»-n (Gailuak) ematen da altan: kode bat ateratzen zaio, eta behin idazten da kutxan, {url} helbidean. Hemen ikusten duzu bakoitza nola dagoen eta non dagoen esaten duzu.",
+    "ca": "Cada caixa és una pantalla emparellada de la teva empresa. Es dona d'alta a «Empresa» (Dispositius): li surt un codi que s'escriu una vegada a la caixa, a {url}. Aquí veus com està cadascuna i dius on és.",
+    "gl": "Cada caixa é unha pantalla emparellada da túa empresa. Dáse de alta en «Empresa» (Dispositivos): sáelle un código que se teclea unha vez na caixa, en {url}. Aquí ves como está cada unha e dis onde está.",
+    "pt": "Cada caixa é um ecrã emparelhado da sua empresa. É adicionada em «Empresa» (Dispositivos): recebe um código que se escreve uma vez na caixa, em {url}. Aqui vê como está cada uma e diz onde está.",
+    "fr": "Chaque caisse est un écran appairé de votre entreprise. Elle s'ajoute dans « Entreprise » (Appareils) : elle reçoit un code que l'on saisit une fois sur la caisse, sur {url}. Ici, vous voyez l'état de chacune et indiquez où elle se trouve.",
+    "de": "Jede Kasse ist ein gekoppelter Bildschirm Ihres Unternehmens. Sie wird unter „Unternehmen“ (Geräte) angelegt: Sie erhält einen Code, der einmal an der Kasse unter {url} eingegeben wird. Hier sehen Sie den Zustand jeder Kasse und geben an, wo sie steht."
+  },
+  "iaColLocation": {
+    "es": "Ubicación",
+    "en": "Location",
+    "eu": "Kokapena",
+    "ca": "Ubicació",
+    "gl": "Localización",
+    "pt": "Localização",
+    "fr": "Emplacement",
+    "de": "Standort"
+  },
+  "iaColLastSeen": {
+    "es": "Vista por última vez",
+    "en": "Last seen",
+    "eu": "Azken aldiz ikusia",
+    "ca": "Vista per última vegada",
+    "gl": "Vista por última vez",
+    "pt": "Vista pela última vez",
+    "fr": "Vue pour la dernière fois",
+    "de": "Zuletzt gesehen"
+  },
+  "iaColLastPhoto": {
+    "es": "Última foto",
+    "en": "Last photo",
+    "eu": "Azken argazkia",
+    "ca": "Última foto",
+    "gl": "Última foto",
+    "pt": "Última foto",
+    "fr": "Dernière photo",
+    "de": "Letztes Foto"
+  },
+  "iaOnline": {
+    "es": "En línea",
+    "en": "Online",
+    "eu": "Linean",
+    "ca": "En línia",
+    "gl": "En liña",
+    "pt": "Online",
+    "fr": "En ligne",
+    "de": "Online"
+  },
+  "iaOffline": {
+    "es": "Sin conexión",
+    "en": "Offline",
+    "eu": "Konexiorik gabe",
+    "ca": "Sense connexió",
+    "gl": "Sen conexión",
+    "pt": "Sem ligação",
+    "fr": "Hors ligne",
+    "de": "Offline"
+  },
+  "iaWaiting": {
+    "es": "Esperando el código",
+    "en": "Waiting for its code",
+    "eu": "Kodearen zain",
+    "ca": "Esperant el codi",
+    "gl": "Agardando o código",
+    "pt": "À espera do código",
+    "fr": "En attente du code",
+    "de": "Wartet auf den Code"
+  },
+  "iaRevoked": {
+    "es": "Revocada",
+    "en": "Revoked",
+    "eu": "Ezeztatua",
+    "ca": "Revocada",
+    "gl": "Revogada",
+    "pt": "Revogada",
+    "fr": "Révoquée",
+    "de": "Widerrufen"
+  },
+  "iaNoStations": {
+    "es": "Aún no hay ninguna caja: dala de alta en «Empresa».",
+    "en": "No stations yet: add one in \"Company\".",
+    "eu": "Oraindik ez dago kutxarik: eman altan «Enpresa»-n.",
+    "ca": "Encara no hi ha cap caixa: dona-la d'alta a «Empresa».",
+    "gl": "Aínda non hai ningunha caixa: dáa de alta en «Empresa».",
+    "pt": "Ainda não há caixas: adicione uma em «Empresa».",
+    "fr": "Aucune caisse pour l'instant : ajoutez-en une dans « Entreprise ».",
+    "de": "Noch keine Kassen: Legen Sie eine unter „Unternehmen“ an."
+  },
+  "iaLocationHint": {
+    "es": "Tienda de Barakaldo, entrada",
+    "en": "Barakaldo store, entrance",
+    "eu": "Barakaldoko denda, sarrera",
+    "ca": "Botiga de Barakaldo, entrada",
+    "gl": "Tenda de Barakaldo, entrada",
+    "pt": "Loja de Barakaldo, entrada",
+    "fr": "Magasin de Barakaldo, entrée",
+    "de": "Filiale Barakaldo, Eingang"
+  },
+  "iaSave": {
+    "es": "Guardar",
+    "en": "Save",
+    "eu": "Gorde",
+    "ca": "Desa",
+    "gl": "Gardar",
+    "pt": "Guardar",
+    "fr": "Enregistrer",
+    "de": "Speichern"
+  },
+  "iaNotOpenedYet": {
+    "es": "Aún no se ha abierto",
+    "en": "Not opened yet",
+    "eu": "Oraindik ez da ireki",
+    "ca": "Encara no s'ha obert",
+    "gl": "Aínda non se abriu",
+    "pt": "Ainda não foi aberta",
+    "fr": "Pas encore ouverte",
+    "de": "Noch nicht geöffnet"
+  },
+  "okStationSaved": {
+    "es": "Caja guardada.",
+    "en": "Station saved.",
+    "eu": "Kutxa gordeta.",
+    "ca": "Caixa desada.",
+    "gl": "Caixa gardada.",
+    "pt": "Caixa guardada.",
+    "fr": "Caisse enregistrée.",
+    "de": "Kasse gespeichert."
+  },
+  "errStationLocation": {
+    "es": "La ubicación es demasiado larga (120 caracteres como mucho).",
+    "en": "The location is too long (120 characters at most).",
+    "eu": "Kokapena luzeegia da (gehienez 120 karaktere).",
+    "ca": "La ubicació és massa llarga (120 caràcters com a màxim).",
+    "gl": "A localización é demasiado longa (120 caracteres como moito).",
+    "pt": "A localização é demasiado longa (120 caracteres no máximo).",
+    "fr": "L'emplacement est trop long (120 caractères au maximum).",
+    "de": "Der Standort ist zu lang (höchstens 120 Zeichen)."
+  },
+  "errStationOnly": {
+    "es": "Esto sólo lo hace una caja emparejada.",
+    "en": "Only a paired station can do this.",
+    "eu": "Hau kutxa parekatu batek bakarrik egin dezake.",
+    "ca": "Això només ho pot fer una caixa emparellada.",
+    "gl": "Isto só o fai unha caixa emparellada.",
+    "pt": "Só uma caixa emparelhada pode fazer isto.",
+    "fr": "Seule une caisse appairée peut faire cela.",
+    "de": "Das kann nur eine gekoppelte Kasse."
+  },
+  "iaCatalogueTitle": {
+    "es": "Catálogo",
+    "en": "Catalogue",
+    "eu": "Katalogoa",
+    "ca": "Catàleg",
+    "gl": "Catálogo",
+    "pt": "Catálogo",
+    "fr": "Catalogue",
+    "de": "Katalog"
+  },
+  "iaCatalogueSub": {
+    "es": "Los productos que reconoce el modelo, con el nombre, el precio y el peso de tu tienda. El peso es el del «peso estimado» de la caja; lo que no está a la venta no se cuenta ni se cobra.",
+    "en": "The products the model recognises, with your store's name, price and weight. The weight is the station's \"estimated weight\"; what is not on sale is neither counted nor charged.",
+    "eu": "Ereduak ezagutzen dituen produktuak, zure dendako izen, prezio eta pisuarekin. Pisua kutxako «kalkulatutako pisua» da; salgai ez dagoena ez da zenbatzen ezta kobratzen ere.",
+    "ca": "Els productes que reconeix el model, amb el nom, el preu i el pes de la teva botiga. El pes és el del «pes estimat» de la caixa; el que no és a la venda ni es compta ni es cobra.",
+    "gl": "Os produtos que recoñece o modelo, co nome, o prezo e o peso da túa tenda. O peso é o do «peso estimado» da caixa; o que non está á venda nin se conta nin se cobra.",
+    "pt": "Os produtos que o modelo reconhece, com o nome, o preço e o peso da sua loja. O peso é o do «peso estimado» da caixa; o que não está à venda não é contado nem cobrado.",
+    "fr": "Les produits que le modèle reconnaît, avec le nom, le prix et le poids de votre magasin. Le poids est le « poids estimé » de la caisse ; ce qui n'est pas en vente n'est ni compté ni facturé.",
+    "de": "Die Produkte, die das Modell erkennt, mit Namen, Preis und Gewicht Ihres Geschäfts. Das Gewicht ist das „geschätzte Gewicht“ der Kasse; was nicht im Verkauf ist, wird weder gezählt noch berechnet."
+  },
+  "iaExportCsv": {
+    "es": "Descargar CSV",
+    "en": "Download CSV",
+    "eu": "Deskargatu CSVa",
+    "ca": "Baixa el CSV",
+    "gl": "Descargar CSV",
+    "pt": "Transferir CSV",
+    "fr": "Télécharger le CSV",
+    "de": "CSV herunterladen"
+  },
+  "iaImportCsv": {
+    "es": "Subir un CSV",
+    "en": "Upload a CSV",
+    "eu": "Igo CSV bat",
+    "ca": "Puja un CSV",
+    "gl": "Subir un CSV",
+    "pt": "Carregar um CSV",
+    "fr": "Importer un CSV",
+    "de": "CSV hochladen"
+  },
+  "iaUpload": {
+    "es": "Subir",
+    "en": "Upload",
+    "eu": "Igo",
+    "ca": "Puja",
+    "gl": "Subir",
+    "pt": "Carregar",
+    "fr": "Importer",
+    "de": "Hochladen"
+  },
+  "iaColName": {
+    "es": "Nombre",
+    "en": "Name",
+    "eu": "Izena",
+    "ca": "Nom",
+    "gl": "Nome",
+    "pt": "Nome",
+    "fr": "Nom",
+    "de": "Name"
+  },
+  "iaColShort": {
+    "es": "Nombre corto",
+    "en": "Short name",
+    "eu": "Izen laburra",
+    "ca": "Nom curt",
+    "gl": "Nome curto",
+    "pt": "Nome curto",
+    "fr": "Nom court",
+    "de": "Kurzname"
+  },
+  "iaColPrice": {
+    "es": "Precio (€)",
+    "en": "Price (€)",
+    "eu": "Prezioa (€)",
+    "ca": "Preu (€)",
+    "gl": "Prezo (€)",
+    "pt": "Preço (€)",
+    "fr": "Prix (€)",
+    "de": "Preis (€)"
+  },
+  "iaColWeightG": {
+    "es": "Peso (g)",
+    "en": "Weight (g)",
+    "eu": "Pisua (g)",
+    "ca": "Pes (g)",
+    "gl": "Peso (g)",
+    "pt": "Peso (g)",
+    "fr": "Poids (g)",
+    "de": "Gewicht (g)"
+  },
+  "iaColCategory": {
+    "es": "Categoría",
+    "en": "Category",
+    "eu": "Kategoria",
+    "ca": "Categoria",
+    "gl": "Categoría",
+    "pt": "Categoria",
+    "fr": "Catégorie",
+    "de": "Kategorie"
+  },
+  "iaColColor": {
+    "es": "Color",
+    "en": "Colour",
+    "eu": "Kolorea",
+    "ca": "Color",
+    "gl": "Cor",
+    "pt": "Cor",
+    "fr": "Couleur",
+    "de": "Farbe"
+  },
+  "iaColActive": {
+    "es": "A la venta",
+    "en": "On sale",
+    "eu": "Salgai",
+    "ca": "A la venda",
+    "gl": "Á venda",
+    "pt": "À venda",
+    "fr": "En vente",
+    "de": "Im Verkauf"
+  },
+  "iaAddProductFrom": {
+    "es": "Añadir un producto que conoce el modelo",
+    "en": "Add a product the model knows",
+    "eu": "Gehitu ereduak ezagutzen duen produktu bat",
+    "ca": "Afegeix un producte que coneix el model",
+    "gl": "Engadir un produto que coñece o modelo",
+    "pt": "Adicionar um produto que o modelo conhece",
+    "fr": "Ajouter un produit que le modèle connaît",
+    "de": "Ein Produkt hinzufügen, das das Modell kennt"
+  },
+  "iaAdd": {
+    "es": "Añadir",
+    "en": "Add",
+    "eu": "Gehitu",
+    "ca": "Afegeix",
+    "gl": "Engadir",
+    "pt": "Adicionar",
+    "fr": "Ajouter",
+    "de": "Hinzufügen"
+  },
+  "okProductSaved": {
+    "es": "Producto guardado.",
+    "en": "Product saved.",
+    "eu": "Produktua gordeta.",
+    "ca": "Producte desat.",
+    "gl": "Produto gardado.",
+    "pt": "Produto guardado.",
+    "fr": "Produit enregistré.",
+    "de": "Produkt gespeichert."
+  },
+  "okCatalogueImported": {
+    "es": {
+      "one": "Catálogo actualizado: {n} producto.",
+      "other": "Catálogo actualizado: {n} productos."
+    },
+    "en": {
+      "one": "Catalogue updated: {n} product.",
+      "other": "Catalogue updated: {n} products."
+    },
+    "eu": {
+      "one": "Katalogoa eguneratuta: produktu {n}.",
+      "other": "Katalogoa eguneratuta: {n} produktu."
+    },
+    "ca": {
+      "one": "Catàleg actualitzat: {n} producte.",
+      "other": "Catàleg actualitzat: {n} productes."
+    },
+    "gl": {
+      "one": "Catálogo actualizado: {n} produto.",
+      "other": "Catálogo actualizado: {n} produtos."
+    },
+    "pt": {
+      "one": "Catálogo atualizado: {n} produto.",
+      "other": "Catálogo atualizado: {n} produtos."
+    },
+    "fr": {
+      "one": "Catalogue mis à jour : {n} produit.",
+      "other": "Catalogue mis à jour : {n} produits."
+    },
+    "de": {
+      "one": "Katalog aktualisiert: {n} Produkt.",
+      "other": "Katalog aktualisiert: {n} Produkte."
+    }
+  },
+  "errProductName": {
+    "es": "El producto necesita un nombre (hasta 120 caracteres; el corto, hasta 40).",
+    "en": "The product needs a name (up to 120 characters; the short one, up to 40).",
+    "eu": "Produktuak izen bat behar du (gehienez 120 karaktere; laburrak, 40).",
+    "ca": "El producte necessita un nom (fins a 120 caràcters; el curt, fins a 40).",
+    "gl": "O produto necesita un nome (ata 120 caracteres; o curto, ata 40).",
+    "pt": "O produto precisa de um nome (até 120 caracteres; o curto, até 40).",
+    "fr": "Le produit a besoin d'un nom (120 caractères maximum ; le court, 40).",
+    "de": "Das Produkt braucht einen Namen (bis zu 120 Zeichen; der kurze bis zu 40)."
+  },
+  "errProductPrice": {
+    "es": "El precio va en euros, con dos decimales como mucho: 1,25.",
+    "en": "The price is in euros, with two decimals at most: 1.25.",
+    "eu": "Prezioa eurotan doa, gehienez bi hamartarrekin: 1,25.",
+    "ca": "El preu va en euros, amb dos decimals com a màxim: 1,25.",
+    "gl": "O prezo vai en euros, con dous decimais como moito: 1,25.",
+    "pt": "O preço é em euros, com duas casas decimais no máximo: 1,25.",
+    "fr": "Le prix est en euros, avec deux décimales au maximum : 1,25.",
+    "de": "Der Preis ist in Euro, mit höchstens zwei Dezimalstellen: 1,25."
+  },
+  "errProductWeight": {
+    "es": "El peso va en gramos, de 0 a 50.000.",
+    "en": "The weight is in grams, from 0 to 50,000.",
+    "eu": "Pisua gramotan doa, 0tik 50.000ra.",
+    "ca": "El pes va en grams, de 0 a 50.000.",
+    "gl": "O peso vai en gramos, de 0 a 50.000.",
+    "pt": "O peso é em gramas, de 0 a 50.000.",
+    "fr": "Le poids est en grammes, de 0 à 50 000.",
+    "de": "Das Gewicht ist in Gramm, von 0 bis 50.000."
+  },
+  "errProductCategory": {
+    "es": "Esa categoría no existe.",
+    "en": "That category does not exist.",
+    "eu": "Kategoria hori ez dago.",
+    "ca": "Aquesta categoria no existeix.",
+    "gl": "Esa categoría non existe.",
+    "pt": "Essa categoria não existe.",
+    "fr": "Cette catégorie n'existe pas.",
+    "de": "Diese Kategorie gibt es nicht."
+  },
+  "errProductColor": {
+    "es": "El color va como #rrggbb.",
+    "en": "The colour goes as #rrggbb.",
+    "eu": "Kolorea #rrggbb gisa doa.",
+    "ca": "El color va com #rrggbb.",
+    "gl": "A cor vai como #rrggbb.",
+    "pt": "A cor vai como #rrggbb.",
+    "fr": "La couleur s'écrit #rrggbb.",
+    "de": "Die Farbe als #rrggbb."
+  },
+  "errProductTag": {
+    "es": "El modelo no conoce esa clase.",
+    "en": "The model does not know that class.",
+    "eu": "Ereduak ez du klase hori ezagutzen.",
+    "ca": "El model no coneix aquesta classe.",
+    "gl": "O modelo non coñece esa clase.",
+    "pt": "O modelo não conhece essa classe.",
+    "fr": "Le modèle ne connaît pas cette classe.",
+    "de": "Das Modell kennt diese Klasse nicht."
+  },
+  "errCatalogueCsv": {
+    "es": "Ese CSV no vale (fila {n}): hace falta tag, name y price, y una clase que conozca el modelo.",
+    "en": "That CSV is not valid (row {n}): it needs tag, name and price, and a class the model knows.",
+    "eu": "CSV horrek ez du balio ({n}. errenkada): tag, name eta price behar dira, eta ereduak ezagutzen duen klase bat.",
+    "ca": "Aquest CSV no val (fila {n}): calen tag, name i price, i una classe que conegui el model.",
+    "gl": "Ese CSV non vale (fila {n}): fan falta tag, name e price, e unha clase que coñeza o modelo.",
+    "pt": "Esse CSV não é válido (linha {n}): são precisos tag, name e price, e uma classe que o modelo conheça.",
+    "fr": "Ce CSV n'est pas valide (ligne {n}) : il faut tag, name et price, et une classe que le modèle connaît.",
+    "de": "Diese CSV ist ungültig (Zeile {n}): Es braucht tag, name und price und eine Klasse, die das Modell kennt."
+  },
+  "iaBrandingTitle": {
+    "es": "La marca de tu tienda",
+    "en": "Your store's brand",
+    "eu": "Zure dendaren marka",
+    "ca": "La marca de la teva botiga",
+    "gl": "A marca da túa tenda",
+    "pt": "A marca da sua loja",
+    "fr": "La marque de votre magasin",
+    "de": "Die Marke Ihres Geschäfts"
+  },
+  "iaBrandingSub": {
+    "es": "Tu logo y tu color en las cajas: «iaCarry │ para <tu logo>», el botón de pagar y las fichas. La marca de iaCarry no cambia.",
+    "en": "Your logo and your colour on the stations: \"iaCarry │ for <your logo>\", the pay button and the chips. iaCarry's own brand does not change.",
+    "eu": "Zure logoa eta zure kolorea kutxetan: «iaCarry │ honentzat <zure logoa>», ordaintzeko botoia eta fitxak. iaCarry-ren marka ez da aldatzen.",
+    "ca": "El teu logo i el teu color a les caixes: «iaCarry │ per a <el teu logo>», el botó de pagar i les fitxes. La marca d'iaCarry no canvia.",
+    "gl": "O teu logo e a túa cor nas caixas: «iaCarry │ para <o teu logo>», o botón de pagar e as fichas. A marca de iaCarry non cambia.",
+    "pt": "O seu logótipo e a sua cor nas caixas: «iaCarry │ para <o seu logótipo>», o botão de pagar e as fichas. A marca da iaCarry não muda.",
+    "fr": "Votre logo et votre couleur sur les caisses : « iaCarry │ pour <votre logo> », le bouton de paiement et les pastilles. La marque d'iaCarry ne change pas.",
+    "de": "Ihr Logo und Ihre Farbe an den Kassen: „iaCarry │ für <Ihr Logo>“, der Bezahlknopf und die Chips. Die Marke von iaCarry bleibt gleich."
+  },
+  "iaBrandName": {
+    "es": "Nombre en la caja",
+    "en": "Name on the station",
+    "eu": "Izena kutxan",
+    "ca": "Nom a la caixa",
+    "gl": "Nome na caixa",
+    "pt": "Nome na caixa",
+    "fr": "Nom sur la caisse",
+    "de": "Name an der Kasse"
+  },
+  "iaBrandColor": {
+    "es": "Color de la marca",
+    "en": "Brand colour",
+    "eu": "Markaren kolorea",
+    "ca": "Color de la marca",
+    "gl": "Cor da marca",
+    "pt": "Cor da marca",
+    "fr": "Couleur de la marque",
+    "de": "Markenfarbe"
+  },
+  "iaBrandColorNote": {
+    "es": "Lleva texto blanco encima (el botón de pagar): por debajo de 3:1 no se lee y no se guarda. Sin color, se toma el más repetido del logo.",
+    "en": "It carries white text (the pay button): below 3:1 it cannot be read and is not saved. Without a colour, the most common one in the logo is taken.",
+    "eu": "Testu zuria darama gainean (ordaintzeko botoia): 3:1etik behera ez da irakurtzen eta ez da gordetzen. Kolorerik gabe, logoan gehien errepikatzen dena hartzen da.",
+    "ca": "Porta text blanc a sobre (el botó de pagar): per sota de 3:1 no es llegeix i no es desa. Sense color, s'agafa el més repetit del logo.",
+    "gl": "Leva texto branco enriba (o botón de pagar): por debaixo de 3:1 non se le e non se garda. Sen cor, tómase a máis repetida do logo.",
+    "pt": "Leva texto branco por cima (o botão de pagar): abaixo de 3:1 não se lê e não é guardada. Sem cor, usa-se a mais repetida no logótipo.",
+    "fr": "Elle porte du texte blanc (le bouton de paiement) : en dessous de 3:1, il ne se lit pas et n'est pas enregistré. Sans couleur, on prend la plus fréquente du logo.",
+    "de": "Darauf steht weißer Text (der Bezahlknopf): Unter 3:1 ist er nicht lesbar und wird nicht gespeichert. Ohne Farbe wird die häufigste Farbe des Logos genommen."
+  },
+  "iaBrandLogo": {
+    "es": "Logo (PNG, JPG o WebP)",
+    "en": "Logo (PNG, JPG or WebP)",
+    "eu": "Logoa (PNG, JPG edo WebP)",
+    "ca": "Logo (PNG, JPG o WebP)",
+    "gl": "Logo (PNG, JPG ou WebP)",
+    "pt": "Logótipo (PNG, JPG ou WebP)",
+    "fr": "Logo (PNG, JPG ou WebP)",
+    "de": "Logo (PNG, JPG oder WebP)"
+  },
+  "iaBrandLogoNote": {
+    "es": "Se limpia solo: el blanco de alrededor pasa a transparente y se recorta a lo suyo. Mejor el logo horizontal, sobre blanco o transparente.",
+    "en": "It cleans itself: the white around it becomes transparent and it is cropped tight. The horizontal logo works best, on white or transparent.",
+    "eu": "Bera bakarrik garbitzen da: inguruko zuria garden bihurtzen da eta bere neurrira mozten da. Hobe logo horizontala, zuriaren edo gardenaren gainean.",
+    "ca": "Es neteja sol: el blanc del voltant passa a transparent i es retalla al que és seu. Millor el logo horitzontal, sobre blanc o transparent.",
+    "gl": "Límpase só: o branco de arredor pasa a transparente e recórtase ao seu. Mellor o logo horizontal, sobre branco ou transparente.",
+    "pt": "Limpa-se sozinho: o branco à volta passa a transparente e é recortado. É melhor o logótipo horizontal, sobre branco ou transparente.",
+    "fr": "Il se nettoie tout seul : le blanc autour devient transparent et il est recadré au plus juste. Mieux vaut le logo horizontal, sur blanc ou transparent.",
+    "de": "Es wird automatisch bereinigt: Das Weiß drumherum wird transparent, und es wird knapp zugeschnitten. Am besten das waagerechte Logo, auf Weiß oder transparent."
+  },
+  "iaBrandContrast": {
+    "es": "Texto blanco sobre el color: {n}:1",
+    "en": "White text on the colour: {n}:1",
+    "eu": "Testu zuria kolorearen gainean: {n}:1",
+    "ca": "Text blanc sobre el color: {n}:1",
+    "gl": "Texto branco sobre a cor: {n}:1",
+    "pt": "Texto branco sobre a cor: {n}:1",
+    "fr": "Texte blanc sur la couleur : {n}:1",
+    "de": "Weißer Text auf der Farbe: {n}:1"
+  },
+  "iaBrandPreview": {
+    "es": "Ver la caja con esta marca",
+    "en": "See the station with this brand",
+    "eu": "Ikusi kutxa marka honekin",
+    "ca": "Mira la caixa amb aquesta marca",
+    "gl": "Ver a caixa con esta marca",
+    "pt": "Ver a caixa com esta marca",
+    "fr": "Voir la caisse avec cette marque",
+    "de": "Kasse mit dieser Marke ansehen"
+  },
+  "okBrandSaved": {
+    "es": "Marca guardada: tus cajas ya la llevan.",
+    "en": "Brand saved: your stations now carry it.",
+    "eu": "Marka gordeta: zure kutxek daramate jada.",
+    "ca": "Marca desada: les teves caixes ja la porten.",
+    "gl": "Marca gardada: as túas caixas xa a levan.",
+    "pt": "Marca guardada: as suas caixas já a usam.",
+    "fr": "Marque enregistrée : vos caisses l'affichent déjà.",
+    "de": "Marke gespeichert: Ihre Kassen zeigen sie jetzt."
+  },
+  "errBrandName": {
+    "es": "La caja necesita un nombre (hasta 80 caracteres).",
+    "en": "The station needs a name (up to 80 characters).",
+    "eu": "Kutxak izen bat behar du (gehienez 80 karaktere).",
+    "ca": "La caixa necessita un nom (fins a 80 caràcters).",
+    "gl": "A caixa necesita un nome (ata 80 caracteres).",
+    "pt": "A caixa precisa de um nome (até 80 caracteres).",
+    "fr": "La caisse a besoin d'un nom (80 caractères maximum).",
+    "de": "Die Kasse braucht einen Namen (bis zu 80 Zeichen)."
+  },
+  "errBrandColor": {
+    "es": "Eso no es un color (#rrggbb).",
+    "en": "That is not a colour (#rrggbb).",
+    "eu": "Hori ez da kolore bat (#rrggbb).",
+    "ca": "Això no és un color (#rrggbb).",
+    "gl": "Iso non é unha cor (#rrggbb).",
+    "pt": "Isso não é uma cor (#rrggbb).",
+    "fr": "Ce n'est pas une couleur (#rrggbb).",
+    "de": "Das ist keine Farbe (#rrggbb)."
+  },
+  "errBrandContrast": {
+    "es": "Con ese color el texto blanco no se lee ({n}:1; hace falta 3:1): elige un tono más oscuro.",
+    "en": "White text cannot be read on that colour ({n}:1; 3:1 is needed): choose a darker shade.",
+    "eu": "Kolore horrekin testu zuria ez da irakurtzen ({n}:1; 3:1 behar da): aukeratu tonu ilunago bat.",
+    "ca": "Amb aquest color el text blanc no es llegeix ({n}:1; cal 3:1): tria un to més fosc.",
+    "gl": "Con esa cor o texto branco non se le ({n}:1; fai falta 3:1): escolle un ton máis escuro.",
+    "pt": "Com essa cor o texto branco não se lê ({n}:1; é preciso 3:1): escolha um tom mais escuro.",
+    "fr": "Avec cette couleur, le texte blanc ne se lit pas ({n}:1 ; il faut 3:1) : choisissez un ton plus foncé.",
+    "de": "Auf dieser Farbe ist weißer Text nicht lesbar ({n}:1; 3:1 ist nötig): Wählen Sie einen dunkleren Ton."
+  },
+  "errBrandLogo": {
+    "es": "Ese logo no se puede usar: no es una imagen, o se queda vacío al quitarle el fondo.",
+    "en": "That logo cannot be used: it is not an image, or it is empty once its background is removed.",
+    "eu": "Logo hori ezin da erabili: ez da irudi bat, edo hutsik geratzen da hondoa kentzean.",
+    "ca": "Aquest logo no es pot fer servir: no és una imatge, o queda buit en treure-li el fons.",
+    "gl": "Ese logo non se pode usar: non é unha imaxe, ou queda baleiro ao quitarlle o fondo.",
+    "pt": "Esse logótipo não pode ser usado: não é uma imagem, ou fica vazio ao retirar o fundo.",
+    "fr": "Ce logo ne peut pas être utilisé : ce n'est pas une image, ou il est vide une fois le fond retiré.",
+    "de": "Dieses Logo ist nicht verwendbar: Es ist kein Bild, oder es ist ohne Hintergrund leer."
+  },
+  "iaBack": {
+    "es": "← Volver",
+    "en": "← Back",
+    "eu": "← Itzuli",
+    "ca": "← Torna",
+    "gl": "← Volver",
+    "pt": "← Voltar",
+    "fr": "← Retour",
+    "de": "← Zurück"
+  },
+  "op_recognition": {
+    "es": "Reconocimiento en caja",
+    "en": "Station recognition",
+    "eu": "Kutxako ezagutza",
+    "ca": "Reconeixement a la caixa",
+    "gl": "Recoñecemento na caixa",
+    "pt": "Reconhecimento na caixa",
+    "fr": "Reconnaissance en caisse",
+    "de": "Erkennung an der Kasse"
+  },
+  "op_demo_recognition": {
+    "es": "Reconocimiento de prueba",
+    "en": "Test recognition",
+    "eu": "Probako ezagutza",
+    "ca": "Reconeixement de prova",
+    "gl": "Recoñecemento de proba",
+    "pt": "Reconhecimento de teste",
+    "fr": "Reconnaissance d'essai",
+    "de": "Test-Erkennung"
+  },
+  "errDetectorDown": {
+    "es": "El reconocimiento no responde: avisa a un asistente.",
+    "en": "Recognition is not responding: please call an assistant.",
+    "eu": "Ezagutzak ez du erantzuten: deitu langile bati.",
+    "ca": "El reconeixement no respon: avisa un assistent.",
+    "gl": "O recoñecemento non responde: avisa a un asistente.",
+    "pt": "O reconhecimento não responde: chame um assistente.",
+    "fr": "La reconnaissance ne répond pas : appelez un assistant.",
+    "de": "Die Erkennung antwortet nicht: Bitte Personal rufen."
+  },
+  "errDetectorBusy": {
+    "es": "El reconocimiento está ocupado: vuelve a intentarlo en unos segundos.",
+    "en": "Recognition is busy: try again in a few seconds.",
+    "eu": "Ezagutza lanpetuta dago: saiatu berriro segundo batzuk barru.",
+    "ca": "El reconeixement està ocupat: torna-ho a provar d'aquí a uns segons.",
+    "gl": "O recoñecemento está ocupado: téntao de novo nuns segundos.",
+    "pt": "O reconhecimento está ocupado: tente novamente dentro de alguns segundos.",
+    "fr": "La reconnaissance est occupée : réessayez dans quelques secondes.",
+    "de": "Die Erkennung ist ausgelastet: In ein paar Sekunden erneut versuchen."
+  },
+  "toolDescription": {
+    "es": "iaCarry: autocobro con inteligencia artificial para supermercados. El comprador deja el carro, ve cada producto reconocido y paga en segundos, sin pasar los artículos uno a uno.",
+    "en": "iaCarry: AI self-checkout for supermarkets. The shopper leaves the trolley, sees every product recognised and pays in seconds, without scanning items one by one.",
+    "eu": "iaCarry: adimen artifizialeko autokobrantza supermerkatuentzat. Erosleak orga uzten du, produktu bakoitza ezagututa ikusten du eta segundotan ordaintzen du, artikuluak banan-banan pasatu gabe.",
+    "ca": "iaCarry: autocobrament amb intel·ligència artificial per a supermercats. El comprador deixa el carro, veu cada producte reconegut i paga en segons, sense passar els articles un a un.",
+    "gl": "iaCarry: autocobro con intelixencia artificial para supermercados. O comprador deixa o carro, ve cada produto recoñecido e paga en segundos, sen pasar os artigos un a un.",
+    "pt": "iaCarry: pagamento automático com inteligência artificial para supermercados. O cliente deixa o carrinho, vê cada produto reconhecido e paga em segundos, sem passar os artigos um a um.",
+    "fr": "iaCarry : encaissement automatique par intelligence artificielle pour supermarchés. Le client dépose le chariot, voit chaque produit reconnu et paie en quelques secondes, sans scanner les articles un par un.",
+    "de": "iaCarry: KI-Selbstbedienungskasse für Supermärkte. Der Kunde stellt den Wagen ab, sieht jedes erkannte Produkt und zahlt in Sekunden, ohne die Artikel einzeln zu scannen."
+  },
+  "landingTitle": {
+    "es": "El carro entero, cobrado en segundos",
+    "en": "The whole trolley, checked out in seconds",
+    "eu": "Orga osoa, segundotan kobratuta",
+    "ca": "El carro sencer, cobrat en segons",
+    "gl": "O carro enteiro, cobrado en segundos",
+    "pt": "O carrinho inteiro, cobrado em segundos",
+    "fr": "Tout le chariot, encaissé en quelques secondes",
+    "de": "Der ganze Wagen, in Sekunden kassiert"
+  },
+  "landingSub": {
+    "es": "Una cámara reconoce cada producto del carro y la caja lo cobra al momento: sin pasar los artículos uno a uno y sin colas. Con la marca de tu supermercado.",
+    "en": "A camera recognises every product in the trolley and the station charges it at once: no scanning items one by one and no queues. With your supermarket's brand.",
+    "eu": "Kamera batek orgako produktu bakoitza ezagutzen du eta kutxak berehala kobratzen du: artikuluak banan-banan pasatu gabe eta ilararik gabe. Zure supermerkatuaren markarekin.",
+    "ca": "Una càmera reconeix cada producte del carro i la caixa el cobra al moment: sense passar els articles un a un i sense cues. Amb la marca del teu supermercat.",
+    "gl": "Unha cámara recoñece cada produto do carro e a caixa cóbrao ao momento: sen pasar os artigos un a un e sen colas. Coa marca do teu supermercado.",
+    "pt": "Uma câmara reconhece cada produto do carrinho e a caixa cobra-o de imediato: sem passar os artigos um a um e sem filas. Com a marca do seu supermercado.",
+    "fr": "Une caméra reconnaît chaque produit du chariot et la caisse l'encaisse aussitôt : sans scanner les articles un par un et sans file d'attente. Aux couleurs de votre supermarché.",
+    "de": "Eine Kamera erkennt jedes Produkt im Wagen, und die Kasse rechnet es sofort ab: ohne einzelnes Scannen und ohne Schlangen. Mit der Marke Ihres Supermarkts."
+  },
+  "landingShotScreen": {
+    "es": "La pantalla de la caja: cada producto reconocido, con su precio y el total",
+    "en": "The station screen: every product recognised, with its price and the total",
+    "eu": "Kutxako pantaila: produktu bakoitza ezagututa, bere prezioarekin eta guztirakoarekin",
+    "ca": "La pantalla de la caixa: cada producte reconegut, amb el seu preu i el total",
+    "gl": "A pantalla da caixa: cada produto recoñecido, co seu prezo e o total",
+    "pt": "O ecrã da caixa: cada produto reconhecido, com o seu preço e o total",
+    "fr": "L'écran de la caisse : chaque produit reconnu, avec son prix et le total",
+    "de": "Der Kassenbildschirm: jedes erkannte Produkt mit Preis und Summe"
+  },
+  "landingShotCart": {
+    "es": "La caja de carro: una cámara cenital y una pantalla",
+    "en": "The trolley station: an overhead camera and a screen",
+    "eu": "Orga-kutxa: goiko kamera bat eta pantaila bat",
+    "ca": "La caixa de carro: una càmera zenital i una pantalla",
+    "gl": "A caixa de carro: unha cámara cenital e unha pantalla",
+    "pt": "A caixa de carrinho: uma câmara superior e um ecrã",
+    "fr": "La caisse chariot : une caméra en plongée et un écran",
+    "de": "Die Wagenkasse: eine Deckenkamera und ein Bildschirm"
+  },
+  "landingShotBasket": {
+    "es": "La caja de cesta, para compras pequeñas",
+    "en": "The basket station, for small shops",
+    "eu": "Saski-kutxa, erosketa txikietarako",
+    "ca": "La caixa de cistella, per a compres petites",
+    "gl": "A caixa de cesta, para compras pequenas",
+    "pt": "A caixa de cesto, para compras pequenas",
+    "fr": "La caisse panier, pour les petits achats",
+    "de": "Die Korbkasse, für kleine Einkäufe"
+  },
+  "landingHowTitle": {
+    "es": "Cómo funciona",
+    "en": "How it works",
+    "eu": "Nola dabilen",
+    "ca": "Com funciona",
+    "gl": "Como funciona",
+    "pt": "Como funciona",
+    "fr": "Comment ça marche",
+    "de": "So funktioniert es"
+  },
+  "landingStep1Title": {
+    "es": "Deja el carro",
+    "en": "Leave the trolley",
+    "eu": "Utzi orga",
+    "ca": "Deixa el carro",
+    "gl": "Deixa o carro",
+    "pt": "Deixe o carrinho",
+    "fr": "Déposez le chariot",
+    "de": "Wagen abstellen"
+  },
+  "landingStep1Text": {
+    "es": "El comprador lo deja bajo la cámara de la caja, tal cual: sin sacar nada.",
+    "en": "The shopper leaves it under the station's camera, as it is: without taking anything out.",
+    "eu": "Erosleak kutxako kameraren azpian uzten du, dagoen bezala: ezer atera gabe.",
+    "ca": "El comprador el deixa sota la càmera de la caixa, tal com està: sense treure res.",
+    "gl": "O comprador déixao baixo a cámara da caixa, tal cal: sen sacar nada.",
+    "pt": "O cliente deixa-o debaixo da câmara da caixa, tal como está: sem tirar nada.",
+    "fr": "Le client le dépose sous la caméra de la caisse, tel quel : sans rien sortir.",
+    "de": "Der Kunde stellt ihn unter die Kamera der Kasse, so wie er ist: ohne etwas herauszunehmen."
+  },
+  "landingStep2Title": {
+    "es": "Revisa",
+    "en": "Review",
+    "eu": "Berrikusi",
+    "ca": "Revisa",
+    "gl": "Revisa",
+    "pt": "Reveja",
+    "fr": "Vérifiez",
+    "de": "Prüfen"
+  },
+  "landingStep2Text": {
+    "es": "La pantalla enseña cada producto reconocido, con su precio, el total y el peso esperado.",
+    "en": "The screen shows every product recognised, with its price, the total and the expected weight.",
+    "eu": "Pantailak produktu ezagutu bakoitza erakusten du, bere prezioarekin, guztirakoarekin eta espero den pisuarekin.",
+    "ca": "La pantalla mostra cada producte reconegut, amb el seu preu, el total i el pes esperat.",
+    "gl": "A pantalla amosa cada produto recoñecido, co seu prezo, o total e o peso esperado.",
+    "pt": "O ecrã mostra cada produto reconhecido, com o seu preço, o total e o peso esperado.",
+    "fr": "L'écran affiche chaque produit reconnu, avec son prix, le total et le poids attendu.",
+    "de": "Der Bildschirm zeigt jedes erkannte Produkt mit Preis, Summe und erwartetem Gewicht."
+  },
+  "landingStep3Title": {
+    "es": "Paga",
+    "en": "Pay",
+    "eu": "Ordaindu",
+    "ca": "Paga",
+    "gl": "Paga",
+    "pt": "Pague",
+    "fr": "Payez",
+    "de": "Bezahlen"
+  },
+  "landingStep3Text": {
+    "es": "Paga sin contacto y se va. En «Compras» ves cada carro de cada caja.",
+    "en": "Pay contactless and go. In \"Checkouts\" you see every trolley at every station.",
+    "eu": "Kontakturik gabe ordaindu eta joan. «Erosketak»-en kutxa bakoitzeko orga bakoitza ikusten duzu.",
+    "ca": "Paga sense contacte i se'n va. A «Compres» veus cada carro de cada caixa.",
+    "gl": "Paga sen contacto e vaise. En «Compras» ves cada carro de cada caixa.",
+    "pt": "Paga sem contacto e vai-se embora. Em «Compras» vê cada carrinho de cada caixa.",
+    "fr": "Il paie sans contact et repart. Dans « Achats », vous voyez chaque chariot de chaque caisse.",
+    "de": "Kontaktlos zahlen und gehen. Unter „Einkäufe“ sehen Sie jeden Wagen an jeder Kasse."
+  },
+  "landingForTitle": {
+    "es": "Para tu supermercado",
+    "en": "For your supermarket",
+    "eu": "Zure supermerkatuarentzat",
+    "ca": "Per al teu supermercat",
+    "gl": "Para o teu supermercado",
+    "pt": "Para o seu supermercado",
+    "fr": "Pour votre supermarché",
+    "de": "Für Ihren Supermarkt"
+  },
+  "landingFor1Title": {
+    "es": "Con tu marca",
+    "en": "With your brand",
+    "eu": "Zure markarekin",
+    "ca": "Amb la teva marca",
+    "gl": "Coa túa marca",
+    "pt": "Com a sua marca",
+    "fr": "À votre marque",
+    "de": "Mit Ihrer Marke"
+  },
+  "landingFor1Text": {
+    "es": "Tu logo y tus colores en las cajas; tu catálogo, con tus precios.",
+    "en": "Your logo and colours on the stations; your catalogue, with your prices.",
+    "eu": "Zure logoa eta koloreak kutxetan; zure katalogoa, zure prezioekin.",
+    "ca": "El teu logo i els teus colors a les caixes; el teu catàleg, amb els teus preus.",
+    "gl": "O teu logo e as túas cores nas caixas; o teu catálogo, cos teus prezos.",
+    "pt": "O seu logótipo e as suas cores nas caixas; o seu catálogo, com os seus preços.",
+    "fr": "Votre logo et vos couleurs sur les caisses ; votre catalogue, avec vos prix.",
+    "de": "Ihr Logo und Ihre Farben an den Kassen; Ihr Katalog, mit Ihren Preisen."
+  },
+  "landingFor2Title": {
+    "es": "Pagas por foto",
+    "en": "Pay per photo",
+    "eu": "Argazkiko ordaintzen duzu",
+    "ca": "Pagues per foto",
+    "gl": "Pagas por foto",
+    "pt": "Paga por foto",
+    "fr": "Vous payez à la photo",
+    "de": "Bezahlung pro Foto"
+  },
+  "landingFor2Text": {
+    "es": "Cada foto analizada descuenta créditos del saldo de tu empresa: para empezar no hace falta una licencia por adelantado.",
+    "en": "Each photo analysed takes credits from your company balance: no licence up front to get started.",
+    "eu": "Aztertutako argazki bakoitzak kredituak kentzen dizkio zure enpresaren saldoari: hasteko ez da aurretiko lizentziarik behar.",
+    "ca": "Cada foto analitzada descompta crèdits del saldo de la teva empresa: per començar no cal cap llicència per avançat.",
+    "gl": "Cada foto analizada desconta créditos do saldo da túa empresa: para comezar non fai falta unha licenza por adiantado.",
+    "pt": "Cada foto analisada desconta créditos do saldo da sua empresa: para começar não é preciso uma licença antecipada.",
+    "fr": "Chaque photo analysée déduit des crédits du solde de votre entreprise : pas de licence à l'avance pour commencer.",
+    "de": "Jedes analysierte Foto zieht Credits vom Guthaben Ihres Unternehmens ab: Zum Start braucht es keine Lizenz im Voraus."
+  },
+  "landingFor3Title": {
+    "es": "Las fotos se borran solas",
+    "en": "Photos delete themselves",
+    "eu": "Argazkiak bakarrik ezabatzen dira",
+    "ca": "Les fotos s'esborren soles",
+    "gl": "As fotos bórranse soas",
+    "pt": "As fotos apagam-se sozinhas",
+    "fr": "Les photos s'effacent toutes seules",
+    "de": "Fotos löschen sich selbst"
+  },
+  "landingFor3Text": {
+    "es": "Se guardan los días de tu contrato y se borran cada día; lo detectado se queda, sin imágenes de nadie.",
+    "en": "They are kept for the days in your contract and deleted daily; what was detected stays, with no images of anyone.",
+    "eu": "Zure kontratuko egunetan gordetzen dira eta egunero ezabatzen dira; detektatutakoa geratzen da, inoren irudirik gabe.",
+    "ca": "Es desen els dies del teu contracte i s'esborren cada dia; el que s'ha detectat es queda, sense imatges de ningú.",
+    "gl": "Gárdanse os días do teu contrato e bórranse cada día; o detectado queda, sen imaxes de ninguén.",
+    "pt": "São guardadas os dias do seu contrato e apagadas todos os dias; o que foi detetado fica, sem imagens de ninguém.",
+    "fr": "Elles sont conservées pendant les jours de votre contrat et supprimées chaque jour ; ce qui a été détecté reste, sans image de personne.",
+    "de": "Sie werden für die Tage Ihres Vertrags aufbewahrt und täglich gelöscht; das Erkannte bleibt, ohne Bilder von irgendwem."
+  }
+}

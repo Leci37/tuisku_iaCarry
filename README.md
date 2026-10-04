@@ -35,8 +35,8 @@ flowchart LR
 | **1 · Ingestion** | Film real carts, split the footage, pick the frames worth keeping | [`README_1_INGESTION.md`](README_1_INGESTION.md) (track B, B1) · plan: [`TRANSITION.md`](TRANSITION.md) A0–A1 | `ingestion/video/` |
 | **2 · Labelling** | One click per product, masks propagated through the video, every box reviewed by hand | [`README_1_INGESTION.md`](README_1_INGESTION.md) (B2–B5) · plan: [`TRANSITION.md`](TRANSITION.md) A2–A8 | `ingestion/video/` |
 | **3 · Training** | Labelled dataset → model file. The plan adds fixed splits, metrics and a release gate | [`README_2_TRAINING.md`](README_2_TRAINING.md) · plan: [`TRANSITION.md`](TRANSITION.md) part B | `training/` |
-| **4 · Query** | The Flask server keeps the model loaded and answers each photo sent to `/upload` with the products and their boxes | [`README_3_SERVER.md`](README_3_SERVER.md) · [`serving/FLOW.md`](serving/FLOW.md) | `serving/app.py` |
-| **5 · Presentation** | The checkout screen shows the cart, the total and the pay button, themed per retailer | [`README_4_FRONTEND.md`](README_4_FRONTEND.md) · pitch deck: [`presentation/`](presentation/README.md) | `serving/templates/` |
+| **4 · Query** | The detector service keeps the model loaded and answers each photo sent to `POST /v1/detect` with the products and their boxes (the old `serving/app.py` answers `/upload` for the sales demo) | [`README_3_SERVER.md`](README_3_SERVER.md) · [`serving/FLOW.md`](serving/FLOW.md) | `serving/detector_service.py` |
+| **5 · Presentation** | The product: **`zlecitool-iacarry/`**, the zlecitool business tool — the checkout screen on paired stations, billed per recognition to each supermarket, with its back office | [`zlecitool-iacarry/README.md`](zlecitool-iacarry/README.md) · [`README_4_FRONTEND.md`](README_4_FRONTEND.md) · pitch deck: [`presentation/`](presentation/README.md) | `zlecitool-iacarry/` |
 
 <p align="center">
   <img src="presentation/images/checkout_screen_2026.jpg" alt="The checkout screen: overhead photo with a box on every product, the cart list and the total" width="760">
@@ -54,6 +54,31 @@ What changed in the way of working:
 - **The demo runs on any laptop.** The stub replays hand-labelled answers for the
   four demo photos (`serving/demo_labels/`), and the retailer is picked from a
   dropdown; `tools/new_client_theme.py` adds a new one.
+
+### The product: `zlecitool-iacarry/`
+
+The checkout now runs as a **zlecitool business tool** on top of
+`zlecitool-core` (0.18), in [`zlecitool-iacarry/`](zlecitool-iacarry/README.md)
+until it gets its own repository: supermarkets are client companies invited by
+tuisku, each with its own logo, colour and catalogue (prices in cents); stations
+are paired devices of the company, and every analysed photo is charged to the
+company's balance (`recognition`). Photos of trolleys are deleted after the
+days in each client's contract. The page is the same checkout screen, with
+the same state machine and the same `/upload` response contract; its tests
+port `serving/verify/verify.py` to pytest + Playwright with a fake detector.
+
+The tool never loads TensorFlow: it calls **`serving/detector_service.py`**
+(`POST /v1/detect`, `GET /health`, shared token, bounded queue that answers
+`503 busy`, no file written per request), configured entirely from the
+environment. `serving/app.py`, its page and `serving/verify/` stay as the sales
+demo until the tool replaces them. The plan is `IACARRY_INTEGRATION_PLAN.md` (kept outside the repository).
+
+```bash
+cd zlecitool-iacarry && pytest                                  # the tool (fake detector)
+pytest serving/test_detector_service.py                         # the service (fake model, no TensorFlow)
+IACARRY_MODEL_DIR=models/… IACARRY_CATEGORY_INDEX=models/…/P_Category_index.pickle \
+  python serving/detector_service.py                            # the real detector on :8600
+```
 
 ---
 
@@ -95,7 +120,9 @@ ingestion/video/       track B — split, tag by hand, track masks, review boxes
 training/tensorflow/   track A — transfer learning, evaluation, the `detect` signature
 training/yolo/         track B — YOLOv8
 training/tflite/       edge export (not used by the server)
-serving/               the Flask app; templates/ holds the checkout screen
+serving/               detector_service.py (the model as an internal service) and the
+                       old Flask app with its checkout screen (the sales demo)
+zlecitool-iacarry/     the product: the zlecitool business tool (stations, back office)
 common/                helpers shared by more than one phase
 tools/                 check_imports.py, new_client_theme.py (adds a retailer to the screen)
 models/                weights and checkpoints          [gitignored]

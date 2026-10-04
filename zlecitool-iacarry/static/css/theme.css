@@ -1,0 +1,20 @@
+/* El tema de la herramienta: SÓLO los valores de los tokens.
+
+   Los nombres y todos los componentes (barra, tarjetas, botones, campos) son
+   del núcleo (shell.css), que zt/base.html carga antes que este fichero. Aquí
+   se cambia el color de la herramienta, y nada más: es lo que hace que las
+   herramientas parezcan una familia sin ser iguales.
+
+   --pri y --acc van en pareja: son los dos extremos de cada degradado, y
+   llevan texto blanco encima, así que los dos tienen que pasar de 4,5:1
+   contra el blanco. Los de abajo son los de tuisku, los mismos que trae el
+   núcleo; las parejas ya comprobadas de la paleta de tuisku (para que cada
+   herramienta tenga su color sin salirse de la familia) están en
+   docs/MARCA.md del núcleo. El logo, la fuente y la raya de colores bajo la
+   barra son de la familia: no se cambian aquí. */
+
+:root {
+  --pri:     #0950e3;  /* el color de la herramienta: marca, enlaces, botones */
+  --acc:     #0e7c98;  /* el otro extremo del degradado; nunca solo           */
+  --bg:      #f4f8fb;  /* el fondo, detrás de las tarjetas                    */
+}

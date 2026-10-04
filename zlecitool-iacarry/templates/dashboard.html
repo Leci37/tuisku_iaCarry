@@ -1,0 +1,28 @@
+{% extends "_layout.html" %}
+{# El panel: lo de hoy en las cajas de la empresa (las pruebas no cuentan) y
+   las últimas compras. #}
+{% block page %}
+<section class="account-card">
+  {% set v = {"t": org.name} %}
+  <h1 class="zt-title" data-i18n="iaDashTitle" data-i18n-vars='{{ v|tojson }}'>{{ zt_t('iaDashTitle', **v) }}</h1>
+  <div class="ia-kpis">
+    <div class="ia-kpi"><b class="tabnum">{{ data.checkouts }}</b><span data-i18n="iaKpiCheckouts">{{ zt_t('iaKpiCheckouts') }}</span></div>
+    <div class="ia-kpi"><b class="tabnum">{{ data.revenue_cents|euros }}</b><span data-i18n="iaKpiRevenue">{{ zt_t('iaKpiRevenue') }}</span></div>
+    {% set s = {"n": data.online, "t": data.stations} %}
+    <div class="ia-kpi"><b class="tabnum" data-i18n="iaKpiStationsValue" data-i18n-vars='{{ s|tojson }}'>{{ zt_t('iaKpiStationsValue', **s) }}</b><span data-i18n="iaKpiStations">{{ zt_t('iaKpiStations') }}</span></div>
+  </div>
+  <p class="ia-actions">
+    <a class="btn-grad" href="{{ url_for('iacarry.demo') }}" data-i18n="iaTryIt">{{ zt_t('iaTryIt') }}</a>
+    {% if is_admin %}<a class="btn-ghost" href="{{ url_for('zlecitool_orgs.company') }}#devices" data-i18n="iaAddStation">{{ zt_t('iaAddStation') }}</a>{% endif %}
+  </p>
+</section>
+
+<section class="account-card">
+  <h2 class="account-card-title" data-i18n="iaRecent">{{ zt_t('iaRecent') }}</h2>
+  {% if data.recent %}
+  {% include "_checkout_rows.html" %}
+  {% else %}
+  <p class="account-note" data-i18n="iaNoCheckouts">{{ zt_t('iaNoCheckouts') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

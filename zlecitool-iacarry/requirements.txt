@@ -1,0 +1,10 @@
+# PRODUCCIÓN. El núcleo, fijado a una versión: subirla es una decisión, y
+# antes se lee su CHANGELOG.md. El repo es privado: el servidor necesita un
+# token de lectura de GitHub para instalarlo.
+zlecitool-core[ai] @ git+https://github.com/Leci37/zlecitool-core@v0.18.0
+
+# Lo propio de la herramienta. Cada línea de aquí va también en
+# requirements-dev.txt (tests/test_layout.py lo comprueba).
+gunicorn>=21
+# La marca del supermercado: limpiar el logo que sube y sacar su color.
+pillow>=10.0

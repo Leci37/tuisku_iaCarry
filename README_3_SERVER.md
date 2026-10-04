@@ -1,5 +1,15 @@
 # 3 — Real-time server (backend)
 
+> **Now:** the model is served by `serving/detector_service.py` — `POST /v1/detect`
+> with honest corner names (`box: {x1, y1, x2, y2}`), `GET /health`, a shared
+> token (`IACARRY_DETECTOR_TOKEN`), a bounded queue that answers `503 busy`,
+> configuration from the environment and no file written per request — and
+> the product, `zlecitool-iacarry/`, calls it. Its tests use a fake model
+> (`serving/test_detector_service.py`). What follows describes `serving/app.py`,
+> which stays as the sales demo. Of "What is missing", the service closes 2,
+> 3, 4, 6, 7, 8, 9 and 10 (for itself, not for this app); 1 (the model files
+> are in no repository) and 5 (no payment) remain.
+
 The Flask application that holds the model in memory, takes a frame over HTTP and
 answers with predictions. Everything in `serving/` except the page itself, which
 is `README_4_FRONTEND.md`.
